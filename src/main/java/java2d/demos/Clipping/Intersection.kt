@@ -34,6 +34,7 @@ package java2d.demos.Clipping
 import java2d.AnimatingControlsSurface
 import java2d.CustomControls
 import java2d.Surface
+import java2d.createToolButton
 import java.awt.Color
 import java.awt.Dimension
 import java.awt.Font
@@ -47,7 +48,6 @@ import java.awt.geom.Ellipse2D
 import java.awt.geom.GeneralPath
 import java.awt.geom.Rectangle2D
 import javax.swing.AbstractButton
-import javax.swing.JToggleButton
 import javax.swing.JToolBar
 import kotlin.reflect.KMutableProperty0
 
@@ -192,19 +192,11 @@ class Intersection : AnimatingControlsSurface()
             addTool("Ovals", true, demo::doOvals)
         }
 
-        fun addTool(title: String, state: Boolean, property: KMutableProperty0<Boolean>) {
-            toolbar.add(JToggleButton(title).apply {
-                isFocusPainted = false
-                isSelected = state
-                val prefSize = Dimension(preferredSize.width, 21)
-                preferredSize = prefSize
-                maximumSize = prefSize
-                minimumSize = prefSize
-                addActionListener {
-                    property.set(isSelected)
-                    if (!demo.animating.running()) {
-                        demo.repaint()
-                    }
+        private fun addTool(title: String, state: Boolean, property: KMutableProperty0<Boolean>) {
+            toolbar.add(createToolButton(title, state) { selected ->
+                property.set(selected)
+                if (!demo.animating.running()) {
+                    demo.repaint()
                 }
             })
         }

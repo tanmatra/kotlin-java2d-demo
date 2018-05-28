@@ -34,6 +34,7 @@ package java2d.demos.Clipping
 import java2d.ControlsSurface
 import java2d.CustomControls
 import java2d.Surface
+import java2d.createToolButton
 import java.awt.Color.BLACK
 import java.awt.Color.GREEN
 import java.awt.Color.RED
@@ -41,13 +42,11 @@ import java.awt.Color.WHITE
 import java.awt.Color.YELLOW
 import java.awt.Dimension
 import java.awt.Graphics2D
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
 import java.awt.geom.Area
 import java.awt.geom.Ellipse2D
 import java.awt.geom.GeneralPath
 import javax.swing.AbstractButton
-import javax.swing.JToggleButton
+import javax.swing.ButtonGroup
 import javax.swing.JToolBar
 
 /**
@@ -56,7 +55,7 @@ import javax.swing.JToolBar
  */
 class Areas : ControlsSurface()
 {
-    protected var areaType = "nop"
+    private var areaType = "nop"
 
     init {
         background = WHITE
@@ -64,80 +63,79 @@ class Areas : ControlsSurface()
     }
 
     override fun render(w: Int, h: Int, g2: Graphics2D) {
-        val p1 = GeneralPath()
-        p1.moveTo(w * .25f, 0.0f)
-        p1.lineTo(w * .75f, h * .5f)
-        p1.lineTo(w * .25f, h.toFloat())
-        p1.lineTo(0.0f, h * .5f)
-        p1.closePath()
-
-        val p2 = GeneralPath()
-        p2.moveTo(w * .75f, 0.0f)
-        p2.lineTo(w.toFloat(), h * .5f)
-        p2.lineTo(w * .75f, h.toFloat())
-        p2.lineTo(w * .25f, h * .5f)
-        p2.closePath()
+        val p1 = GeneralPath().apply {
+            moveTo(w * .25f, 0.0f)
+            lineTo(w * .75f, h * .5f)
+            lineTo(w * .25f, h.toFloat())
+            lineTo(0.0f, h * .5f)
+            closePath()
+        }
+        val p2 = GeneralPath().apply {
+            moveTo(w * .75f, 0.0f)
+            lineTo(w.toFloat(), h * .5f)
+            lineTo(w * .75f, h.toFloat())
+            lineTo(w * .25f, h * .5f)
+            closePath()
+        }
 
         val area = Area(p1)
         g2.color = YELLOW
-        if (areaType == "nop") {
-            g2.fill(p1)
-            g2.fill(p2)
-            g2.color = RED
-            g2.draw(p1)
-            g2.draw(p2)
-            return
-        } else if (areaType == "add") {
-            area.add(Area(p2))
-        } else if (areaType == "sub") {
-            area.subtract(Area(p2))
-        } else if (areaType == "xor") {
-            area.exclusiveOr(Area(p2))
-        } else if (areaType == "int") {
-            area.intersect(Area(p2))
-        } else if (areaType == "pear") {
+        when (areaType) {
+            "nop" -> {
+                g2.fill(p1)
+                g2.fill(p2)
+                g2.color = RED
+                g2.draw(p1)
+                g2.draw(p2)
+                return
+            }
+            "add" -> area.add(Area(p2))
+            "sub" -> area.subtract(Area(p2))
+            "xor" -> area.exclusiveOr(Area(p2))
+            "int" -> area.intersect(Area(p2))
+            "pear" -> {
+                val sx = (w / 100).toDouble()
+                val sy = (h / 140).toDouble()
+                g2.scale(sx, sy)
+                val x = w.toDouble() / sx / 2.0
+                val y = h.toDouble() / sy / 2.0
 
-            val sx = (w / 100).toDouble()
-            val sy = (h / 140).toDouble()
-            g2.scale(sx, sy)
-            val x = w.toDouble() / sx / 2.0
-            val y = h.toDouble() / sy / 2.0
+                // Creates the first leaf by filling the intersection of two Area
+                // objects created from an ellipse.
+                val leaf = Ellipse2D.Double(x - 16, y - 29, 15.0, 15.0)
+                var leaf1 = Area(leaf)
+                leaf.setFrame(x - 14, y - 47, 30.0, 30.0)
+                val leaf2 = Area(leaf)
+                leaf1.intersect(leaf2)
+                g2.color = GREEN
+                g2.fill(leaf1)
 
-            // Creates the first leaf by filling the intersection of two Area
-            // objects created from an ellipse.
-            val leaf = Ellipse2D.Double(x - 16, y - 29, 15.0, 15.0)
-            var leaf1 = Area(leaf)
-            leaf.setFrame(x - 14, y - 47, 30.0, 30.0)
-            val leaf2 = Area(leaf)
-            leaf1.intersect(leaf2)
-            g2.color = GREEN
-            g2.fill(leaf1)
+                // Creates the second leaf.
+                leaf.setFrame(x + 1, y - 29, 15.0, 15.0)
+                leaf1 = Area(leaf)
+                leaf2.intersect(leaf1)
+                g2.fill(leaf2)
 
-            // Creates the second leaf.
-            leaf.setFrame(x + 1, y - 29, 15.0, 15.0)
-            leaf1 = Area(leaf)
-            leaf2.intersect(leaf1)
-            g2.fill(leaf2)
+                // Creates the stem by filling the Area resulting from the
+                // subtraction of two Area objects created from an ellipse.
+                val stem = Ellipse2D.Double(x, y - 42, 40.0, 40.0)
+                val st1 = Area(stem)
+                stem.setFrame(x + 3, y - 47, 50.0, 50.0)
+                st1.subtract(Area(stem))
+                g2.color = BLACK
+                g2.fill(st1)
 
-            // Creates the stem by filling the Area resulting from the
-            // subtraction of two Area objects created from an ellipse.
-            val stem = Ellipse2D.Double(x, y - 42, 40.0, 40.0)
-            val st1 = Area(stem)
-            stem.setFrame(x + 3, y - 47, 50.0, 50.0)
-            st1.subtract(Area(stem))
-            g2.color = BLACK
-            g2.fill(st1)
+                // Creates the pear itself by filling the Area resulting from the
+                // union of two Area objects created by two different ellipses.
+                val circle = Ellipse2D.Double(x - 25, y, 50.0, 50.0)
+                val oval = Ellipse2D.Double(x - 19, y - 20, 40.0, 70.0)
+                val circ = Area(circle)
+                circ.add(Area(oval))
 
-            // Creates the pear itself by filling the Area resulting from the
-            // union of two Area objects created by two different ellipses.
-            val circle = Ellipse2D.Double(x - 25, y, 50.0, 50.0)
-            val oval = Ellipse2D.Double(x - 19, y - 20, 40.0, 70.0)
-            val circ = Area(circle)
-            circ.add(Area(oval))
-
-            g2.color = YELLOW
-            g2.fill(circ)
-            return
+                g2.color = YELLOW
+                g2.fill(circ)
+                return
+            }
         }
 
         g2.fill(area)
@@ -145,9 +143,10 @@ class Areas : ControlsSurface()
         g2.draw(area)
     }
 
-    internal class DemoControls(var demo: Areas) : CustomControls(demo.name), ActionListener
+    internal class DemoControls(var demo: Areas) : CustomControls(demo.name)
     {
-        var toolbar: JToolBar  = JToolBar().apply { isFloatable = false }
+        private val toolbar = JToolBar().apply { isFloatable = false }
+        private val buttonGroup = ButtonGroup()
 
         init {
             add(toolbar)
@@ -159,32 +158,16 @@ class Areas : ControlsSurface()
             addTool("pear", "pear", false)
         }
 
-        fun addTool(str: String, tooltip: String, state: Boolean) {
-            val b = toolbar.add(JToggleButton(str)) as JToggleButton
-            b.isFocusPainted = false
-            b.toolTipText = tooltip
-            b.isSelected = state
-            b.addActionListener(this)
-            val width = b.preferredSize.width
-            val prefSize = Dimension(width, 21)
-            b.preferredSize = prefSize
-            b.maximumSize = prefSize
-            b.minimumSize = prefSize
-        }
-
-        override fun actionPerformed(e: ActionEvent) {
-            for (comp in toolbar.components) {
-                (comp as JToggleButton).isSelected = false
+        private fun addTool(str: String, tooltip: String, state: Boolean) {
+            val button = createToolButton(str, state, tooltip) {
+                demo.areaType = str
+                demo.repaint()
             }
-            val b = e.source as JToggleButton
-            b.isSelected = true
-            demo.areaType = b.text
-            demo.repaint()
+            buttonGroup.add(button)
+            toolbar.add(button)
         }
 
-        override fun getPreferredSize(): Dimension {
-            return Dimension(200, 40)
-        }
+        override fun getPreferredSize() = Dimension(200, 40)
 
         override fun run() {
             try {
@@ -216,4 +199,3 @@ class Areas : ControlsSurface()
         }
     }
 }
-
