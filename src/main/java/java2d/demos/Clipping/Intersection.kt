@@ -34,17 +34,12 @@ package java2d.demos.Clipping
 import java2d.AnimatingControlsSurface
 import java2d.CustomControls
 import java2d.Surface
-import java.awt.Color.BLACK
-import java.awt.Color.GREEN
-import java.awt.Color.LIGHT_GRAY
-import java.awt.Color.WHITE
+import java.awt.Color
 import java.awt.Dimension
 import java.awt.Font
 import java.awt.Graphics2D
 import java.awt.Rectangle
 import java.awt.Shape
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
 import java.awt.font.FontRenderContext
 import java.awt.font.TextLayout
 import java.awt.geom.AffineTransform
@@ -77,7 +72,7 @@ class Intersection : AnimatingControlsSurface()
     private var threeSixty: Boolean = false
 
     init {
-        background = WHITE
+        background = Color.WHITE
         controls = arrayOf(DemoControls(this))
     }
 
@@ -174,51 +169,43 @@ class Intersection : AnimatingControlsSurface()
             g2.clip(path)
         }
 
-        g2.color = GREEN
+        g2.color = Color.GREEN
         g2.fill(rect)
 
         g2.clip = Rectangle(0, 0, w, h)
 
-        g2.color = LIGHT_GRAY
+        g2.color = Color.LIGHT_GRAY
         g2.draw(rect)
-        g2.color = BLACK
+        g2.color = Color.BLACK
         g2.draw(path)
     }
 
-    internal class DemoControls(var demo: Intersection) : CustomControls(demo.name), ActionListener
+    internal class DemoControls(var demo: Intersection) : CustomControls(demo.name)
     {
         private val toolbar = JToolBar().apply { isFloatable = false }
 
         init {
             add(toolbar)
-            addTool("Intersect", true)
-            addTool("Text", false)
-            addTool("Ovals", true)
+            addTool("Intersect", true) { selected -> demo.doIntersection = selected }
+            addTool("Text", false) { selected -> demo.doText = selected }
+            addTool("Ovals", true) { selected -> demo.doOvals = selected }
         }
 
-        fun addTool(str: String, state: Boolean) {
-            toolbar.add(JToggleButton(str).apply {
+        fun addTool(title: String, state: Boolean, action: (selected: Boolean) -> Unit) {
+            toolbar.add(JToggleButton(title).apply {
                 isFocusPainted = false
                 isSelected = state
-                val width = preferredSize.width
-                val prefSize = Dimension(width, 21)
+                val prefSize = Dimension(preferredSize.width, 21)
                 preferredSize = prefSize
                 maximumSize = prefSize
                 minimumSize = prefSize
-                addActionListener(this@DemoControls)
+                addActionListener {
+                    action(isSelected)
+                    if (!demo.animating.running()) {
+                        demo.repaint()
+                    }
+                }
             })
-        }
-
-        override fun actionPerformed(actionEvent: ActionEvent) {
-            val button = actionEvent.source as JToggleButton
-            when (button.text) {
-                "Intersect" -> demo.doIntersection = button.isSelected
-                "Ovals" -> demo.doOvals = button.isSelected
-                "Text" -> demo.doText = button.isSelected
-            }
-            if (!demo.animating.running()) {
-                demo.repaint()
-            }
         }
 
         override fun getPreferredSize(): Dimension {
