@@ -34,14 +34,9 @@ package java2d.demos.Clipping
 import java2d.ControlsSurface
 import java2d.CustomControls
 import java2d.Surface
+import java2d.createToolButton
 import java.awt.BasicStroke
-import java.awt.Color.BLACK
-import java.awt.Color.BLUE
-import java.awt.Color.CYAN
-import java.awt.Color.GRAY
-import java.awt.Color.RED
-import java.awt.Color.WHITE
-import java.awt.Color.YELLOW
+import java.awt.Color
 import java.awt.Dimension
 import java.awt.Font
 import java.awt.GradientPaint
@@ -49,14 +44,12 @@ import java.awt.Graphics2D
 import java.awt.Image
 import java.awt.Rectangle
 import java.awt.TexturePaint
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
 import java.awt.font.TextLayout
 import java.awt.geom.AffineTransform
 import java.awt.geom.Line2D
 import java.awt.image.BufferedImage
 import javax.swing.AbstractButton
-import javax.swing.JToggleButton
+import javax.swing.ButtonGroup
 import javax.swing.JToolBar
 
 /**
@@ -65,90 +58,99 @@ import javax.swing.JToolBar
 class Text : ControlsSurface()
 {
     private var clipType = "Lines"
-    protected var doClip = true
+    private var doClip = true
 
     init {
-        background = WHITE
+        background = Color.WHITE
         img = getImage("clouds.jpg")
         controls = arrayOf(DemoControls(this))
     }
 
     override fun render(w: Int, h: Int, g2: Graphics2D) {
         val frc = g2.fontRenderContext
-        var f = Font("sansserif", Font.BOLD, 32)
-        val s = "JAVA"
-        var tl = TextLayout(s, f, frc)
-        var sw = tl.bounds.width
-        var sh = tl.bounds.height
-        val sx = (w - 40) / sw
-        val sy = (h - 40) / sh
-        var tx = AffineTransform.getScaleInstance(sx, sy)
-        var shape = tl.getOutline(tx)
-        sw = shape.bounds.getWidth()
-        sh = shape.bounds.getHeight()
-        tx = AffineTransform.getTranslateInstance(w / 2 - sw / 2, h / 2 + sh / 2)
-        shape = tx.createTransformedShape(shape)
+        val font = Font(Font.SANS_SERIF, Font.BOLD, 32)
+        val string = "JAVA"
+        var textLayout = TextLayout(string, font, frc)
+        val sw1 = textLayout.bounds.width
+        val sh1 = textLayout.bounds.height
+        val sx = (w - 40) / sw1
+        val sy = (h - 40) / sh1
+
+        val shape1 = textLayout.getOutline(AffineTransform.getScaleInstance(sx, sy))
+        val sw = shape1.bounds.getWidth()
+        val sh = shape1.bounds.getHeight()
+
+        val shape = AffineTransform.getTranslateInstance(w / 2 - sw / 2, h / 2 + sh / 2)
+            .createTransformedShape(shape1)
+
         val r = shape.bounds
 
         if (doClip) {
             g2.clip(shape)
         }
 
-        if (clipType == "Lines") {
-            g2.color = BLACK
-            g2.fill(r)
-            g2.color = YELLOW
-            g2.stroke = BasicStroke(1.5f)
-            var j = r.y
-            while (j < r.y + r.height) {
-                val line = Line2D.Float(
-                    r.x.toFloat(), j.toFloat(),
-                    (r.x + r.width).toFloat(), j.toFloat()
-                                       )
-                g2.draw(line)
-                j = j + 3
+        when (clipType) {
+            "Lines" -> {
+                g2.color = Color.BLACK
+                g2.fill(r)
+                g2.color = Color.YELLOW
+                g2.stroke = BasicStroke(1.5f)
+                var j = r.y
+                while (j < r.y + r.height) {
+                    val line = Line2D.Float(
+                        r.x.toFloat(), j.toFloat(),
+                        (r.x + r.width).toFloat(), j.toFloat())
+                    g2.draw(line)
+                    j += 3
+                }
             }
-        } else if (clipType == "Image") {
-            g2.drawImage(img, r.x, r.y, r.width, r.height, null)
-        } else if (clipType == "TP") {
-            g2.paint = texturePaint
-            g2.fill(r)
-        } else if (clipType == "GP") {
-            g2.paint = GradientPaint(0f, 0f, BLUE, w.toFloat(), h.toFloat(), YELLOW)
-            g2.fill(r)
-        } else if (clipType == "Text") {
-            g2.color = BLACK
-            g2.fill(shape.bounds)
-            g2.color = CYAN
-            f = Font("serif", Font.BOLD, 10)
-            tl = TextLayout("java", f, frc)
-            sw = tl.bounds.width
+            "Image" -> g2.drawImage(img, r.x, r.y, r.width, r.height, null)
+            "TP" -> {
+                g2.paint = texturePaint
+                g2.fill(r)
+            }
+            "GP" -> {
+                g2.paint = GradientPaint(0f, 0f, Color.BLUE, w.toFloat(), h.toFloat(), Color.YELLOW)
+                g2.fill(r)
+            }
+            "Text" -> {
+                g2.color = Color.BLACK
+                g2.fill(shape.bounds)
+                g2.color = Color.CYAN
+                val font2 = Font(Font.SERIF, Font.BOLD, 14) // was 10
+                textLayout = TextLayout("java", font2, frc)
+                val sw2 = textLayout.bounds.width
 
-            var x = r.x
-            var y = (r.y + tl.ascent).toInt()
-            sh = (r.y + r.height).toDouble()
-            while (y < sh) {
-                tl.draw(g2, x.toFloat(), y.toFloat())
-                x += sw.toInt()
-                if (x > r.x + r.width) {
-                    x = r.x
-                    y += tl.ascent.toInt()
+                var x = r.x
+                var y = (r.y + textLayout.ascent).toInt()
+                val sh2 = (r.y + r.height).toDouble()
+                while (y < sh2) {
+                    textLayout.draw(g2, x.toFloat(), y.toFloat())
+                    x += sw2.toInt()
+                    if (x > r.x + r.width) {
+                        x = r.x
+                        y += textLayout.ascent.toInt()
+                    }
                 }
             }
         }
         g2.clip = Rectangle(0, 0, w, h)
 
-        g2.color = GRAY
+        g2.color = Color.GRAY
         g2.draw(shape)
     }
 
-    internal class DemoControls(var demo: Text) : CustomControls(demo.name), ActionListener
+    internal class DemoControls(private var demo: Text) : CustomControls(demo.name)
     {
         private val toolbar = JToolBar().apply { isFloatable = false }
+        private val buttonGroup = ButtonGroup()
 
         init {
             add(toolbar)
-            addTool("Clip", true)
+            toolbar.add(createToolButton("Clip", true) { selected ->
+                demo.doClip = selected
+                demo.repaint()
+            })
             addTool("Lines", true)
             addTool("Image", false)
             addTool("TP", false)
@@ -156,36 +158,17 @@ class Text : ControlsSurface()
             addTool("Text", false)
         }
 
-        fun addTool(str: String, state: Boolean) {
-            val b = toolbar.add(JToggleButton(str)) as JToggleButton
-            b.isFocusPainted = false
-            b.isSelected = state
-            b.addActionListener(this)
-            val width = b.preferredSize.width
-            val prefSize = Dimension(width, 21)
-            b.preferredSize = prefSize
-            b.maximumSize = prefSize
-            b.minimumSize = prefSize
-        }
-
-        override fun actionPerformed(e: ActionEvent) {
-            if (e.source == toolbar.getComponentAtIndex(0)) {
-                val b = e.source as JToggleButton
-                demo.doClip = b.isSelected
-            } else {
-                for (comp in toolbar.components) {
-                    (comp as JToggleButton).isSelected = false
-                }
-                val b = e.source as JToggleButton
-                b.isSelected = true
-                demo.clipType = b.text
+        private fun addTool(str: String, state: Boolean) {
+            createToolButton(str, state) {
+                demo.clipType = str
+                demo.repaint()
+            }.also {
+                toolbar.add(it)
+                buttonGroup.add(it)
             }
-            demo.repaint()
         }
 
-        override fun getPreferredSize(): Dimension {
-            return Dimension(200, 40)
-        }
+        override fun getPreferredSize() = Dimension(200, 40)
 
         override fun run() {
             try {
@@ -212,20 +195,20 @@ class Text : ControlsSurface()
     companion object
     {
         internal lateinit var img: Image
-        internal var texturePaint: TexturePaint
 
-        init {
-            val bi = BufferedImage(5, 5, BufferedImage.TYPE_INT_RGB)
-            val big = bi.createGraphics()
-            big.background = YELLOW
-            big.clearRect(0, 0, 5, 5)
-            big.color = RED
-            big.fillRect(0, 0, 3, 3)
-            texturePaint = TexturePaint(bi, Rectangle(0, 0, 5, 5))
+        internal val texturePaint: TexturePaint = run {
+            val image = BufferedImage(5, 5, BufferedImage.TYPE_INT_RGB)
+            image.createGraphics().run {
+                background = Color.YELLOW
+                clearRect(0, 0, 5, 5)
+                color = Color.RED
+                fillRect(0, 0, 3, 3)
+            }
+            TexturePaint(image, Rectangle(0, 0, 5, 5))
         }
 
         @JvmStatic
-        fun main(s: Array<String>) {
+        fun main(args: Array<String>) {
             Surface.createDemoFrame(Text())
         }
     }
