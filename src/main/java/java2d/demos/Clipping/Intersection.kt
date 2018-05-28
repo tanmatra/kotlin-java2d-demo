@@ -66,11 +66,11 @@ class Intersection : AnimatingControlsSurface()
     private var hh: Int = 0
     private var direction = HEIGHT_DECREASE
     private var angdeg: Int = 0
-    private var textshape: Shape? = null
-    private var sw: Double = 0.toDouble()
-    private var sh: Double = 0.toDouble()
-    private var ovals: GeneralPath? = null
-    private var rectshape: Rectangle2D? = null
+    private lateinit var textshape: Shape
+    private var sw: Double = 0.0
+    private var sh: Double = 0.0
+    private lateinit var ovals: GeneralPath
+    private lateinit var rectshape: Rectangle2D
     private var doIntersection = true
     private var doOvals = true
     private var doText: Boolean = false
@@ -98,9 +98,9 @@ class Intersection : AnimatingControlsSurface()
         val sy = (size - 100) / sh
         val tx = AffineTransform.getScaleInstance(sx, sy)
         textshape = tl.getOutline(tx)
-        rectshape = textshape!!.bounds
-        sw = rectshape!!.width
-        sh = rectshape!!.height
+        rectshape = textshape.bounds
+        sw = rectshape.width
+        sh = rectshape.height
         ovals = GeneralPath().apply {
             append(Ellipse2D.Double(10.0, 10.0, 20.0, 20.0), false)
             append(Ellipse2D.Double((w - 30).toDouble(), 10.0, 20.0, 20.0), false)
@@ -110,38 +110,42 @@ class Intersection : AnimatingControlsSurface()
     }
 
     override fun step(w: Int, h: Int) {
-        if (direction == HEIGHT_DECREASE) {
-            yy += 2
-            hh -= 4
-            if (yy >= h / 2) {
-                direction = HEIGHT_INCREASE
+        when (direction) {
+            HEIGHT_DECREASE -> {
+                yy += 2
+                hh -= 4
+                if (yy >= h / 2) {
+                    direction = HEIGHT_INCREASE
+                }
             }
-        } else if (direction == HEIGHT_INCREASE) {
-            yy -= 2
-            hh += 4
-            if (yy <= 0) {
-                direction = WIDTH_DECREASE
-                hh = h - 1
-                yy = 0
+            HEIGHT_INCREASE -> {
+                yy -= 2
+                hh += 4
+                if (yy <= 0) {
+                    direction = WIDTH_DECREASE
+                    hh = h - 1
+                    yy = 0
+                }
             }
-        }
-        if (direction == WIDTH_DECREASE) {
-            xx += 2
-            ww -= 4
-            if (xx >= w / 2) {
-                direction = WIDTH_INCREASE
+            WIDTH_DECREASE -> {
+                xx += 2
+                ww -= 4
+                if (xx >= w / 2) {
+                    direction = WIDTH_INCREASE
+                }
             }
-        } else if (direction == WIDTH_INCREASE) {
-            xx -= 2
-            ww += 4
-            if (xx <= 0) {
-                direction = HEIGHT_DECREASE
-                ww = w - 1
-                xx = 0
+            WIDTH_INCREASE -> {
+                xx -= 2
+                ww += 4
+                if (xx <= 0) {
+                    direction = HEIGHT_DECREASE
+                    ww = w - 1
+                    xx = 0
+                }
             }
         }
         angdeg += 5
-        if ((angdeg) == 360) {
+        if (angdeg == 360) {
             angdeg = 0
             threeSixty = true
         }
@@ -157,7 +161,7 @@ class Intersection : AnimatingControlsSurface()
 
         val path = GeneralPath()
         if (doOvals) {
-            path.append(ovals!!, false)
+            path.append(ovals, false)
         }
         if (doText) {
             path.append(tx.createTransformedShape(textshape), false)
@@ -183,7 +187,7 @@ class Intersection : AnimatingControlsSurface()
 
     internal class DemoControls(var demo: Intersection) : CustomControls(demo.name), ActionListener
     {
-        var toolbar: JToolBar = JToolBar().apply { isFloatable = false }
+        private val toolbar = JToolBar().apply { isFloatable = false }
 
         init {
             add(toolbar)
