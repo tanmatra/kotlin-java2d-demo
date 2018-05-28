@@ -49,6 +49,7 @@ import java.awt.geom.Rectangle2D
 import javax.swing.AbstractButton
 import javax.swing.JToggleButton
 import javax.swing.JToolBar
+import kotlin.reflect.KMutableProperty0
 
 /**
  * Animated intersection clipping of lines, an image and a textured rectangle.
@@ -186,12 +187,12 @@ class Intersection : AnimatingControlsSurface()
 
         init {
             add(toolbar)
-            addTool("Intersect", true) { selected -> demo.doIntersection = selected }
-            addTool("Text", false) { selected -> demo.doText = selected }
-            addTool("Ovals", true) { selected -> demo.doOvals = selected }
+            addTool("Intersect", true, demo::doIntersection)
+            addTool("Text", false, demo::doText)
+            addTool("Ovals", true, demo::doOvals)
         }
 
-        fun addTool(title: String, state: Boolean, action: (selected: Boolean) -> Unit) {
+        fun addTool(title: String, state: Boolean, property: KMutableProperty0<Boolean>) {
             toolbar.add(JToggleButton(title).apply {
                 isFocusPainted = false
                 isSelected = state
@@ -200,7 +201,7 @@ class Intersection : AnimatingControlsSurface()
                 maximumSize = prefSize
                 minimumSize = prefSize
                 addActionListener {
-                    action(isSelected)
+                    property.set(isSelected)
                     if (!demo.animating.running()) {
                         demo.repaint()
                     }
@@ -208,9 +209,7 @@ class Intersection : AnimatingControlsSurface()
             })
         }
 
-        override fun getPreferredSize(): Dimension {
-            return Dimension(200, 40)
-        }
+        override fun getPreferredSize() = Dimension(200, 40)
 
         override fun run() {
             val me = Thread.currentThread()
