@@ -63,7 +63,7 @@ class ClipAnim : AnimatingControlsSurface()
         AnimVal(false))
 
     private var doObjects = true
-    private val originalFont = Font("serif", Font.PLAIN, 12)
+    private val originalFont = Font(Font.SERIF, Font.PLAIN, 12)
     private var textFont: Font? = null
     private var gradient: GradientPaint? = null
     private var strX: Int = 0
@@ -82,18 +82,18 @@ class ClipAnim : AnimatingControlsSurface()
         for (a in animval) {
             a.reset(w, h)
         }
-        gradient = GradientPaint(0f, (h / 2).toFloat(), Color.RED, w * .4f, h * .9f, Color.YELLOW)
-        dukeX = (w * .25 - dimg.getWidth(this) / 2).toInt()
-        dukeY = (h * .25 - dimg.getHeight(this) / 2).toInt()
+        gradient = GradientPaint(0f, (h / 2).toFloat(), Color.RED, w * 0.4f, h * 0.9f, Color.YELLOW)
+        dukeX = (w * 0.25 - dimg.getWidth(this) / 2).toInt()
+        dukeY = (h * 0.25 - dimg.getHeight(this) / 2).toInt()
         var fm = getFontMetrics(originalFont)
-        val sw = fm.stringWidth("CLIPPING").toDouble()
+        val sw = fm.stringWidth(TEXT).toDouble()
         val sh = (fm.ascent + fm.descent).toDouble()
         val sx = (w / 2 - 30) / sw
         val sy = (h / 2 - 30) / sh
         textFont = originalFont.deriveFont(AffineTransform.getScaleInstance(sx, sy))
         fm = getFontMetrics(textFont)
-        strX = (w * .75 - fm.stringWidth("CLIPPING") / 2).toInt()
-        strY = (h * .72 + fm.ascent / 2).toInt()
+        strX = (w * 0.75 - fm.stringWidth(TEXT) / 2).toInt()
+        strY = (h * 0.72 + fm.ascent / 2).toInt()
     }
 
     override fun step(w: Int, h: Int) {
@@ -118,7 +118,7 @@ class ClipAnim : AnimatingControlsSurface()
                 p2.append(Rectangle2D.Double(x + 5, y + 5, ew - 10, eh - 10), false)
             }
         }
-        if (animval[0].isSelected || animval[1].isSelected || animval[2].isSelected) {
+        if (animval.any { it.isSelected }) {
             g2.clip = p1
             g2.clip(p2)
         }
@@ -147,7 +147,7 @@ class ClipAnim : AnimatingControlsSurface()
         }
     }
 
-    inner class AnimVal(internal var isSelected: Boolean)
+    class AnimVal(internal var isSelected: Boolean)
     {
         private var ix = 5.0
         private var iy = 3.0
@@ -257,6 +257,7 @@ class ClipAnim : AnimatingControlsSurface()
 
     companion object
     {
+        const val TEXT = "CLIPPING"
         private lateinit var dimg: Image
         private lateinit var cimg: Image
 
