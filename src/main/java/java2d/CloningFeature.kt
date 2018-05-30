@@ -34,6 +34,7 @@ package java2d
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Dimension
+import java.awt.EventQueue
 import java.awt.Font
 import javax.swing.JPanel
 import javax.swing.JScrollPane
@@ -48,45 +49,37 @@ import javax.swing.border.SoftBevelBorder
  */
 class CloningFeature : JPanel(), Runnable
 {
+    @Volatile
     private var thread: Thread? = null
-    private val ta: JTextArea
+
+    private val textArea= JTextArea("Cloning Demonstrated\n\nClicking once on a demo\n").apply {
+        minimumSize = Dimension(300, 500)
+        font = Font("Dialog", Font.PLAIN, 14)
+        foreground = Color.black
+        background = Color.lightGray
+        isEditable = false
+    }
 
     init {
         layout = BorderLayout()
-        val eb = EmptyBorder(5, 5, 5, 5)
-        val sbb = SoftBevelBorder(BevelBorder.RAISED)
-        border = CompoundBorder(eb, sbb)
-
-        ta = JTextArea("Cloning Demonstrated\n\nClicking once on a demo\n")
-        ta.minimumSize = Dimension(300, 500)
-        val scroller = JScrollPane()
-        scroller.viewport.add(ta)
-        ta.font = Font("Dialog", Font.PLAIN, 14)
-        ta.foreground = Color.black
-        ta.background = Color.lightGray
-        ta.isEditable = false
-
-        add("Center", scroller)
-
+        border = CompoundBorder(EmptyBorder(5, 5, 5, 5), SoftBevelBorder(BevelBorder.RAISED))
+        add(JScrollPane(textArea), BorderLayout.CENTER)
         start()
     }
 
     fun start() {
-        thread = Thread(this)
-        thread!!.priority = Thread.MAX_PRIORITY
-        thread!!.name = "CloningFeature"
-        thread!!.start()
+        thread = Thread(this, "CloningFeature").apply {
+            priority = Thread.MAX_PRIORITY
+            start()
+        }
     }
 
     fun stop() {
-        if (thread != null) {
-            thread!!.interrupt()
-        }
+        thread?.interrupt()
         thread = null
     }
 
     override fun run() {
-
         var index = Java2Demo.tabbedPane.selectedIndex
         if (index == 0) {
             Java2Demo.tabbedPane.selectedIndex = 1
@@ -107,14 +100,16 @@ class CloningFeature : JPanel(), Runnable
         }
 
         index = Java2Demo.tabbedPane.selectedIndex - 1
-        val dg = Java2Demo.group[index]
-        var dp = dg.panel.getComponent(0) as DemoPanel
-        if (dp.surface == null) {
-            ta.append("Sorry your zeroth component is not a Surface.")
+        val demoGroup: DemoGroup = Java2Demo.group[index]
+        var demoPanel: DemoPanel = demoGroup.panel.getComponent(0) as DemoPanel
+        if (demoPanel.surface == null) {
+            EventQueue.invokeLater {
+                textArea.append("Sorry your zeroth component is not a Surface.")
+            }
             return
         }
 
-        dg.mouseClicked(dp.surface)
+        demoGroup.mouseClicked(demoPanel.surface)
 
         try {
             Thread.sleep(3333)
@@ -122,31 +117,35 @@ class CloningFeature : JPanel(), Runnable
             return
         }
 
-        ta.append("Clicking the ToolBar double document button\n")
+        textArea.append("Clicking the ToolBar double document button\n")
         try {
             Thread.sleep(3333)
         } catch (e: Exception) {
             return
         }
 
-        dp = dg.clonePanels[0].getComponent(0) as DemoPanel
+        demoPanel = demoGroup.clonePanels[0].getComponent(0) as DemoPanel
 
-        if (dp.tools != null) {
-            var i = 0
-            while (i < 3 && thread != null) {
-                ta.append("   Cloning\n")
-                dp.tools.cloneB.doClick()
+        demoPanel.tools?.let { tools ->
+            repeat(3) {
+                if (thread == null) {
+                    return@let
+                }
+                EventQueue.invokeLater {
+                    textArea.append("   Cloning\n")
+                    tools.cloneB.doClick()
+                }
                 try {
                     Thread.sleep(3333)
                 } catch (e: Exception) {
                     return
                 }
-
-                i++
             }
         }
 
-        ta.append("Changing attributes \n")
+        EventQueue.invokeLater {
+            textArea.append("Changing attributes \n")
+        }
 
         try {
             Thread.sleep(3333)
@@ -154,31 +153,31 @@ class CloningFeature : JPanel(), Runnable
             return
         }
 
-        val cmps = dg.clonePanels[0].components
+        val cmps = demoGroup.clonePanels[0].components
         var i = 0
         while (i < cmps.size && thread != null) {
-            dp = cmps[i] as DemoPanel
-            if (dp.tools == null) {
+            demoPanel = cmps[i] as DemoPanel
+            if (demoPanel.tools == null) {
                 i++
                 continue
             }
             when (i) {
-                0 -> {
-                    ta.append("   Changing AntiAliasing\n")
-                    dp.tools.aliasB.doClick()
+                0 -> EventQueue.invokeLater {
+                    textArea.append("   Changing AntiAliasing\n")
+                    demoPanel.tools.aliasB.doClick()
                 }
-                1 -> {
-                    ta.append("   Changing Composite & Texture\n")
-                    dp.tools.compositeB.doClick()
-                    dp.tools.textureB.doClick()
+                1 -> EventQueue.invokeLater {
+                    textArea.append("   Changing Composite & Texture\n")
+                    demoPanel.tools.compositeB.doClick()
+                    demoPanel.tools.textureB.doClick()
                 }
-                2 -> {
-                    ta.append("   Changing Screen\n")
-                    dp.tools.screenCombo.setSelectedIndex(4)
+                2 -> EventQueue.invokeLater {
+                    textArea.append("   Changing Screen\n")
+                    demoPanel.tools.screenCombo.setSelectedIndex(4)
                 }
-                3 -> {
-                    ta.append("   Removing a clone\n")
-                    dp.tools.cloneB.doClick()
+                3 -> EventQueue.invokeLater {
+                    textArea.append("   Removing a clone\n")
+                    demoPanel.tools.cloneB.doClick()
                 }
             }
             try {
@@ -188,7 +187,8 @@ class CloningFeature : JPanel(), Runnable
             }
             i++
         }
-
-        ta.append("\nAll Done!")
+        EventQueue.invokeLater {
+            textArea.append("\nAll Done!")
+        }
     }
 }
