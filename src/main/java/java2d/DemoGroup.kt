@@ -108,7 +108,7 @@ class DemoGroup(private val groupName: String) : JPanel(), ChangeListener, Actio
             demoPanel.setDemoBorder(p)
             demoPanel.surface?.run {
                 addMouseListener(mouseListener)
-                setMonitor(Java2Demo.performancemonitor != null)
+                monitor = Java2Demo.performancemonitor != null
             }
             if (p.layout is GridBagLayout) {
                 val x = p.componentCount % 2
@@ -148,7 +148,7 @@ class DemoGroup(private val groupName: String) : JPanel(), ChangeListener, Actio
                 val c = DemoPanel(dp.className)
                 c.setDemoBorder(clonePanels[i])
                 if (c.surface != null) {
-                    c.surface.setMonitor(Java2Demo.performancemonitor != null)
+                    c.surface.monitor = Java2Demo.performancemonitor != null
                     val cloneImg = DemoImages.getImage("clone.gif", this)
                     c.tools.cloneButton = c.tools.addTool(cloneImg, "Clone the Surface", this)
                     val d = c.tools.toolbar.preferredSize
@@ -278,7 +278,7 @@ class DemoGroup(private val groupName: String) : JPanel(), ChangeListener, Actio
             }
         }
         clone.start()
-        clone.surface.setMonitor(Java2Demo.performancemonitor != null)
+        clone.surface.monitor = Java2Demo.performancemonitor != null
         panel.add(clone)
         panel.repaint()
         panel.revalidate()

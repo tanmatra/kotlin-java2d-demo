@@ -128,10 +128,10 @@ class Tools(private val surface: Surface) : JPanel(BorderLayout()), ActionListen
             isFloatable = false
         }
 
-        var s = if (surface.AntiAlias === RenderingHints.VALUE_ANTIALIAS_ON) "On" else "Off"
+        var s = if (surface.antiAlias === RenderingHints.VALUE_ANTIALIAS_ON) "On" else "Off"
         antialiasButton = addTool("A", "Antialiasing $s", this)
 
-        s = if (surface.Rendering === RenderingHints.VALUE_RENDER_SPEED) "Speed" else "Quality"
+        s = if (surface.rendering === RenderingHints.VALUE_RENDER_SPEED) "Speed" else "Quality"
         renderButton = addTool("R", "Rendering $s", this)
 
         s = if (surface.texture != null) "On" else "Off"

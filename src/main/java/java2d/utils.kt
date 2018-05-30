@@ -28,3 +28,5 @@ fun createToolButton(text: String,
 }
 
 inline fun <reified T> getLogger() = Logger.getLogger(T::class.java.name)
+
+fun byteArrayFrom(vararg ints: Int) = ByteArray(ints.size) { i -> ints[i].toByte() }

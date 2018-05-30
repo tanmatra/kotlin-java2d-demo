@@ -106,7 +106,7 @@ public class DemoPanel extends JPanel {
             if (surface.getAnimating() != null) {
                 surface.getAnimating().stop();
             }
-            surface.setBimg(null);
+            surface.setBufferedImage(null);
         }
         if (ccc != null) {
             ccc.handleThread(STOP);

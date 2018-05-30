@@ -32,10 +32,10 @@
 package java2d
 
 import java.awt.AlphaComposite
+import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Dimension
 import java.awt.Font
-import java.awt.Frame
 import java.awt.GradientPaint
 import java.awt.Graphics
 import java.awt.Graphics2D
@@ -62,7 +62,7 @@ import java.awt.print.PageFormat
 import java.awt.print.Printable
 import java.awt.print.PrinterException
 import java.util.logging.Level
-import java.util.logging.Logger
+import javax.swing.JFrame
 import javax.swing.JPanel
 import javax.swing.RepaintManager
 
@@ -73,31 +73,34 @@ import javax.swing.RepaintManager
  */
 abstract class Surface : JPanel(), Printable
 {
-    var AntiAlias = VALUE_ANTIALIAS_ON
-    var Rendering = VALUE_RENDER_SPEED
+    var antiAlias = VALUE_ANTIALIAS_ON
+    var rendering = VALUE_RENDER_SPEED
     var composite: AlphaComposite? = null
     var texture: Paint? = null
     var perfStr: String? = null // PerformanceMonitor
-    var bimg: BufferedImage? = null
+
+    var bufferedImage: BufferedImage? = null
 
     var imageType: Int = 0
         set(value) {
             field = if (value == 0) 1 else value
-            bimg = null
+            bufferedImage = null
         }
 
     var clearSurface = true
+
     // Demos using animated gif's that implement ImageObserver set dontThread.
     var dontThread: Boolean = false
 
-    var animating: AnimatingSurface? = null
-        private set
+    val animating: AnimatingSurface? = if (this is AnimatingSurface) this else null
 
     var sleepAmount: Long = 50
     private var orig: Long = 0
     private var start: Long = 0
     private var frame: Long = 0
-    private var perfMonitor: Boolean = false
+
+    var monitor: Boolean = false
+
     private var outputPerf: Boolean = false
     private var biw: Int = 0
     private var bih: Int = 0
@@ -114,13 +117,9 @@ abstract class Surface : JPanel(), Printable
         try {
             if (System.getProperty("java2demo.perf") != null) {
                 outputPerf = true
-                perfMonitor = outputPerf
+                monitor = outputPerf
             }
         } catch (ex: Exception) {
-        }
-
-        if (this is AnimatingSurface) {
-            animating = this
         }
     }
 
@@ -133,11 +132,11 @@ abstract class Surface : JPanel(), Printable
     }
 
     fun setAntiAlias(aa: Boolean) {
-        AntiAlias = if (aa) VALUE_ANTIALIAS_ON else VALUE_ANTIALIAS_OFF
+        antiAlias = if (aa) VALUE_ANTIALIAS_ON else VALUE_ANTIALIAS_OFF
     }
 
     fun setRendering(rd: Boolean) {
-        Rendering = if (rd) VALUE_RENDER_QUALITY else VALUE_RENDER_SPEED
+        rendering = if (rd) VALUE_RENDER_QUALITY else VALUE_RENDER_SPEED
     }
 
     fun setTexture(obj: Any?) {
@@ -149,14 +148,7 @@ abstract class Surface : JPanel(), Printable
     }
 
     fun setComposite(cp: Boolean) {
-        composite = if (cp)
-            AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f)
-        else
-            null
-    }
-
-    fun setMonitor(pm: Boolean) {
-        perfMonitor = pm
+        composite = if (cp) AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f) else null
     }
 
     fun createBufferedImage(
@@ -164,22 +156,16 @@ abstract class Surface : JPanel(), Printable
         w: Int,
         h: Int,
         imgType: Int
-     ): BufferedImage? {
-        var bi: BufferedImage? = null
-        if (imgType == 0) {
-            bi = g2.deviceConfiguration.createCompatibleImage(w, h)
-        } else if (imgType > 0 && imgType < 14) {
-            bi = BufferedImage(w, h, imgType)
-        } else if (imgType == 14) {
-            bi = createBinaryImage(w, h, 2)
-        } else if (imgType == 15) {
-            bi = createBinaryImage(w, h, 4)
-        } else if (imgType == 16) {
-            bi = createSGISurface(w, h, 32)
-        } else if (imgType == 17) {
-            bi = createSGISurface(w, h, 16)
+    ): BufferedImage? {
+        return when (imgType) {
+            0 -> g2.deviceConfiguration.createCompatibleImage(w, h)
+            in 1 .. 13 -> BufferedImage(w, h, imgType)
+            14 -> createBinaryImage(w, h, 2)
+            15 -> createBinaryImage(w, h, 4)
+            16 -> createSGISurface(w, h, 32)
+            17 -> createSGISurface(w, h, 16)
+            else -> null
         }
-        return bi
     }
 
     private fun createBinaryImage(w: Int, h: Int, pixelBits: Int): BufferedImage {
@@ -188,30 +174,19 @@ abstract class Surface : JPanel(), Printable
             bytesPerRow++
         }
         val imageData = ByteArray(h * bytesPerRow)
-        var cm: IndexColorModel? = null
-        when (pixelBits) {
-            1 -> cm = IndexColorModel(
-                pixelBits, lut1Arr.size,
-                lut1Arr, lut1Arr, lut1Arr
-                                     )
-            2 -> cm = IndexColorModel(
-                pixelBits, lut2Arr.size,
-                lut2Arr, lut2Arr, lut2Arr
-                                     )
-            4 -> cm = IndexColorModel(
-                pixelBits, lut4Arr.size,
-                lut4Arr, lut4Arr, lut4Arr
-                                     )
-            else -> Logger.getLogger(Surface::class.java.name).log(
-                Level.SEVERE,
-                null,
-                Exception("Invalid # of bit per pixel")
-                                                                  )
+        val colorModel: IndexColorModel = when (pixelBits) {
+            1 -> IndexColorModel(pixelBits, lut1Arr.size, lut1Arr, lut1Arr, lut1Arr)
+            2 -> IndexColorModel(pixelBits, lut2Arr.size, lut2Arr, lut2Arr, lut2Arr)
+            4 -> IndexColorModel(pixelBits, lut4Arr.size, lut4Arr, lut4Arr, lut4Arr)
+            else -> {
+                val exception = Exception("Invalid # of bit per pixel")
+                getLogger<Surface>().log(Level.SEVERE, null, exception)
+                throw exception
+            }
         }
-
-        val db = DataBufferByte(imageData, imageData.size)
-        val r = Raster.createPackedRaster(db, w, h, pixelBits, null)
-        return BufferedImage(cm!!, r, false, null)
+        val dataBufferByte = DataBufferByte(imageData, imageData.size)
+        val raster = Raster.createPackedRaster(dataBufferByte, w, h, pixelBits, null)
+        return BufferedImage(colorModel, raster, false, null)
     }
 
     private fun createSGISurface(w: Int, h: Int, pixelBits: Int): BufferedImage {
@@ -229,10 +204,7 @@ abstract class Surface : JPanel(), Printable
             16 -> {
                 val imageDataUShort = ShortArray(w * h)
                 dcm = DirectColorModel(16, rMask16, gMask16, bMask16)
-                db = DataBufferUShort(
-                    imageDataUShort,
-                    imageDataUShort.size
-                                     )
+                db = DataBufferUShort(imageDataUShort, imageDataUShort.size)
                 wr = Raster.createPackedRaster(
                     db, w, h, w,
                     intArrayOf(rMask16, gMask16, bMask16), null)
@@ -245,10 +217,7 @@ abstract class Surface : JPanel(), Printable
                     db, w, h, w,
                     intArrayOf(rMask32, gMask32, bMask32), null)
             }
-            else -> Logger.getLogger(Surface::class.java.name).log(
-                Level.SEVERE,
-                null,
-                Exception("Invalid # of bit per pixel"))
+            else -> getLogger<Surface>().log(Level.SEVERE, null, Exception("Invalid # of bit per pixel"))
         }
         return BufferedImage(dcm!!, wr!!, false, null)
     }
@@ -268,8 +237,8 @@ abstract class Surface : JPanel(), Printable
         }
 
         g2!!.background = background
-        g2.setRenderingHint(KEY_ANTIALIASING, AntiAlias)
-        g2.setRenderingHint(KEY_RENDERING, Rendering)
+        g2.setRenderingHint(KEY_ANTIALIASING, antiAlias)
+        g2.setRenderingHint(KEY_RENDERING, rendering)
 
         if (clearSurface || clearOnce) {
             g2.clearRect(0, 0, width, height)
@@ -329,9 +298,9 @@ abstract class Surface : JPanel(), Printable
         }
 
         if (imageType == 1) {
-            bimg = null
-        } else if (bimg == null || toBeInitialized) {
-            bimg = createBufferedImage(g as Graphics2D, d.width, d.height, imageType - 2)
+            bufferedImage = null
+        } else if (bufferedImage == null || toBeInitialized) {
+            bufferedImage = createBufferedImage(g as Graphics2D, d.width, d.height, imageType - 2)
             clearOnce = true
         }
 
@@ -346,16 +315,16 @@ abstract class Surface : JPanel(), Printable
         if (animating != null && animating!!.running()) {
             animating!!.step(d.width, d.height)
         }
-        val g2 = createGraphics2D(d.width, d.height, bimg, g)
+        val g2 = createGraphics2D(d.width, d.height, bufferedImage, g)
         render(d.width, d.height, g2)
         g2.dispose()
 
-        if (bimg != null) {
-            g!!.drawImage(bimg, 0, 0, null)
+        if (bufferedImage != null) {
+            g!!.drawImage(bufferedImage, 0, 0, null)
             toolkit.sync()
         }
 
-        if (perfMonitor) {
+        if (monitor) {
             LogPerformance()
         }
     }
@@ -368,29 +337,25 @@ abstract class Surface : JPanel(), Printable
 
         val g2d = g as Graphics2D
         g2d.translate(pf.imageableX, pf.imageableY)
-        g2d.translate(
-            pf.imageableWidth / 2,
-            pf.imageableHeight / 2
-                     )
+        g2d.translate(pf.imageableWidth / 2,
+                      pf.imageableHeight / 2)
 
         val d = size
 
-        val scale = Math.min(
-            pf.imageableWidth / d.width,
-            pf.imageableHeight / d.height
-                            )
+        val scale = Math.min(pf.imageableWidth / d.width,
+                             pf.imageableHeight / d.height)
         if (scale < 1.0) {
             g2d.scale(scale, scale)
         }
 
         g2d.translate(-d.width / 2.0, -d.height / 2.0)
 
-        if (bimg == null) {
+        if (bufferedImage == null) {
             val g2 = createGraphics2D(d.width, d.height, null, g2d)
             render(d.width, d.height, g2)
             g2.dispose()
         } else {
-            g2d.drawImage(bimg, 0, 0, this)
+            g2d.drawImage(bufferedImage, 0, 0, this)
         }
 
         return Printable.PAGE_EXISTS
@@ -438,14 +403,8 @@ abstract class Surface : JPanel(), Printable
 
         str = str + (" " + GlobalControls.screenCombo.selectedItem!!)
 
-        str + if (AntiAlias === VALUE_ANTIALIAS_ON)
-            " ANTIALIAS_ON "
-        else
-            " ANTIALIAS_OFF "
-        str + if (Rendering === VALUE_RENDER_QUALITY)
-            "RENDER_QUALITY "
-        else
-            "RENDER_SPEED "
+        str = str + if (antiAlias === VALUE_ANTIALIAS_ON) " ANTIALIAS_ON " else " ANTIALIAS_OFF "
+        str = str + if (rendering === VALUE_RENDER_QUALITY) "RENDER_QUALITY " else "RENDER_SPEED "
 
         if (texture != null) {
             str = str + "Texture "
@@ -463,7 +422,8 @@ abstract class Surface : JPanel(), Printable
         println(str)
     }
 
-    companion object {
+    companion object
+    {
         // Lookup tables for BYTE_BINARY 1, 2 and 4 bits.
         internal var lut1Arr = byteArrayOf(0, 255.toByte())
         internal var lut2Arr = byteArrayOf(0, 85.toByte(), 170.toByte(), 255.toByte())
@@ -485,33 +445,29 @@ abstract class Surface : JPanel(), Printable
             238.toByte(),
             255.toByte())
 
-        private val REPORTFRAMES = 30
+        const private val REPORTFRAMES = 30
 
         @JvmStatic
         fun createDemoFrame(surface: Surface) {
-            val dp = DemoPanel(surface)
-            val f = Frame("Java2D Demo - " + surface.name)
-            f.addWindowListener(object : WindowAdapter() {
-
-                override fun windowClosing(e: WindowEvent?) {
-                    System.exit(0)
-                }
-
-                override fun windowDeiconified(e: WindowEvent?) {
-                    dp.start()
-                }
-
-                override fun windowIconified(e: WindowEvent?) {
-                    dp.stop()
-                }
-            })
-            f.add("Center", dp)
-            f.pack()
-            f.size = Dimension(500, 300)
-            f.isVisible = true
-            if (surface.animating != null) {
-                surface.animating!!.start()
+            val demoPanel = DemoPanel(surface)
+            JFrame("Java2D Demo - ${surface.name}").apply {
+                addWindowListener(object : WindowAdapter() {
+                    override fun windowClosing(e: WindowEvent?) {
+                        System.exit(0)
+                    }
+                    override fun windowDeiconified(e: WindowEvent?) {
+                        demoPanel.start()
+                    }
+                    override fun windowIconified(e: WindowEvent?) {
+                        demoPanel.stop()
+                    }
+                })
+                contentPane.add(demoPanel, BorderLayout.CENTER)
+                pack()
+                size = Dimension(500, 300)
+                isVisible = true
             }
+            surface.animating?.start()
         }
     }
 }
