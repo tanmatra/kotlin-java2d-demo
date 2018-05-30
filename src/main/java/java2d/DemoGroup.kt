@@ -1,0 +1,348 @@
+/*
+ *
+ * Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *   - Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in the
+ *     documentation and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of Oracle nor the names of its
+ *     contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+package java2d
+
+import java.awt.BorderLayout
+import java.awt.Component
+import java.awt.Dimension
+import java.awt.Font
+import java.awt.GridBagLayout
+import java.awt.GridLayout
+import java.awt.event.ActionEvent
+import java.awt.event.ActionListener
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
+import java.awt.event.WindowAdapter
+import java.awt.event.WindowEvent
+import javax.swing.JButton
+import javax.swing.JCheckBoxMenuItem
+import javax.swing.JFrame
+import javax.swing.JPanel
+import javax.swing.JTabbedPane
+import javax.swing.border.BevelBorder
+import javax.swing.border.CompoundBorder
+import javax.swing.border.EmptyBorder
+import javax.swing.border.SoftBevelBorder
+import javax.swing.event.ChangeEvent
+import javax.swing.event.ChangeListener
+
+/**
+ * DemoGroup handles multiple demos inside of a panel.  Demos are loaded
+ * from the demos[][] string as listed in Java2Demo.java.
+ * Demo groups can be loaded individually, for example :
+ * java DemoGroup Fonts
+ * Loads all the demos found in the demos/Fonts directory.
+ */
+class DemoGroup(private val groupName: String) : JPanel(), ChangeListener, ActionListener
+{
+    lateinit var clonePanels: Array<JPanel>
+    var tabbedPane: JTabbedPane? = null
+    private var index: Int = 0
+
+    val panel: JPanel
+        get() = if (tabbedPane != null) {
+            tabbedPane!!.selectedComponent as JPanel
+        } else {
+            getComponent(0) as JPanel
+        }
+
+    init {
+        layout = BorderLayout()
+
+        val p = JPanel(GridLayout(0, 2))
+        p.border = CompoundBorder(emptyB, bevelB)
+
+        // Find the named demo group in Java2Demo.demos[].
+        var ind = -1
+        while (groupName != Java2Demo.demos[++ind][0]) {
+        }
+        val demos = Java2Demo.demos[ind]
+
+        // If there are an odd number of demos, use GridBagLayout.
+        // Note that we don't use the first entry.
+        val numDemos = demos.size - 1
+        if (numDemos % 2 == 1) {
+            p.layout = GridBagLayout()
+        }
+
+        val mouseListener = object : MouseAdapter() {
+
+            override fun mouseClicked(e: MouseEvent) {
+                this@DemoGroup.mouseClicked(e.component)
+            }
+        }
+
+        // For each demo in the group, prepare a DemoPanel.
+        for (i in 1..numDemos) {
+            val dp = DemoPanel("java2d.demos." + groupName + "." + demos[i])
+            dp.setDemoBorder(p)
+            if (dp.surface != null) {
+                dp.surface.addMouseListener(mouseListener)
+                dp.surface.setMonitor(Java2Demo.performancemonitor != null)
+            }
+            if (p.layout is GridBagLayout) {
+                val x = p.componentCount % 2
+                val y = p.componentCount / 2
+                val w = if (i == numDemos) 2 else 1
+                Java2Demo.addToGridBag(p, dp, x, y, w, 1, 1.0, 1.0)
+            } else {
+                p.add(dp)
+            }
+        }
+
+        add(p)
+    }
+
+    fun mouseClicked(component: Component) {
+        var className = component.toString()
+
+        if (tabbedPane == null) {
+            shutDown(panel)
+            val p = JPanel(BorderLayout())
+            p.border = CompoundBorder(emptyB, bevelB)
+
+            tabbedPane = JTabbedPane().apply {
+                font = FONT
+            }
+
+            val tmpP = getComponent(0) as JPanel
+            tabbedPane!!.addTab(groupName, tmpP)
+
+//          clonePanels = arrayOfNulls(tmpP.componentCount)
+            clonePanels = Array(tmpP.componentCount) { i ->
+                JPanel(BorderLayout())
+            }
+            for (i in clonePanels.indices) {
+//              clonePanels[i] = JPanel(BorderLayout())
+                val dp = tmpP.getComponent(i) as DemoPanel
+                val c = DemoPanel(dp.className)
+                c.setDemoBorder(clonePanels[i])
+                if (c.surface != null) {
+                    c.surface.setMonitor(Java2Demo.performancemonitor != null)
+                    val cloneImg = DemoImages.getImage("clone.gif", this)
+                    c.tools.cloneB = c.tools.addTool(cloneImg, "Clone the Surface", this)
+                    val d = c.tools.toolbar.preferredSize
+                    c.tools.toolbar.preferredSize = Dimension(d.width + 27, d.height)
+                    if (Java2Demo.backgroundColor != null) {
+                        c.surface.background = Java2Demo.backgroundColor
+                    }
+                }
+                clonePanels[i].add(c)
+                val s = dp.className.substring(dp.className.indexOf('.') + 1)
+                tabbedPane!!.addTab(s, clonePanels[i])
+            }
+            p.add(tabbedPane)
+            remove(tmpP)
+            add(p)
+
+            tabbedPane!!.addChangeListener(this)
+            revalidate()
+        }
+
+        className = className.substring(0, className.indexOf('['))
+
+        for (i in 0 until tabbedPane!!.tabCount) {
+            val s1 = className.substring(className.indexOf('.') + 1)
+            if (tabbedPane!!.getTitleAt(i) == s1) {
+                tabbedPane!!.selectedIndex = i
+                break
+            }
+        }
+
+        revalidate()
+    }
+
+    override fun actionPerformed(e: ActionEvent) {
+        val b = e.source as JButton
+        if (b.toolTipText.startsWith("Clone")) {
+            cloneDemo()
+        } else {
+            removeClone(b.parent.parent.parent.parent)
+        }
+    }
+
+    override fun stateChanged(e: ChangeEvent) {
+        shutDown(tabbedPane!!.getComponentAt(index) as JPanel)
+        index = tabbedPane!!.selectedIndex
+        setup(false)
+    }
+
+    fun setup(issueRepaint: Boolean) {
+        val p = panel
+
+        // Let PerformanceMonitor know which demos are running
+        if (Java2Demo.performancemonitor != null) {
+            Java2Demo.performancemonitor.surf.setPanel(p)
+            Java2Demo.performancemonitor.surf.setSurfaceState()
+        }
+
+        val c = Java2Demo.controls
+        // .. tools check against global controls settings ..
+        // .. & start demo & custom control thread if need be ..
+        for (i in 0 until p.componentCount) {
+            val dp = p.getComponent(i) as DemoPanel
+            if (dp.surface != null && c != null) {
+                val t = dp.tools
+                t.isVisible = isValid
+                t.issueRepaint = issueRepaint
+                val b = arrayOf(t.toggleB, t.aliasB, t.renderB, t.textureB, t.compositeB)
+                val cb = arrayOf(c.toolBarCB, c.aliasCB, c.renderCB, c.textureCB, c.compositeCB)
+                for (j in b.indices) {
+                    if (c.obj != null && c.obj == cb[j]) {
+                        if (b[j].isSelected != cb[j].isSelected) {
+                            b[j].doClick()
+                        }
+                    } else if (c.obj == null) {
+                        if (b[j].isSelected != cb[j].isSelected) {
+                            b[j].doClick()
+                        }
+                    }
+                }
+                t.isVisible = true
+                if (GlobalControls.screenCombo.selectedIndex != t.screenCombo.selectedIndex) {
+                    t.screenCombo.selectedIndex = GlobalControls.screenCombo.selectedIndex
+                }
+                if (Java2Demo.verboseCB.isSelected) {
+                    dp.surface.verbose()
+                }
+                dp.surface.setSleepAmount(c.slider.value.toLong())
+                if (Java2Demo.backgroundColor != null) {
+                    dp.surface.background = Java2Demo.backgroundColor
+                }
+                t.issueRepaint = true
+            }
+            dp.start()
+        }
+        revalidate()
+    }
+
+    fun shutDown(p: JPanel) {
+        for (i in 0 until p.componentCount) {
+            (p.getComponent(i) as DemoPanel).stop()
+        }
+        System.gc()
+    }
+
+    fun cloneDemo() {
+        val panel = clonePanels[tabbedPane!!.selectedIndex - 1]
+        if (panel.componentCount == 1) {
+            panel.invalidate()
+            panel.layout = GridLayout(0, columns, 5, 5)
+            panel.revalidate()
+        }
+        val original = panel.getComponent(0) as DemoPanel
+        val clone = DemoPanel(original.className)
+        if (columns == 2) {
+            clone.setDemoBorder(panel)
+        }
+        val removeImg = DemoImages.getImage("remove.gif", this)
+        clone.tools.cloneB = clone.tools.addTool(removeImg, "Remove the Surface", this)
+        val d = clone.tools.toolbar.preferredSize
+        clone.tools.toolbar.preferredSize = Dimension(d.width + 27, d.height)
+        if (Java2Demo.backgroundColor != null) {
+            clone.surface.background = Java2Demo.backgroundColor
+        }
+        if (Java2Demo.controls != null) {
+            if (clone.tools.isExpanded != Java2Demo.controls.toolBarCB.isSelected) {
+                clone.tools.toggleB.doClick()
+            }
+        }
+        clone.start()
+        clone.surface.setMonitor(Java2Demo.performancemonitor != null)
+        panel.add(clone)
+        panel.repaint()
+        panel.revalidate()
+    }
+
+    fun removeClone(theClone: Component) {
+        val panel = clonePanels[tabbedPane!!.selectedIndex - 1]
+        if (panel.componentCount == 2) {
+            val cmp = panel.getComponent(0)
+            panel.removeAll()
+            panel.layout = BorderLayout()
+            panel.revalidate()
+            panel.add(cmp)
+        } else {
+            panel.remove(theClone)
+            val cmpCount = panel.componentCount
+            for (j in 1 until cmpCount) {
+                val top = if (j + 1 >= 3) 0 else 5
+                val left = if ((j + 1) % 2 == 0) 0 else 5
+                val eb = EmptyBorder(top, left, 5, 5)
+                val sbb = SoftBevelBorder(BevelBorder.RAISED)
+                val p = panel.getComponent(j) as JPanel
+                p.border = CompoundBorder(eb, sbb)
+            }
+        }
+        panel.repaint()
+        panel.revalidate()
+    }
+
+    companion object
+    {
+        var columns = 2
+        private val FONT = Font(Font.SERIF, Font.PLAIN, 10)
+        private val emptyB = EmptyBorder(5, 5, 5, 5)
+        private val bevelB = BevelBorder(BevelBorder.LOWERED)
+
+        @JvmStatic
+        fun main(args: Array<String>) {
+            val group = DemoGroup(args[0])
+            JFrame("Java2D Demo - DemoGroup").apply {
+                addWindowListener(object : WindowAdapter() {
+                    override fun windowClosing(e: WindowEvent?) {
+                        System.exit(0)
+                    }
+                    override fun windowDeiconified(e: WindowEvent?) {
+                        group.setup(false)
+                    }
+                    override fun windowIconified(e: WindowEvent?) {
+                        group.shutDown(group.panel)
+                    }
+                })
+                contentPane.add(group, BorderLayout.CENTER)
+                pack()
+                val FRAME_WIDTH = 620
+                val FRAME_HEIGHT = 530
+                setSize(FRAME_WIDTH, FRAME_HEIGHT)
+                setLocationRelativeTo(null)  // centers f on screen
+                isVisible = true
+            }
+            for (arg in args) {
+                if (arg.startsWith("-ccthread")) {
+                    Java2Demo.ccthreadCB = JCheckBoxMenuItem("CCThread", true)
+                }
+            }
+            group.setup(false)
+        }
+    }
+}

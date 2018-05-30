@@ -151,7 +151,7 @@ public class Java2DemoApplet extends JApplet {
             Java2Demo.verboseCB.setSelected(true);
         }
         if ((param = getParameter("columns")) != null) {
-            DemoGroup.columns = Integer.parseInt(param);
+            DemoGroup.Companion.setColumns(Integer.parseInt(param));
         }
         if ((param = getParameter("buffers")) != null) {
             // usage -buffers=3,10

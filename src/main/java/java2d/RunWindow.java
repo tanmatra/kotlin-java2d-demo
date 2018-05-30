@@ -32,9 +32,6 @@
 package java2d;
 
 
-import static java.awt.Color.BLACK;
-import static java.awt.Color.GREEN;
-import static java.awt.Color.RED;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -56,6 +53,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+
+import static java.awt.Color.BLACK;
+import static java.awt.Color.GREEN;
+import static java.awt.Color.RED;
 
 
 /**
@@ -248,7 +249,7 @@ public class RunWindow extends JPanel implements Runnable, ActionListener {
 
                 if (i != 0 && (zoomCB.isSelected() || buffersFlag)) {
                     dp = (DemoPanel) dg.getPanel().getComponent(0);
-                    if (dg.tabbedPane == null && dp.surface != null) {
+                    if (dg.getTabbedPane() == null && dp.surface != null) {
                         Runnable mouseClickedRunnable = new Runnable() {
 
                             @Override
@@ -258,7 +259,7 @@ public class RunWindow extends JPanel implements Runnable, ActionListener {
                         };
                         invokeAndWait(mouseClickedRunnable);
                     }
-                    for (int j = 1; j < dg.tabbedPane.getTabCount() && thread
+                    for (int j = 1; j < dg.getTabbedPane().getTabCount() && thread
                             != null; j++) {
 
                         final int subTabIndex = j;
@@ -269,7 +270,7 @@ public class RunWindow extends JPanel implements Runnable, ActionListener {
                             public void run() {
                                 pb.setValue(0);
                                 pb.setMaximum(delay);
-                                dg.tabbedPane.setSelectedIndex(subTabIndex);
+                                dg.getTabbedPane().setSelectedIndex(subTabIndex);
                             }
                         };
                         invokeAndWait(initPanelRunnable);

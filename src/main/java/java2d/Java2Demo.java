@@ -32,10 +32,6 @@
 package java2d;
 
 
-import static java2d.CustomControlsContext.State.START;
-import static java2d.CustomControlsContext.State.STOP;
-import static java2d.DemoImages.newDemoImages;
-import static java2d.DemoFonts.newDemoFonts;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -77,6 +73,11 @@ import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.EtchedBorder;
+
+import static java2d.CustomControlsContext.State.START;
+import static java2d.CustomControlsContext.State.STOP;
+import static java2d.DemoFonts.newDemoFonts;
+import static java2d.DemoImages.newDemoImages;
 
 
 /**
@@ -527,7 +528,7 @@ public class Java2Demo extends JPanel implements ItemListener, ActionListener {
                 Java2Demo.printCB.setSelected(true);
                 RunWindow.printCB.setSelected(true);
             } else if (arg.startsWith("-columns=")) {
-                DemoGroup.columns = Integer.parseInt(s);
+                DemoGroup.Companion.setColumns(Integer.parseInt(s));
             } else if (arg.startsWith("-buffers=")) {
                 // usage -buffers=3,10
                 RunWindow.buffersFlag = true;
