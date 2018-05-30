@@ -90,7 +90,7 @@ public class DemoPanel extends JPanel {
             surface.startClock();
         }
         if (tools != null && surface != null) {
-            if (tools.getStartStopB() != null && tools.getStartStopB().isSelected()) {
+            if (tools.getStartStopButton() != null && tools.getStartStopButton().isSelected()) {
                 surface.animating.start();
             }
         }

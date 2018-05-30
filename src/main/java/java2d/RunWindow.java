@@ -197,10 +197,10 @@ public class RunWindow extends JPanel implements Runnable, ActionListener {
                     if (dp.tools != null) {
                         if (dp.surface.animating != null) {
                             if (dp.surface.animating.running()) {
-                                dp.tools.getStartStopB().doClick();
+                                dp.tools.getStartStopButton().doClick();
                             }
                         }
-                        dp.tools.getPrintB().doClick();
+                        dp.tools.getPrintButton().doClick();
                     }
                 }
             }
@@ -289,7 +289,7 @@ public class RunWindow extends JPanel implements Runnable, ActionListener {
 
                                     @Override
                                     public void run() {
-                                        dp.tools.getCloneB().doClick();
+                                        dp.tools.getCloneButton().doClick();
                                         int n = p.getComponentCount();
                                         DemoPanel clone = (DemoPanel) p.
                                                 getComponent(n - 1);

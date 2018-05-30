@@ -128,7 +128,7 @@ class CloningFeature : JPanel(), Runnable
                 }
                 EventQueue.invokeLater {
                     textArea.append("   Cloning\n")
-                    tools.cloneB!!.doClick()
+                    tools.cloneButton!!.doClick()
                 }
                 Thread.sleep(3333)
             }
@@ -151,12 +151,12 @@ class CloningFeature : JPanel(), Runnable
                     when (i) {
                         0 -> {
                             textArea.append("   Changing AntiAliasing\n")
-                            tools.aliasB.doClick()
+                            tools.antialiasButton.doClick()
                         }
                         1 -> {
                             textArea.append("   Changing Composite & Texture\n")
                             tools.compositeB.doClick()
-                            tools.textureB.doClick()
+                            tools.textureButton.doClick()
                         }
                         2 -> {
                             textArea.append("   Changing Screen\n")
@@ -164,7 +164,7 @@ class CloningFeature : JPanel(), Runnable
                         }
                         3 -> {
                             textArea.append("   Removing a clone\n")
-                            tools.cloneB!!.doClick()
+                            tools.cloneButton!!.doClick()
                         }
                     }
                 }

@@ -34,9 +34,6 @@ package java2d
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Color.BLACK
-import java.awt.Color.GREEN
-import java.awt.Color.LIGHT_GRAY
-import java.awt.Color.WHITE
 import java.awt.Component
 import java.awt.Dimension
 import java.awt.FlowLayout
@@ -50,9 +47,9 @@ import java.awt.event.ActionListener
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.awt.print.PrinterJob
+import java.security.AccessControlException
 import java.text.DecimalFormat
 import java.util.logging.Level
-import java.util.logging.Logger
 import javax.print.attribute.HashPrintRequestAttributeSet
 import javax.swing.Icon
 import javax.swing.ImageIcon
@@ -65,37 +62,35 @@ import javax.swing.JSlider
 import javax.swing.JToggleButton
 import javax.swing.JToolBar
 import javax.swing.SwingConstants
+import javax.swing.Timer
 import javax.swing.border.EtchedBorder
-import javax.swing.event.ChangeEvent
-import javax.swing.event.ChangeListener
 
 /**
  * Tools to control individual demo graphic attributes.  Also, control for
  * start & stop on animated demos; control for cloning the demo; control for
  * printing the demo.  Expand and collapse the Tools panel with ToggleIcon.
  */
-class Tools(private val surface: Surface) : JPanel(), ActionListener, ChangeListener, Runnable {
-
+class Tools(private val surface: Surface) : JPanel(BorderLayout()), ActionListener, Runnable
+{
     private val stopIcon: ImageIcon
     private val startIcon: ImageIcon
     private val roColor = Color(187, 213, 238)
     private var thread: Thread? = null
     private val toolbarPanel: JPanel
     private var sliderPanel: JPanel? = null
-    private var label: JLabel? = null
     private val bumpyIcon: ToggleIcon
     private val rolloverIcon: ToggleIcon
     private val decimalFormat = DecimalFormat("000")
     private var focus: Boolean = false
-    var toggleB: JToggleButton
-    var printB: JButton
+    var toggleButton: JToggleButton
+    var printButton: JButton
     var screenCombo: JComboBox<String>
-    var renderB: JToggleButton
-    var aliasB: JToggleButton
-    var textureB: JToggleButton
+    var renderButton: JToggleButton
+    var antialiasButton: JToggleButton
+    var textureButton: JToggleButton
     var compositeB: JToggleButton
-    var startStopB: JButton? = null
-    var cloneB: JButton? = null
+    var startStopButton: JButton? = null
+    var cloneButton: JButton? = null
     var issueRepaint = true
     var toolbar: JToolBar
     var slider: JSlider? = null
@@ -103,93 +98,92 @@ class Tools(private val surface: Surface) : JPanel(), ActionListener, ChangeList
     var isExpanded: Boolean = false
 
     init {
-        layout = BorderLayout()
-
         stopIcon = ImageIcon(DemoImages.getImage("stop.gif", this))
         startIcon = ImageIcon(DemoImages.getImage("start.gif", this))
-        bumpyIcon = ToggleIcon(this, LIGHT_GRAY)
+        bumpyIcon = ToggleIcon(this, Color.LIGHT_GRAY)
         rolloverIcon = ToggleIcon(this, roColor)
-        toggleB = JToggleButton(bumpyIcon)
-        toggleB.addMouseListener(object : MouseAdapter() {
-
-            override fun mouseEntered(e: MouseEvent?) {
-                focus = true
-                bumpyIcon.start()
-            }
-
-            override fun mouseExited(e: MouseEvent?) {
-                focus = false
-                bumpyIcon.stop()
-            }
-        })
+        toggleButton = JToggleButton(bumpyIcon).apply {
+            addMouseListener(object : MouseAdapter() {
+                override fun mouseEntered(e: MouseEvent?) {
+                    focus = true
+                    bumpyIcon.start()
+                }
+                override fun mouseExited(e: MouseEvent?) {
+                    focus = false
+                    bumpyIcon.stop()
+                }
+            })
+            addActionListener(this@Tools)
+            margin = Insets(0, 0, -4, 0)
+            isBorderPainted = false
+            isFocusPainted = false
+            isContentAreaFilled = false
+            rolloverIcon = this@Tools.rolloverIcon
+        }
+        add(toggleButton, BorderLayout.NORTH)
         isExpanded = false
-        toggleB.addActionListener(this)
-        toggleB.margin = Insets(0, 0, -4, 0)
-        toggleB.isBorderPainted = false
-        toggleB.isFocusPainted = false
-        toggleB.isContentAreaFilled = false
-        toggleB.rolloverIcon = rolloverIcon
-        add("North", toggleB)
 
-        toolbar = JToolBar()
-        toolbar.preferredSize = Dimension(112, 26)
-        toolbar.isFloatable = false
+        toolbar = JToolBar().apply {
+            preferredSize = Dimension(112, 26)
+            isFloatable = false
+        }
 
-        var s = if (surface.AntiAlias === RenderingHints.VALUE_ANTIALIAS_ON)
-            "On"
-        else
-            "Off"
-        aliasB = addTool("A", "Antialiasing $s", this)
+        var s = if (surface.AntiAlias === RenderingHints.VALUE_ANTIALIAS_ON) "On" else "Off"
+        antialiasButton = addTool("A", "Antialiasing $s", this)
 
-        s = if (surface.Rendering === RenderingHints.VALUE_RENDER_SPEED)
-            "Speed"
-        else
-            "Quality"
-        renderB = addTool("R", "Rendering $s", this)
+        s = if (surface.Rendering === RenderingHints.VALUE_RENDER_SPEED) "Speed" else "Quality"
+        renderButton = addTool("R", "Rendering $s", this)
 
         s = if (surface.texture != null) "On" else "Off"
-        textureB = addTool("T", "Texture $s", this)
+        textureButton = addTool("T", "Texture $s", this)
 
         s = if (surface.composite != null) "On" else "Off"
         compositeB = addTool("C", "Composite $s", this)
 
         val printBImg = DemoImages.getImage("print.gif", this)
-        printB = addTool(printBImg, "Print the Surface", this)
+        printButton = addTool(printBImg, "Print the Surface", this)
 
         if (surface is AnimatingSurface) {
             val stopImg = DemoImages.getImage("stop.gif", this)
-            startStopB = addTool(stopImg, "Stop Animation", this)
+            startStopButton = addTool(stopImg, "Stop Animation", this)
             toolbar.preferredSize = Dimension(132, 26)
         }
 
-        screenCombo = JComboBox()
-        screenCombo.preferredSize = Dimension(100, 18)
-        screenCombo.font = FONT
-        for (name in GlobalControls.screenNames) {
-            screenCombo.addItem(name)
+        screenCombo = JComboBox<String>().apply {
+            preferredSize = Dimension(100, 18)
+            font = FONT
+            for (name in GlobalControls.screenNames) {
+                addItem(name)
+            }
+            addActionListener(this@Tools)
         }
-        screenCombo.addActionListener(this)
-        toolbarPanel = JPanel(FlowLayout(FlowLayout.CENTER, 5, 0))
-        toolbarPanel.setLocation(0, 6)
-        toolbarPanel.isVisible = false
-        toolbarPanel.add(toolbar)
-        toolbarPanel.add(screenCombo)
-        toolbarPanel.border = EtchedBorder()
+        toolbarPanel = JPanel(FlowLayout(FlowLayout.CENTER, 5, 0)).apply {
+            setLocation(0, 6)
+            isVisible = false
+            add(toolbar)
+            add(screenCombo)
+            border = EtchedBorder()
+        }
         add(toolbarPanel)
 
         preferredSize = Dimension(200, 8)
 
         if (surface is AnimatingSurface) {
-            sliderPanel = JPanel(BorderLayout())
-            label = JLabel(" Sleep = 030 ms")
-            label!!.foreground = BLACK
-            sliderPanel!!.add(label!!, BorderLayout.WEST)
-            slider = JSlider(SwingConstants.HORIZONTAL, 0, 200, 30).apply {
-                addChangeListener(this@Tools)
+            val sliderLabel = JLabel(" Sleep = 030 ms").apply {
+                foreground = BLACK
             }
-            sliderPanel!!.border = EtchedBorder()
-            sliderPanel!!.add(slider)
-
+            slider = JSlider(SwingConstants.HORIZONTAL, 0, 200, 30).apply {
+                addChangeListener {
+                    sliderLabel.text = " Sleep = ${decimalFormat.format(value)} ms"
+                    sliderLabel.repaint()
+                    surface.setSleepAmount(value.toLong())
+                }
+            }
+            sliderPanel = JPanel(BorderLayout()).apply {
+                border = EtchedBorder()
+                add(sliderLabel, BorderLayout.WEST)
+                add(slider)
+            }
             addMouseListener(object : MouseAdapter() {
                 override fun mouseClicked(e: MouseEvent?) {
                     if (toolbarPanel.isVisible) {
@@ -199,7 +193,7 @@ class Tools(private val surface: Surface) : JPanel(), ActionListener, ChangeList
                             remove(toolbarPanel)
                             add(sliderPanel)
                         } else {
-                            remove(sliderPanel!!)
+                            remove(sliderPanel)
                             add(toolbarPanel)
                         }
                         validate()
@@ -215,28 +209,18 @@ class Tools(private val surface: Surface) : JPanel(), ActionListener, ChangeList
         toolTip: String,
         al: ActionListener
     ): JButton {
-        val b = object : JButton(ImageIcon(img)) {
-
-            internal var prefSize = Dimension(21, 22)
-
-            override fun getPreferredSize(): Dimension {
-                return prefSize
-            }
-
-            override fun getMaximumSize(): Dimension {
-                return prefSize
-            }
-
-            override fun getMinimumSize(): Dimension {
-                return prefSize
-            }
+        val button = object : JButton(ImageIcon(img)) {
+            override fun getPreferredSize(): Dimension = TOOL_BUTTON_SIZE
+            override fun getMaximumSize(): Dimension = TOOL_BUTTON_SIZE
+            override fun getMinimumSize(): Dimension = TOOL_BUTTON_SIZE
+        }.apply {
+            isFocusPainted = false
+            isSelected = true
+            toolTipText = toolTip
+            addActionListener(al)
         }
-        toolbar.add(b)
-        b.isFocusPainted = false
-        b.isSelected = true
-        b.toolTipText = toolTip
-        b.addActionListener(al)
-        return b
+        toolbar.add(button)
+        return button
     }
 
     private fun addTool(
@@ -244,44 +228,33 @@ class Tools(private val surface: Surface) : JPanel(), ActionListener, ChangeList
         toolTip: String,
         al: ActionListener
     ): JToggleButton {
-        val b = object : JToggleButton(name) {
-
-            internal var prefSize = Dimension(21, 22)
-
-            override fun getPreferredSize(): Dimension {
-                return prefSize
-            }
-
-            override fun getMaximumSize(): Dimension {
-                return prefSize
-            }
-
-            override fun getMinimumSize(): Dimension {
-                return prefSize
-            }
+        val button = object : JToggleButton(name) {
+            override fun getPreferredSize(): Dimension = TOOL_BUTTON_SIZE
+            override fun getMaximumSize(): Dimension = TOOL_BUTTON_SIZE
+            override fun getMinimumSize(): Dimension = TOOL_BUTTON_SIZE
+        }.apply {
+            isFocusPainted = false
+            isSelected =
+                    toolTip == "Rendering Quality" ||
+                    toolTip == "Antialiasing On" ||
+                    toolTip == "Texture On" ||
+                    toolTip == "Composite On"
+            toolTipText = toolTip
+            addActionListener(al)
         }
-        toolbar.add(b)
-        b.isFocusPainted = false
-        if (toolTip == "Rendering Quality" || toolTip == "Antialiasing On" || toolTip == "Texture On" || toolTip == "Composite On") {
-            b.isSelected = true
-        } else {
-            b.isSelected = false
-        }
-        b.toolTipText = toolTip
-        b.addActionListener(al)
-        return b
+        toolbar.add(button)
+        return button
     }
 
     override fun actionPerformed(e: ActionEvent) {
         val obj = e.source
         if (obj is JButton) {
-            val b = obj
-            b.isSelected = !b.isSelected
-            if (b.icon == null) {
-                b.background = if (b.isSelected) GREEN else LIGHT_GRAY
+            obj.isSelected = !obj.isSelected
+            if (obj.icon == null) {
+                obj.background = if (obj.isSelected) Color.GREEN else Color.LIGHT_GRAY
             }
         }
-        if (obj == toggleB) {
+        if (obj == toggleButton) {
             isExpanded = !isExpanded
             preferredSize = if (isExpanded) {
                 Dimension(200, 38)
@@ -289,49 +262,47 @@ class Tools(private val surface: Surface) : JPanel(), ActionListener, ChangeList
                 Dimension(200, 6)
             }
             toolbarPanel.isVisible = isExpanded
-            if (sliderPanel != null) {
-                sliderPanel!!.isVisible = isExpanded
-            }
+            sliderPanel?.isVisible = isExpanded
             parent.validate()
-            toggleB.model.isRollover = false
+            toggleButton.model.isRollover = false
             return
         }
-        if (obj == printB) {
+        if (obj == printButton) {
             start()
             return
         }
 
-        if (obj == startStopB) {
-            if (startStopB!!.toolTipText == "Stop Animation") {
-                startStopB!!.icon = startIcon
-                startStopB!!.toolTipText = "Start Animation"
+        if (obj == startStopButton) {
+            if (startStopButton!!.toolTipText == "Stop Animation") {
+                startStopButton!!.icon = startIcon
+                startStopButton!!.toolTipText = "Start Animation"
                 surface.animating.stop()
             } else {
-                startStopB!!.icon = stopIcon
-                startStopB!!.toolTipText = "Stop Animation"
+                startStopButton!!.icon = stopIcon
+                startStopButton!!.toolTipText = "Stop Animation"
                 surface.animating.start()
             }
-        } else if (obj == aliasB) {
-            if (aliasB.toolTipText == "Antialiasing On") {
-                aliasB.toolTipText = "Antialiasing Off"
+        } else if (obj == antialiasButton) {
+            if (antialiasButton.toolTipText == "Antialiasing On") {
+                antialiasButton.toolTipText = "Antialiasing Off"
             } else {
-                aliasB.toolTipText = "Antialiasing On"
+                antialiasButton.toolTipText = "Antialiasing On"
             }
-            surface.setAntiAlias(aliasB.isSelected)
-        } else if (obj == renderB) {
-            if (renderB.toolTipText == "Rendering Quality") {
-                renderB.toolTipText = "Rendering Speed"
+            surface.setAntiAlias(antialiasButton.isSelected)
+        } else if (obj == renderButton) {
+            if (renderButton.toolTipText == "Rendering Quality") {
+                renderButton.toolTipText = "Rendering Speed"
             } else {
-                renderB.toolTipText = "Rendering Quality"
+                renderButton.toolTipText = "Rendering Quality"
             }
-            surface.setRendering(renderB.isSelected)
-        } else if (obj == textureB) {
-            if (textureB.toolTipText == "Texture On") {
-                textureB.toolTipText = "Texture Off"
+            surface.setRendering(renderButton.isSelected)
+        } else if (obj == textureButton) {
+            if (textureButton.toolTipText == "Texture On") {
+                textureButton.toolTipText = "Texture Off"
                 surface.setTexture(null)
                 surface.clearSurface = true
             } else {
-                textureB.toolTipText = "Texture On"
+                textureButton.toolTipText = "Texture On"
                 surface.setTexture(TextureChooser.texture)
             }
         } else if (obj == compositeB) {
@@ -356,18 +327,11 @@ class Tools(private val surface: Surface) : JPanel(), ActionListener, ChangeList
         }
     }
 
-    override fun stateChanged(e: ChangeEvent) {
-        val value = slider!!.value
-        label!!.text = " Sleep = " + decimalFormat.format(value.toLong()) + " ms"
-        label!!.repaint()
-        surface.setSleepAmount(value.toLong())
-    }
-
     fun start() {
-        thread = Thread(this)
-        thread!!.priority = Thread.MAX_PRIORITY
-        thread!!.name = "Printing " + surface.name
-        thread!!.start()
+        thread = Thread(this, "Printing ${surface.name}").apply {
+            priority = Thread.MAX_PRIORITY
+            start()
+        }
     }
 
     @Synchronized
@@ -381,7 +345,7 @@ class Tools(private val surface: Surface) : JPanel(), ActionListener, ChangeList
         var stopped = false
         if (surface.animating != null && surface.animating.running()) {
             stopped = true
-            startStopB!!.doClick()
+            startStopButton!!.doClick()
         }
 
         try {
@@ -396,21 +360,20 @@ class Tools(private val surface: Surface) : JPanel(), ActionListener, ChangeList
             if (pDialogState) {
                 printJob.print(aset)
             }
-        } catch (ace: java.security.AccessControlException) {
+        } catch (ace: AccessControlException) {
             val errmsg = ("Applet access control exception; to allow "
                     + "access to printer, run policytool and set\n"
                     + "permission for \"queuePrintJob\" in "
                     + "RuntimePermission.")
             JOptionPane.showMessageDialog(
                 this, errmsg, "Printer Access Error",
-                JOptionPane.ERROR_MESSAGE
-                                         )
+                JOptionPane.ERROR_MESSAGE)
         } catch (ex: Exception) {
-            Logger.getLogger(Tools::class.java.name).log(Level.SEVERE, null, ex)
+            getLogger<Tools>().log(Level.SEVERE, null, ex)
         }
 
         if (stopped) {
-            startStopB!!.doClick()
+            startStopButton!!.doClick()
         }
         thread = null
     }
@@ -418,66 +381,57 @@ class Tools(private val surface: Surface) : JPanel(), ActionListener, ChangeList
     /**
      * Expand and Collapse the Tools Panel with this bumpy button.
      */
-    internal class ToggleIcon(private val tools: Tools, private val fillColor: Color) : Icon, Runnable
+    class ToggleIcon(private val tools: Tools, private val fillColor: Color) : Icon
     {
-        private val shadowColor = Color(102, 102, 153)
-        private var thread: Thread? = null
+        companion object {
+            private val SHADOW_COLOR = Color(102, 102, 153)
+        }
+        private var timer: Timer? = null
 
         override fun paintIcon(c: Component, g: Graphics, x: Int, y: Int) {
-            var cx = x
             val w = iconWidth
             val h = iconHeight
             g.color = fillColor
             g.fillRect(0, 0, w, h)
-            while (cx < w - 2) {
-                g.color = WHITE
-                g.fillRect(cx, 1, 1, 1)
+            for (cx in x until w - 2 step 4) {
+                g.color = Color.WHITE
+                g.fillRect(cx,     1, 1, 1)
                 g.fillRect(cx + 2, 3, 1, 1)
-                g.color = shadowColor
+                g.color = SHADOW_COLOR
                 g.fillRect(cx + 1, 2, 1, 1)
                 g.fillRect(cx + 3, 4, 1, 1)
-                cx += 4
             }
         }
 
-        override fun getIconWidth(): Int {
-            return tools.size.width
-        }
+        override fun getIconWidth(): Int = tools.size.width
 
-        override fun getIconHeight(): Int {
-            return 6
-        }
+        override fun getIconHeight(): Int = 6
 
         fun start() {
-            thread = Thread(this)
-            thread!!.priority = Thread.MIN_PRIORITY
-            thread!!.name = "ToggleIcon"
-            thread!!.start()
+            if (timer == null) {
+                timer = Timer(400) {
+                    if (tools.focus) {
+                        tools.toggleButton.doClick()
+                        timer = null
+                    }
+                }.apply {
+                    isRepeats = false
+                    start()
+                }
+            }
         }
 
-        @Synchronized
         fun stop() {
-            if (thread != null) {
-                thread!!.interrupt()
+            timer?.run {
+                stop()
+                timer = null
             }
-            thread = null
-        }
-
-        override fun run() {
-            try {
-                Thread.sleep(400)
-            } catch (e: InterruptedException) {
-            }
-
-            if (tools.focus && thread != null) {
-                tools.toggleB.doClick()
-            }
-            thread = null
         }
     }
 
     companion object
     {
         private val FONT = Font(Font.SERIF, Font.PLAIN, 10)
+        private val TOOL_BUTTON_SIZE = Dimension(21, 22)
     }
 }

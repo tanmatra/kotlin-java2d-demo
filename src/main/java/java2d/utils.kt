@@ -1,6 +1,7 @@
 package java2d
 
 import java.awt.Dimension
+import java.util.logging.Logger
 import javax.swing.AbstractButton
 import javax.swing.JComponent
 import javax.swing.JToggleButton
@@ -25,3 +26,5 @@ fun createToolButton(text: String,
         addActionListener { action(isSelected) }
     }
 }
+
+inline fun <reified T> getLogger() = Logger.getLogger(T::class.java.name)

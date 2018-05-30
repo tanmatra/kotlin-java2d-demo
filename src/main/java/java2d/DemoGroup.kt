@@ -150,7 +150,7 @@ class DemoGroup(private val groupName: String) : JPanel(), ChangeListener, Actio
                 if (c.surface != null) {
                     c.surface.setMonitor(Java2Demo.performancemonitor != null)
                     val cloneImg = DemoImages.getImage("clone.gif", this)
-                    c.tools.cloneB = c.tools.addTool(cloneImg, "Clone the Surface", this)
+                    c.tools.cloneButton = c.tools.addTool(cloneImg, "Clone the Surface", this)
                     val d = c.tools.toolbar.preferredSize
                     c.tools.toolbar.preferredSize = Dimension(d.width + 27, d.height)
                     Java2Demo.backgroundColor?.let { backgroundColor ->
@@ -215,7 +215,7 @@ class DemoGroup(private val groupName: String) : JPanel(), ChangeListener, Actio
                 val t = dp.tools
                 t.isVisible = isValid
                 t.issueRepaint = issueRepaint
-                val b = arrayOf(t.toggleB, t.aliasB, t.renderB, t.textureB, t.compositeB)
+                val b = arrayOf(t.toggleButton, t.antialiasButton, t.renderButton, t.textureButton, t.compositeB)
                 val cb = arrayOf(c.toolBarCB, c.aliasCB, c.renderCB, c.textureCB, c.compositeCB)
                 for (j in b.indices) {
                     if (c.obj != null && c.obj == cb[j]) {
@@ -266,7 +266,7 @@ class DemoGroup(private val groupName: String) : JPanel(), ChangeListener, Actio
             clone.setDemoBorder(panel)
         }
         val removeImg = DemoImages.getImage("remove.gif", this)
-        clone.tools.cloneB = clone.tools.addTool(removeImg, "Remove the Surface", this)
+        clone.tools.cloneButton = clone.tools.addTool(removeImg, "Remove the Surface", this)
         val d = clone.tools.toolbar.preferredSize
         clone.tools.toolbar.preferredSize = Dimension(d.width + 27, d.height)
         Java2Demo.backgroundColor?.let { backgroundColor ->
@@ -274,7 +274,7 @@ class DemoGroup(private val groupName: String) : JPanel(), ChangeListener, Actio
         }
         if (Java2Demo.controls != null) {
             if (clone.tools.isExpanded != Java2Demo.controls.toolBarCB.isSelected) {
-                clone.tools.toggleB.doClick()
+                clone.tools.toggleButton.doClick()
             }
         }
         clone.start()
