@@ -176,7 +176,7 @@ class Tools(private val surface: Surface) : JPanel(BorderLayout()), ActionListen
                 addChangeListener {
                     sliderLabel.text = " Sleep = ${decimalFormat.format(value)} ms"
                     sliderLabel.repaint()
-                    surface.setSleepAmount(value.toLong())
+                    surface.sleepAmount = value.toLong()
                 }
             }
             sliderPanel = JPanel(BorderLayout()).apply {
@@ -276,11 +276,11 @@ class Tools(private val surface: Surface) : JPanel(BorderLayout()), ActionListen
             if (startStopButton!!.toolTipText == "Stop Animation") {
                 startStopButton!!.icon = startIcon
                 startStopButton!!.toolTipText = "Start Animation"
-                surface.animating.stop()
+                surface.animating?.stop()
             } else {
                 startStopButton!!.icon = stopIcon
                 startStopButton!!.toolTipText = "Stop Animation"
-                surface.animating.start()
+                surface.animating?.start()
             }
         } else if (obj == antialiasButton) {
             if (antialiasButton.toolTipText == "Antialiasing On") {
@@ -313,14 +313,19 @@ class Tools(private val surface: Surface) : JPanel(BorderLayout()), ActionListen
             }
             surface.setComposite(compositeB.isSelected)
         } else if (obj == screenCombo) {
-            surface.setImageType(screenCombo.selectedIndex)
+            surface.imageType = screenCombo.selectedIndex
         }
 
-        if (issueRepaint && surface.animating != null) {
-            if (surface.getSleepAmount() != 0L) {
-                if (surface.animating.running()) {
-                    surface.animating.doRepaint()
+        if (issueRepaint) {
+            val animating = surface.animating
+            if (animating != null) {
+                if (surface.sleepAmount != 0L) {
+                    if (animating.running()) {
+                        animating.doRepaint()
+                    }
                 }
+            } else if (issueRepaint) {
+                surface.repaint()
             }
         } else if (issueRepaint) {
             surface.repaint()
@@ -343,7 +348,8 @@ class Tools(private val surface: Surface) : JPanel(BorderLayout()), ActionListen
 
     override fun run() {
         var stopped = false
-        if (surface.animating != null && surface.animating.running()) {
+        val animating = surface.animating
+        if (animating != null && animating.running()) {
             stopped = true
             startStopButton!!.doClick()
         }

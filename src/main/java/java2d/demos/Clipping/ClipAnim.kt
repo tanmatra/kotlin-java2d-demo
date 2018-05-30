@@ -33,7 +33,6 @@ package java2d.demos.Clipping
 
 import java2d.AnimatingControlsSurface
 import java2d.CustomControls
-import java2d.Surface
 import java2d.createToolButton
 import java.awt.Color
 import java.awt.Dimension
@@ -227,7 +226,7 @@ class ClipAnim : AnimatingControlsSurface()
         }
 
         private fun checkRepaint() {
-            if (!demo.animating.running()) {
+            if (!demo.animating!!.running()) {
                 demo.repaint()
             }
         }
@@ -274,7 +273,7 @@ class ClipAnim : AnimatingControlsSurface()
 
         @JvmStatic
         fun main(argv: Array<String>) {
-            Surface.createDemoFrame(ClipAnim())
+            createDemoFrame(ClipAnim())
         }
     }
 }

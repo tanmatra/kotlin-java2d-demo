@@ -32,12 +32,13 @@
 package java2d.demos.Colors;
 
 
-import static java.awt.Color.RED;
-import static java.awt.Color.WHITE;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Ellipse2D;
 import java2d.Surface;
+
+import static java.awt.Color.RED;
+import static java.awt.Color.WHITE;
 
 
 /**

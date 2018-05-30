@@ -32,8 +32,6 @@
 package java2d.demos.Lines;
 
 
-import static java.awt.Color.BLACK;
-import static java.awt.Color.WHITE;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -59,6 +57,9 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
+import static java.awt.Color.BLACK;
+import static java.awt.Color.WHITE;
 
 
 /**
@@ -131,7 +132,7 @@ public class Joins extends ControlsSurface {
 
         @SuppressWarnings("LeakingThisInConstructor")
         public DemoControls(Joins demo) {
-            super(demo.name);
+            super(demo.getName());
             setBorder(new CompoundBorder(getBorder(),
                     new EmptyBorder(2, 2, 2, 2)));
             this.demo = demo;

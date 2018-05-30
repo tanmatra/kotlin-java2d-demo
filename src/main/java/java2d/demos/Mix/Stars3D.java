@@ -32,11 +32,6 @@
 package java2d.demos.Mix;
 
 
-import static java.awt.Color.BLACK;
-import static java.awt.Color.BLUE;
-import static java.awt.Color.GREEN;
-import static java.awt.Color.RED;
-import static java.awt.Color.WHITE;
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Component;
@@ -58,6 +53,12 @@ import java2d.ControlsSurface;
 import java2d.CustomControls;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+
+import static java.awt.Color.BLACK;
+import static java.awt.Color.BLUE;
+import static java.awt.Color.GREEN;
+import static java.awt.Color.RED;
+import static java.awt.Color.WHITE;
 
 
 /**
@@ -227,8 +228,8 @@ public class Stars3D extends ControlsSurface {
         } // while
         ribbon = working;
 
-        if (composite != null) {
-            g2.setComposite(composite);
+        if (getComposite() != null) {
+            g2.setComposite(getComposite());
         } else {
             g2.setComposite(AlphaComposite.SrcOver);
         }
@@ -259,7 +260,7 @@ public class Stars3D extends ControlsSurface {
 
         @SuppressWarnings("LeakingThisInConstructor")
         public DemoControls(Stars3D demo) {
-            super(demo.name);
+            super(demo.getName());
             this.demo = demo;
             JLabel l = new JLabel("  Text:");
             l.setForeground(BLACK);

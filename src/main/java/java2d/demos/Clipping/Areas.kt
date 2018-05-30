@@ -33,7 +33,6 @@ package java2d.demos.Clipping
 
 import java2d.ControlsSurface
 import java2d.CustomControls
-import java2d.Surface
 import java2d.createToolButton
 import java.awt.Color.BLACK
 import java.awt.Color.GREEN
@@ -195,7 +194,7 @@ class Areas : ControlsSurface()
     {
         @JvmStatic
         fun main(argv: Array<String>) {
-            Surface.createDemoFrame(Areas())
+            createDemoFrame(Areas())
         }
     }
 }

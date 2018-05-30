@@ -32,9 +32,6 @@
 package java2d.demos.Mix;
 
 
-import static java.awt.Color.LIGHT_GRAY;
-import static java.awt.Color.WHITE;
-import static java.lang.Math.random;
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -62,6 +59,10 @@ import javax.swing.AbstractButton;
 import javax.swing.JComboBox;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+
+import static java.awt.Color.LIGHT_GRAY;
+import static java.awt.Color.WHITE;
+import static java.lang.Math.random;
 
 
 /**
@@ -303,7 +304,7 @@ public class BezierScroller extends AnimatingControlsSurface {
         JComboBox combo;
 
         public DemoControls(BezierScroller demo) {
-            super(demo.name);
+            super(demo.getName());
             this.demo = demo;
             add(toolbar = new JToolBar());
             toolbar.setFloatable(false);
@@ -335,7 +336,7 @@ public class BezierScroller extends AnimatingControlsSurface {
             } else {
                 demo.doText = b.isSelected();
             }
-            if (!demo.animating.running()) {
+            if (!demo.getAnimating().running()) {
                 demo.repaint();
             }
         }

@@ -32,9 +32,6 @@
 package java2d.demos.Transforms;
 
 
-import static java.awt.Color.BLACK;
-import static java.awt.Color.ORANGE;
-import static java.awt.Color.WHITE;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -50,6 +47,10 @@ import java2d.CustomControls;
 import javax.swing.AbstractButton;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+
+import static java.awt.Color.BLACK;
+import static java.awt.Color.ORANGE;
+import static java.awt.Color.WHITE;
 
 
 /**
@@ -247,7 +248,7 @@ public class SelectTx extends AnimatingControlsSurface {
         JToolBar toolbar;
 
         public DemoControls(SelectTx demo) {
-            super(demo.name);
+            super(demo.getName());
             this.demo = demo;
             add(toolbar = new JToolBar());
             toolbar.setFloatable(false);

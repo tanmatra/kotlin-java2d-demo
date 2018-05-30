@@ -32,15 +32,6 @@
 package java2d.demos.Fonts;
 
 
-import static java.awt.Font.BOLD;
-import static java.awt.Font.ITALIC;
-import static java.awt.Font.PLAIN;
-import static java.awt.font.TextAttribute.BACKGROUND;
-import static java.awt.font.TextAttribute.CHAR_REPLACEMENT;
-import static java.awt.font.TextAttribute.FONT;
-import static java.awt.font.TextAttribute.FOREGROUND;
-import static java.awt.font.TextAttribute.UNDERLINE;
-import static java.awt.font.TextAttribute.UNDERLINE_ON;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GradientPaint;
@@ -60,6 +51,16 @@ import java.awt.image.BufferedImage;
 import java.text.AttributedCharacterIterator;
 import java.text.AttributedString;
 import java2d.Surface;
+
+import static java.awt.Font.BOLD;
+import static java.awt.Font.ITALIC;
+import static java.awt.Font.PLAIN;
+import static java.awt.font.TextAttribute.BACKGROUND;
+import static java.awt.font.TextAttribute.CHAR_REPLACEMENT;
+import static java.awt.font.TextAttribute.FONT;
+import static java.awt.font.TextAttribute.FOREGROUND;
+import static java.awt.font.TextAttribute.UNDERLINE;
+import static java.awt.font.TextAttribute.UNDERLINE_ON;
 
 
 /**

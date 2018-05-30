@@ -32,18 +32,6 @@
 package java2d.demos.Composite;
 
 
-import static java.awt.AlphaComposite.Clear;
-import static java.awt.AlphaComposite.Dst;
-import static java.awt.AlphaComposite.DstAtop;
-import static java.awt.AlphaComposite.DstIn;
-import static java.awt.AlphaComposite.DstOut;
-import static java.awt.AlphaComposite.DstOver;
-import static java.awt.AlphaComposite.Src;
-import static java.awt.AlphaComposite.SrcAtop;
-import static java.awt.AlphaComposite.SrcIn;
-import static java.awt.AlphaComposite.SrcOut;
-import static java.awt.AlphaComposite.SrcOver;
-import static java.awt.AlphaComposite.Xor;
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Font;
@@ -56,6 +44,19 @@ import java.awt.font.TextLayout;
 import java.awt.geom.GeneralPath;
 import java.awt.image.BufferedImage;
 import java2d.AnimatingSurface;
+
+import static java.awt.AlphaComposite.Clear;
+import static java.awt.AlphaComposite.Dst;
+import static java.awt.AlphaComposite.DstAtop;
+import static java.awt.AlphaComposite.DstIn;
+import static java.awt.AlphaComposite.DstOut;
+import static java.awt.AlphaComposite.DstOver;
+import static java.awt.AlphaComposite.Src;
+import static java.awt.AlphaComposite.SrcAtop;
+import static java.awt.AlphaComposite.SrcIn;
+import static java.awt.AlphaComposite.SrcOut;
+import static java.awt.AlphaComposite.SrcOver;
+import static java.awt.AlphaComposite.Xor;
 
 
 /**
@@ -202,13 +203,13 @@ public class ACrules extends AnimatingSurface {
         Graphics2D big = bi.createGraphics();
         big.setColor(getBackground());
         big.fillRect(0, 0, bi.getWidth(), bi.getHeight());
-        big.setRenderingHint(RenderingHints.KEY_ANTIALIASING, AntiAlias);
+        big.setRenderingHint(RenderingHints.KEY_ANTIALIASING, getAntiAlias());
         big.setFont(f);
 
         Graphics2D gD = dBI.createGraphics();
-        gD.setRenderingHint(RenderingHints.KEY_ANTIALIASING, AntiAlias);
+        gD.setRenderingHint(RenderingHints.KEY_ANTIALIASING, getAntiAlias());
         Graphics2D gS = sBI.createGraphics();
-        gS.setRenderingHint(RenderingHints.KEY_ANTIALIASING, AntiAlias);
+        gS.setRenderingHint(RenderingHints.KEY_ANTIALIASING, getAntiAlias());
 
         int x = 0, y = 0;
         int yy = (int) lm.getHeight() + VPAD;

@@ -235,7 +235,7 @@ class DemoGroup(private val groupName: String) : JPanel(), ChangeListener, Actio
                 if (Java2Demo.verboseCB.isSelected) {
                     dp.surface.verbose()
                 }
-                dp.surface.setSleepAmount(c.slider.value.toLong())
+                dp.surface.sleepAmount = c.slider.value.toLong()
                 Java2Demo.backgroundColor?.let { backgroundColor ->
                     dp.surface.background = backgroundColor
                 }

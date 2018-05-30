@@ -32,14 +32,6 @@
 package java2d.demos.Mix;
 
 
-import static java.awt.Color.BLUE;
-import static java.awt.Color.GREEN;
-import static java.awt.Color.ORANGE;
-import static java.awt.Color.RED;
-import static java.awt.Color.WHITE;
-import static java.awt.Color.YELLOW;
-import static java.lang.Math.random;
-import static java.lang.Math.sqrt;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -57,6 +49,15 @@ import javax.swing.AbstractButton;
 import javax.swing.JComboBox;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+
+import static java.awt.Color.BLUE;
+import static java.awt.Color.GREEN;
+import static java.awt.Color.ORANGE;
+import static java.awt.Color.RED;
+import static java.awt.Color.WHITE;
+import static java.awt.Color.YELLOW;
+import static java.lang.Math.random;
+import static java.lang.Math.sqrt;
 
 
 /**
@@ -267,7 +268,7 @@ public class Balls extends AnimatingControlsSurface {
 
         @SuppressWarnings("LeakingThisInConstructor")
         public DemoControls(Balls demo) {
-            super(demo.name);
+            super(demo.getName());
             this.demo = demo;
             add(toolbar = new JToolBar());
             toolbar.setFloatable(false);
@@ -316,7 +317,7 @@ public class Balls extends AnimatingControlsSurface {
             }
             JToggleButton b = (JToggleButton) e.getSource();
             if (b.getText().equals("Clear")) {
-                demo.clearSurface = b.isSelected();
+                demo.setClearSurface(b.isSelected());
             } else {
                 int index = toolbar.getComponentIndex(b) - 1;
                 demo.balls[index].isSelected = b.isSelected();
@@ -345,7 +346,7 @@ public class Balls extends AnimatingControlsSurface {
                     return;
                 }
                 if (demo.clearToggle) {
-                    if (demo.clearSurface) {
+                    if (demo.getClearSurface()) {
                         combo.setSelectedIndex((int) (random() * 5));
                     }
                     ((AbstractButton) toolbar.getComponentAtIndex(0)).doClick();

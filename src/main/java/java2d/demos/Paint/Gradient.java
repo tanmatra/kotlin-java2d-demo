@@ -32,16 +32,6 @@
 package java2d.demos.Paint;
 
 
-import static java.awt.Color.black;
-import static java.awt.Color.blue;
-import static java.awt.Color.cyan;
-import static java.awt.Color.green;
-import static java.awt.Color.lightGray;
-import static java.awt.Color.magenta;
-import static java.awt.Color.orange;
-import static java.awt.Color.red;
-import static java.awt.Color.white;
-import static java.awt.Color.yellow;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -58,6 +48,17 @@ import javax.swing.Icon;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+
+import static java.awt.Color.black;
+import static java.awt.Color.blue;
+import static java.awt.Color.cyan;
+import static java.awt.Color.green;
+import static java.awt.Color.lightGray;
+import static java.awt.Color.magenta;
+import static java.awt.Color.orange;
+import static java.awt.Color.red;
+import static java.awt.Color.white;
+import static java.awt.Color.yellow;
 
 
 @SuppressWarnings("serial")
@@ -112,7 +113,7 @@ public class Gradient extends ControlsSurface {
 
         @SuppressWarnings("LeakingThisInConstructor")
         public DemoControls(Gradient demo) {
-            super(demo.name);
+            super(demo.getName());
             this.demo = demo;
             JMenuBar inMenuBar = new JMenuBar();
             add(inMenuBar);

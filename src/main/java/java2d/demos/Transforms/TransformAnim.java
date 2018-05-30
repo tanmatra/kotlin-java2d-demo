@@ -33,20 +33,6 @@
 
 package java2d.demos.Transforms;
 
-import static java.awt.Color.BLACK;
-import static java.awt.Color.BLUE;
-import static java.awt.Color.CYAN;
-import static java.awt.Color.GREEN;
-import static java.awt.Color.LIGHT_GRAY;
-import static java.awt.Color.MAGENTA;
-import static java.awt.Color.ORANGE;
-import static java.awt.Color.PINK;
-import static java.awt.Color.RED;
-import static java.awt.Color.WHITE;
-import static java.awt.Color.YELLOW;
-import static java.awt.Font.BOLD;
-import static java.awt.Font.ITALIC;
-import static java.awt.Font.PLAIN;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -87,6 +73,21 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.metal.MetalBorders.ButtonBorder;
+
+import static java.awt.Color.BLACK;
+import static java.awt.Color.BLUE;
+import static java.awt.Color.CYAN;
+import static java.awt.Color.GREEN;
+import static java.awt.Color.LIGHT_GRAY;
+import static java.awt.Color.MAGENTA;
+import static java.awt.Color.ORANGE;
+import static java.awt.Color.PINK;
+import static java.awt.Color.RED;
+import static java.awt.Color.WHITE;
+import static java.awt.Color.YELLOW;
+import static java.awt.Font.BOLD;
+import static java.awt.Font.ITALIC;
+import static java.awt.Font.PLAIN;
 
 /**
  * Animation of shapes, text and images rotating, scaling and translating
@@ -393,7 +394,7 @@ public final class TransformAnim extends AnimatingControlsSurface {
 
         @SuppressWarnings("LeakingThisInConstructor")
         public DemoControls(TransformAnim demo) {
-            super(demo.name);
+            super(demo.getName());
             this.demo = demo;
             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
             add(Box.createVerticalStrut(5));
@@ -467,7 +468,7 @@ public final class TransformAnim extends AnimatingControlsSurface {
             } else if (b.getText().equals("SH")) {
                 demo.doShear = b.isSelected();
             }
-            if (!demo.animating.running()) {
+            if (!demo.getAnimating().running()) {
                 demo.repaint();
             }
         }
@@ -488,7 +489,7 @@ public final class TransformAnim extends AnimatingControlsSurface {
                 tb.setTitle(String.valueOf(value) + " Images");
                 demo.setImages(value);
             }
-            if (!demo.animating.running()) {
+            if (!demo.getAnimating().running()) {
                 demo.repaint();
             }
             slider.repaint();

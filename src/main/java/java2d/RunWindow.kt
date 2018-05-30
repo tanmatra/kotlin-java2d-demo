@@ -172,8 +172,8 @@ class RunWindow : JPanel(GridBagLayout()), Runnable
             for (component in demoGroup.panel.components) {
                 val demoPanel = component as DemoPanel
                 demoPanel.tools?.let { tools ->
-                    if (demoPanel.surface.animating != null) {
-                        if (demoPanel.surface.animating.running()) {
+                    demoPanel.surface.animating?.let { animating ->
+                        if (animating.running()) {
                             tools.startStopButton!!.doClick()
                         }
                     }

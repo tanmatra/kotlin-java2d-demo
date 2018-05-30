@@ -32,17 +32,6 @@
 package java2d.demos.Composite;
 
 
-import static java.awt.Color.BLACK;
-import static java.awt.Color.BLUE;
-import static java.awt.Color.CYAN;
-import static java.awt.Color.GREEN;
-import static java.awt.Color.LIGHT_GRAY;
-import static java.awt.Color.MAGENTA;
-import static java.awt.Color.ORANGE;
-import static java.awt.Color.PINK;
-import static java.awt.Color.RED;
-import static java.awt.Color.WHITE;
-import static java.awt.Color.YELLOW;
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
@@ -79,6 +68,18 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
+import static java.awt.Color.BLACK;
+import static java.awt.Color.BLUE;
+import static java.awt.Color.CYAN;
+import static java.awt.Color.GREEN;
+import static java.awt.Color.LIGHT_GRAY;
+import static java.awt.Color.MAGENTA;
+import static java.awt.Color.ORANGE;
+import static java.awt.Color.PINK;
+import static java.awt.Color.RED;
+import static java.awt.Color.WHITE;
+import static java.awt.Color.YELLOW;
 
 
 /**
@@ -397,7 +398,7 @@ public final class FadeAnim extends AnimatingControlsSurface {
 
         @SuppressWarnings("LeakingThisInConstructor")
         public DemoControls(FadeAnim demo) {
-            super(demo.name);
+            super(demo.getName());
             this.demo = demo;
             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
             add(Box.createVerticalStrut(5));
@@ -460,7 +461,7 @@ public final class FadeAnim extends AnimatingControlsSurface {
                 demo.setImages(value);
             }
             slider.repaint();
-            if (!demo.animating.running()) {
+            if (!demo.getAnimating().running()) {
                 demo.repaint();
             }
         }

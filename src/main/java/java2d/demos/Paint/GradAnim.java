@@ -270,7 +270,7 @@ public class GradAnim extends AnimatingControlsSurface {
 
         @SuppressWarnings("LeakingThisInConstructor")
         public DemoControls(GradAnim demo) {
-            super(demo.name);
+            super(demo.getName());
             this.demo = demo;
             combo = new JComboBox();
             combo.addActionListener(this);
@@ -288,7 +288,7 @@ public class GradAnim extends AnimatingControlsSurface {
             if (index >= 0) {
                 demo.gradientType = index;
             }
-            if (!demo.animating.running()) {
+            if (!demo.getAnimating().running()) {
                 demo.repaint();
             }
         }

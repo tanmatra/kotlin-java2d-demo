@@ -50,10 +50,10 @@ public abstract class AnimatingSurface extends Surface implements Runnable {
 
 
     public void start() {
-        if (!running() && !dontThread) {
+        if (!running() && !getDontThread()) {
             thread = new Thread(this);
             thread.setPriority(Thread.MIN_PRIORITY);
-            thread.setName(name + " Demo");
+            thread.setName(getName() + " Demo");
             thread.start();
             running = true;
         }
@@ -84,7 +84,7 @@ public abstract class AnimatingSurface extends Surface implements Runnable {
         while (running()) {
             repaint();
             try {
-                Thread.sleep(sleepAmount);
+                Thread.sleep(getSleepAmount());
             } catch (InterruptedException ignored) {
             }
         }

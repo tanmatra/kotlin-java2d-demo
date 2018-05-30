@@ -32,12 +32,6 @@
 package java2d.demos.Transforms;
 
 
-import static java.awt.Color.BLACK;
-import static java.awt.Color.BLUE;
-import static java.awt.Color.GRAY;
-import static java.awt.Color.LIGHT_GRAY;
-import static java.awt.Color.WHITE;
-import static java.awt.Color.YELLOW;
 import java.awt.BasicStroke;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -50,6 +44,13 @@ import java2d.ControlsSurface;
 import java2d.CustomControls;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+
+import static java.awt.Color.BLACK;
+import static java.awt.Color.BLUE;
+import static java.awt.Color.GRAY;
+import static java.awt.Color.LIGHT_GRAY;
+import static java.awt.Color.WHITE;
+import static java.awt.Color.YELLOW;
 
 
 /**
@@ -111,7 +112,7 @@ public class Rotate extends ControlsSurface {
 
         @SuppressWarnings("LeakingThisInConstructor")
         public DemoControls(Rotate demo) {
-            super(demo.name);
+            super(demo.getName());
             this.demo = demo;
             JLabel l = new JLabel("Increment:");
             l.setForeground(BLACK);

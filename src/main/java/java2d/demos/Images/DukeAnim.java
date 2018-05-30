@@ -58,7 +58,7 @@ public class DukeAnim extends AnimatingSurface implements ImageObserver {
         aw = agif.getWidth(this) / 2;
         ah = agif.getHeight(this) / 2;
         cw = clouds.getWidth(this);
-        dontThread = true;
+        setDontThread(true);
     }
 
     @Override

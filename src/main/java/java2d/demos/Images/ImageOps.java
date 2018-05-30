@@ -193,7 +193,7 @@ public class ImageOps extends ControlsSurface implements ChangeListener {
 
         @SuppressWarnings("LeakingThisInConstructor")
         public DemoControls(ImageOps demo) {
-            super(demo.name);
+            super(demo.getName());
             this.demo = demo;
             add(imgCombo = new JComboBox());
             imgCombo.setFont(font);

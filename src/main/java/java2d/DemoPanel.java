@@ -91,7 +91,7 @@ public class DemoPanel extends JPanel {
         }
         if (tools != null && surface != null) {
             if (tools.getStartStopButton() != null && tools.getStartStopButton().isSelected()) {
-                surface.animating.start();
+                surface.getAnimating().start();
             }
         }
         if (ccc != null
@@ -103,10 +103,10 @@ public class DemoPanel extends JPanel {
 
     public void stop() {
         if (surface != null) {
-            if (surface.animating != null) {
-                surface.animating.stop();
+            if (surface.getAnimating() != null) {
+                surface.getAnimating().stop();
             }
-            surface.bimg = null;
+            surface.setBimg(null);
         }
         if (ccc != null) {
             ccc.handleThread(STOP);

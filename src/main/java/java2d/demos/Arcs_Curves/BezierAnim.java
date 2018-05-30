@@ -32,12 +32,6 @@
 package java2d.demos.Arcs_Curves;
 
 
-import static java.awt.Color.BLUE;
-import static java.awt.Color.GRAY;
-import static java.awt.Color.GREEN;
-import static java.awt.Color.RED;
-import static java.awt.Color.WHITE;
-import static java.awt.Color.YELLOW;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
@@ -60,6 +54,13 @@ import javax.swing.Icon;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+
+import static java.awt.Color.BLUE;
+import static java.awt.Color.GRAY;
+import static java.awt.Color.GREEN;
+import static java.awt.Color.RED;
+import static java.awt.Color.WHITE;
+import static java.awt.Color.YELLOW;
 
 
 /**
@@ -213,7 +214,7 @@ public class BezierAnim extends AnimatingControlsSurface {
 
         @SuppressWarnings("LeakingThisInConstructor")
         public DemoControls(BezierAnim demo) {
-            super(demo.name);
+            super(demo.getName());
             this.demo = demo;
 
             JMenuBar drawMenuBar = new JMenuBar();
@@ -275,7 +276,7 @@ public class BezierAnim extends AnimatingControlsSurface {
             } else if (obj.equals(drawMI[0])) {
                 demo.doDraw = false;
             }
-            if (!demo.animating.running()) {
+            if (!demo.getAnimating().running()) {
                 demo.repaint();
             }
         }

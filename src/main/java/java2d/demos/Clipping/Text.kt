@@ -209,7 +209,7 @@ class Text : ControlsSurface()
 
         @JvmStatic
         fun main(args: Array<String>) {
-            Surface.createDemoFrame(Text())
+            createDemoFrame(Text())
         }
     }
 }

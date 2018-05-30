@@ -32,16 +32,6 @@
 package java2d.demos.Colors;
 
 
-import static java.awt.Color.black;
-import static java.awt.Color.blue;
-import static java.awt.Color.cyan;
-import static java.awt.Color.green;
-import static java.awt.Color.magenta;
-import static java.awt.Color.orange;
-import static java.awt.Color.pink;
-import static java.awt.Color.red;
-import static java.awt.Color.white;
-import static java.awt.Color.yellow;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
@@ -55,6 +45,17 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
 import java2d.Surface;
+
+import static java.awt.Color.black;
+import static java.awt.Color.blue;
+import static java.awt.Color.cyan;
+import static java.awt.Color.green;
+import static java.awt.Color.magenta;
+import static java.awt.Color.orange;
+import static java.awt.Color.pink;
+import static java.awt.Color.red;
+import static java.awt.Color.white;
+import static java.awt.Color.yellow;
 
 
 /**

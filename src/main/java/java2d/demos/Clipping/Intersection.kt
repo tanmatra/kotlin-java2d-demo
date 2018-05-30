@@ -33,7 +33,6 @@ package java2d.demos.Clipping
 
 import java2d.AnimatingControlsSurface
 import java2d.CustomControls
-import java2d.Surface
 import java2d.createToolButton
 import java.awt.Color
 import java.awt.Dimension
@@ -195,7 +194,7 @@ class Intersection : AnimatingControlsSurface()
         private fun addTool(title: String, state: Boolean, property: KMutableProperty0<Boolean>) {
             toolbar.add(createToolButton(title, state) { selected ->
                 property.set(selected)
-                if (!demo.animating.running()) {
+                if (!demo.animating!!.running()) {
                     demo.repaint()
                 }
             })
@@ -229,7 +228,7 @@ class Intersection : AnimatingControlsSurface()
 
         @JvmStatic
         fun main(argv: Array<String>) {
-            Surface.createDemoFrame(Intersection())
+            createDemoFrame(Intersection())
         }
     }
 }

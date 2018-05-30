@@ -179,7 +179,7 @@ public class PerformanceMonitor extends JPanel {
                 int ssH = 1;
                 for (Component comp : panel.getComponents()) {
                     if (((DemoPanel) comp).surface != null) {
-                        String pStr = ((DemoPanel) comp).surface.perfStr;
+                        String pStr = ((DemoPanel) comp).surface.getPerfStr();
                         if (pStr != null) {
                             ssH += ascent;
                             big.drawString(pStr, 4, ssH + 1);

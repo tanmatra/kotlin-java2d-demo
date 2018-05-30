@@ -32,10 +32,6 @@
 package java2d.demos.Fonts;
 
 
-import static java.awt.Color.BLACK;
-import static java.awt.Color.CYAN;
-import static java.awt.Color.LIGHT_GRAY;
-import static java.awt.Color.WHITE;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
@@ -46,6 +42,11 @@ import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java2d.AnimatingSurface;
+
+import static java.awt.Color.BLACK;
+import static java.awt.Color.CYAN;
+import static java.awt.Color.LIGHT_GRAY;
+import static java.awt.Color.WHITE;
 
 
 /**

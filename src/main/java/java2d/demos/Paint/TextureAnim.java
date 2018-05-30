@@ -32,10 +32,6 @@
 package java2d.demos.Paint;
 
 
-import static java.awt.Color.BLACK;
-import static java.awt.Color.GRAY;
-import static java.awt.Color.LIGHT_GRAY;
-import static java.awt.Color.WHITE;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -58,6 +54,11 @@ import javax.swing.JMenuItem;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.plaf.metal.MetalBorders.ButtonBorder;
+
+import static java.awt.Color.BLACK;
+import static java.awt.Color.GRAY;
+import static java.awt.Color.LIGHT_GRAY;
+import static java.awt.Color.WHITE;
 
 
 /**
@@ -307,7 +308,7 @@ public final class TextureAnim extends AnimatingControlsSurface {
 
         @SuppressWarnings("LeakingThisInConstructor")
         public DemoControls(TextureAnim demo) {
-            super(demo.name);
+            super(demo.getName());
             this.demo = demo;
             menuitems = new JMenuItem[3];
             add(toolbar = new JToolBar());
@@ -389,7 +390,7 @@ public final class TextureAnim extends AnimatingControlsSurface {
                     demo.sheary = b.isSelected();
                 }
             }
-            if (!demo.animating.running()) {
+            if (!demo.getAnimating().running()) {
                 demo.repaint();
             }
         }
