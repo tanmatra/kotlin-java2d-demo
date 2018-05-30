@@ -32,8 +32,6 @@
 package java2d;
 
 
-import static java2d.CustomControlsContext.State.START;
-import static java2d.CustomControlsContext.State.STOP;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.util.logging.Level;
@@ -43,6 +41,9 @@ import javax.swing.border.BevelBorder;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.SoftBevelBorder;
+
+import static java2d.CustomControlsContext.State.START;
+import static java2d.CustomControlsContext.State.STOP;
 
 
 /**
@@ -94,8 +95,8 @@ public class DemoPanel extends JPanel {
             }
         }
         if (ccc != null
-                && Java2Demo.ccthreadCB != null
-                && Java2Demo.ccthreadCB.isSelected()) {
+                && Java2Demo.Companion.getCcthreadCB() != null
+                && Java2Demo.Companion.getCcthreadCB().isSelected()) {
             ccc.handleThread(START);
         }
     }

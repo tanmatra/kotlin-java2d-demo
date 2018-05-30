@@ -32,10 +32,6 @@
 package java2d;
 
 
-import static java.awt.Color.GRAY;
-import static java.awt.Color.GREEN;
-import static java.awt.Color.LIGHT_GRAY;
-import static java.awt.Color.WHITE;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
@@ -60,6 +56,11 @@ import java.awt.image.BufferedImage;
 import javax.swing.JPanel;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
+
+import static java.awt.Color.GRAY;
+import static java.awt.Color.GREEN;
+import static java.awt.Color.LIGHT_GRAY;
+import static java.awt.Color.WHITE;
 
 
 /**
@@ -161,9 +162,9 @@ public final class TextureChooser extends JPanel {
                     }
 
                     // ABP
-                    if (Java2Demo.controls.textureCB.isSelected()) {
-                        Java2Demo.controls.textureCB.doClick();
-                        Java2Demo.controls.textureCB.doClick();
+                    if (Java2Demo.Companion.getControls().textureCB.isSelected()) {
+                        Java2Demo.Companion.getControls().textureCB.doClick();
+                        Java2Demo.Companion.getControls().textureCB.doClick();
                     }
                 }
 

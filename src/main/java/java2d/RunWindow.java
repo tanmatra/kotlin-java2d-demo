@@ -91,12 +91,12 @@ public class RunWindow extends JPanel implements Runnable, ActionListener {
         runB.setBackground(GREEN);
         runB.addActionListener(this);
         runB.setMinimumSize(new Dimension(70, 30));
-        Java2Demo.addToGridBag(this, runB, 0, 0, 1, 1, 0.0, 0.0);
+        Java2Demo.Companion.addToGridBag(this, runB, 0, 0, 1, 1, 0.0, 0.0);
 
         pb = new JProgressBar();
         pb.setPreferredSize(new Dimension(100, 30));
         pb.setMinimum(0);
-        Java2Demo.addToGridBag(this, pb, 1, 0, 2, 1, 1.0, 0.0);
+        Java2Demo.Companion.addToGridBag(this, pb, 1, 0, 2, 1, 1.0, 0.0);
 
         JPanel p1 = new JPanel(new GridLayout(2, 2));
         JPanel p2 = new JPanel();
@@ -124,13 +124,13 @@ public class RunWindow extends JPanel implements Runnable, ActionListener {
         p1.add(zoomCB);
         p1.add(printCB);
         printCB.addActionListener(this);
-        Java2Demo.addToGridBag(this, p1, 0, 1, 3, 1, 1.0, 1.0);
+        Java2Demo.Companion.addToGridBag(this, p1, 0, 1, 3, 1, 1.0, 1.0);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource().equals(printCB)) {
-            Java2Demo.printCB.setSelected(printCB.isSelected());
+            Java2Demo.Companion.getPrintCB().setSelected(printCB.isSelected());
         } else if (e.getSource().equals(delayTextField)) {
             delay = Integer.parseInt(delayTextField.getText().trim());
         } else if (e.getSource().equals(runsTextField)) {
@@ -188,8 +188,8 @@ public class RunWindow extends JPanel implements Runnable, ActionListener {
 
             @Override
             public void run() {
-                if (!Java2Demo.controls.toolBarCB.isSelected()) {
-                    Java2Demo.controls.toolBarCB.setSelected(true);
+                if (!Java2Demo.Companion.getControls().toolBarCB.isSelected()) {
+                    Java2Demo.Companion.getControls().toolBarCB.setSelected(true);
                     dg.invalidate();
                 }
                 for (Component comp : dg.getPanel().getComponents()) {
@@ -228,7 +228,7 @@ public class RunWindow extends JPanel implements Runnable, ActionListener {
             float totalMemory = r.totalMemory();
             System.out.println(((totalMemory - freeMemory) / 1024) + "K used");
 
-            for (int i = 0; i < Java2Demo.tabbedPane.getTabCount() && thread
+            for (int i = 0; i < Java2Demo.Companion.getTabbedPane().getTabCount() && thread
                     != null; i++) {
 
                 final int mainTabIndex = i;
@@ -239,10 +239,10 @@ public class RunWindow extends JPanel implements Runnable, ActionListener {
                         pb.setValue(0);
                         pb.setMaximum(delay);
                         if (mainTabIndex != 0) {
-                            dg = Java2Demo.group[mainTabIndex - 1];
+                            dg = Java2Demo.Companion.getGroup()[mainTabIndex - 1];
                             dg.invalidate();
                         }
-                        Java2Demo.tabbedPane.setSelectedIndex(mainTabIndex);
+                        Java2Demo.Companion.getTabbedPane().setSelectedIndex(mainTabIndex);
                     }
                 };
                 invokeAndWait(initDemoRunnable);

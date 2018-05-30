@@ -32,10 +32,6 @@
 package java2d;
 
 
-import static java.awt.Color.BLACK;
-import static java.awt.Color.GREEN;
-import static java.awt.Color.LIGHT_GRAY;
-import static java.awt.Color.WHITE;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -70,6 +66,11 @@ import javax.swing.SwingConstants;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
+import static java.awt.Color.BLACK;
+import static java.awt.Color.GREEN;
+import static java.awt.Color.LIGHT_GRAY;
+import static java.awt.Color.WHITE;
 
 
 /**
@@ -398,7 +399,7 @@ public final class Tools extends JPanel implements ActionListener,
             boolean pDialogState = true;
             PrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
 
-            if (!Java2Demo.printCB.isSelected()) {
+            if (!Java2Demo.Companion.getPrintCB().isSelected()) {
                 pDialogState = printJob.printDialog(aset);
             }
             if (pDialogState) {

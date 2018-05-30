@@ -153,8 +153,8 @@ class DemoGroup(private val groupName: String) : JPanel(), ChangeListener, Actio
                     c.tools.cloneB = c.tools.addTool(cloneImg, "Clone the Surface", this)
                     val d = c.tools.toolbar.preferredSize
                     c.tools.toolbar.preferredSize = Dimension(d.width + 27, d.height)
-                    if (Java2Demo.backgroundColor != null) {
-                        c.surface.background = Java2Demo.backgroundColor
+                    Java2Demo.backgroundColor?.let { backgroundColor ->
+                        c.surface.background = backgroundColor
                     }
                 }
                 clonePanels[i].add(c)
@@ -236,8 +236,8 @@ class DemoGroup(private val groupName: String) : JPanel(), ChangeListener, Actio
                     dp.surface.verbose()
                 }
                 dp.surface.setSleepAmount(c.slider.value.toLong())
-                if (Java2Demo.backgroundColor != null) {
-                    dp.surface.background = Java2Demo.backgroundColor
+                Java2Demo.backgroundColor?.let { backgroundColor ->
+                    dp.surface.background = backgroundColor
                 }
                 t.issueRepaint = true
             }
@@ -269,8 +269,8 @@ class DemoGroup(private val groupName: String) : JPanel(), ChangeListener, Actio
         clone.tools.cloneB = clone.tools.addTool(removeImg, "Remove the Surface", this)
         val d = clone.tools.toolbar.preferredSize
         clone.tools.toolbar.preferredSize = Dimension(d.width + 27, d.height)
-        if (Java2Demo.backgroundColor != null) {
-            clone.surface.background = Java2Demo.backgroundColor
+        Java2Demo.backgroundColor?.let { backgroundColor ->
+            clone.surface.background = backgroundColor
         }
         if (Java2Demo.controls != null) {
             if (clone.tools.isExpanded != Java2Demo.controls.toolBarCB.isSelected) {

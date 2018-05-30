@@ -89,7 +89,7 @@ public class GlobalControls extends JPanel implements ItemListener,
             screenCombo.addItem(screenNames[i]);
         }
         screenCombo.addItemListener(this);
-        Java2Demo.addToGridBag(this, screenCombo, 0, 4, 1, 1, 0.0, 0.0);
+        Java2Demo.Companion.addToGridBag(this, screenCombo, 0, 4, 1, 1, 0.0, 0.0);
 
         toolBarCB = createCheckBox("Tools", false, 5);
 
@@ -100,10 +100,10 @@ public class GlobalControls extends JPanel implements ItemListener,
         tb.setTitle("Anim delay = 30 ms");
         slider.setBorder(tb);
         slider.setMinimumSize(new Dimension(80, 46));
-        Java2Demo.addToGridBag(this, slider, 0, 6, 1, 1, 1.0, 1.0);
+        Java2Demo.Companion.addToGridBag(this, slider, 0, 6, 1, 1, 1.0, 1.0);
 
         texturechooser = new TextureChooser(0);
-        Java2Demo.addToGridBag(this, texturechooser, 0, 7, 1, 1, 1.0, 1.0);
+        Java2Demo.Companion.addToGridBag(this, texturechooser, 0, 7, 1, 1, 1.0, 1.0);
     }
 
     private JCheckBox createCheckBox(String s, boolean b, int y) {
@@ -111,7 +111,7 @@ public class GlobalControls extends JPanel implements ItemListener,
         cb.setFont(font);
         cb.setHorizontalAlignment(SwingConstants.LEFT);
         cb.addItemListener(this);
-        Java2Demo.addToGridBag(this, cb, 0, y, 1, 1, 1.0, 1.0);
+        Java2Demo.Companion.addToGridBag(this, cb, 0, y, 1, 1, 1.0, 1.0);
         return cb;
     }
 
@@ -120,8 +120,8 @@ public class GlobalControls extends JPanel implements ItemListener,
         int value = slider.getValue();
         TitledBorder tb = (TitledBorder) slider.getBorder();
         tb.setTitle("Anim delay = " + String.valueOf(value) + " ms");
-        int index = Java2Demo.tabbedPane.getSelectedIndex() - 1;
-        DemoGroup dg = Java2Demo.group[index];
+        int index = Java2Demo.Companion.getTabbedPane().getSelectedIndex() - 1;
+        DemoGroup dg = Java2Demo.Companion.getGroup()[index];
         JPanel p = dg.getPanel();
         for (int i = 0; i < p.getComponentCount(); i++) {
             DemoPanel dp = (DemoPanel) p.getComponent(i);
@@ -134,10 +134,10 @@ public class GlobalControls extends JPanel implements ItemListener,
 
     @Override
     public void itemStateChanged(ItemEvent e) {
-        if (Java2Demo.tabbedPane.getSelectedIndex() != 0) {
+        if (Java2Demo.Companion.getTabbedPane().getSelectedIndex() != 0) {
             obj = e.getSource();
-            int index = Java2Demo.tabbedPane.getSelectedIndex() - 1;
-            Java2Demo.group[index].setup(true);
+            int index = Java2Demo.Companion.getTabbedPane().getSelectedIndex() - 1;
+            Java2Demo.Companion.getGroup()[index].setup(true);
             obj = null;
         }
     }

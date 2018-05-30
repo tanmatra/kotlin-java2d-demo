@@ -59,39 +59,39 @@ public class GlobalPanel extends JPanel implements ChangeListener {
         EmptyBorder eb = new EmptyBorder(5, 0, 5, 5);
         BevelBorder bb = new BevelBorder(BevelBorder.LOWERED);
         p.setBorder(new CompoundBorder(eb, bb));
-        Java2Demo.addToGridBag(p, Java2Demo.controls, 0, 0, 1, 1, 0, 0);
-        Java2Demo.addToGridBag(p, Java2Demo.memorymonitor, 0, 1, 1, 1, 0, 0);
-        Java2Demo.addToGridBag(p, Java2Demo.performancemonitor, 0, 2, 1, 1, 0, 0);
-        add(Java2Demo.intro);
+        Java2Demo.Companion.addToGridBag(p, Java2Demo.Companion.getControls(), 0, 0, 1, 1, 0, 0);
+        Java2Demo.Companion.addToGridBag(p, Java2Demo.Companion.getMemorymonitor(), 0, 1, 1, 1, 0, 0);
+        Java2Demo.Companion.addToGridBag(p, Java2Demo.Companion.getPerformancemonitor(), 0, 2, 1, 1, 0, 0);
+        add(Java2Demo.Companion.getIntro());
     }
 
     @Override
     public void stateChanged(ChangeEvent e) {
 
-        Java2Demo.group[index].shutDown(Java2Demo.group[index].getPanel());
-        if (Java2Demo.tabbedPane.getSelectedIndex() == 0) {
-            Java2Demo.memorymonitor.surf.stop();
-            Java2Demo.performancemonitor.surf.stop();
+        Java2Demo.Companion.getGroup()[index].shutDown(Java2Demo.Companion.getGroup()[index].getPanel());
+        if (Java2Demo.Companion.getTabbedPane().getSelectedIndex() == 0) {
+            Java2Demo.Companion.getMemorymonitor().surf.stop();
+            Java2Demo.Companion.getPerformancemonitor().surf.stop();
             removeAll();
-            add(Java2Demo.intro);
-            Java2Demo.intro.start();
+            add(Java2Demo.Companion.getIntro());
+            Java2Demo.Companion.getIntro().start();
         } else {
             if (getComponentCount() == 1) {
-                Java2Demo.intro.stop();
-                remove(Java2Demo.intro);
+                Java2Demo.Companion.getIntro().stop();
+                remove(Java2Demo.Companion.getIntro());
                 add(p, BorderLayout.EAST);
-                if (Java2Demo.memoryCB.getState()) {
-                    Java2Demo.memorymonitor.surf.start();
+                if (Java2Demo.Companion.getMemoryCB().getState()) {
+                    Java2Demo.Companion.getMemorymonitor().surf.start();
                 }
-                if (Java2Demo.perfCB.getState()) {
-                    Java2Demo.performancemonitor.surf.start();
+                if (Java2Demo.Companion.getPerfCB().getState()) {
+                    Java2Demo.Companion.getPerformancemonitor().surf.start();
                 }
             } else {
-                remove(Java2Demo.group[index]);
+                remove(Java2Demo.Companion.getGroup()[index]);
             }
-            index = Java2Demo.tabbedPane.getSelectedIndex() - 1;
-            add(Java2Demo.group[index]);
-            Java2Demo.group[index].setup(false);
+            index = Java2Demo.Companion.getTabbedPane().getSelectedIndex() - 1;
+            add(Java2Demo.Companion.getGroup()[index]);
+            Java2Demo.Companion.getGroup()[index].setup(false);
         }
         revalidate();
     }

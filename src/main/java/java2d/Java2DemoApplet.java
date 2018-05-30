@@ -97,19 +97,19 @@ public class Java2DemoApplet extends JApplet {
         progressPanel.add(Box.createGlue());
 
         Dimension d = new Dimension(400, 20);
-        Java2Demo.progressLabel = new JLabel("Loading, please wait...");
-        Java2Demo.progressLabel.setMaximumSize(d);
-        progressPanel.add(Java2Demo.progressLabel);
+        Java2Demo.Companion.setProgressLabel(new JLabel("Loading, please wait..."));
+        Java2Demo.Companion.getProgressLabel().setMaximumSize(d);
+        progressPanel.add(Java2Demo.Companion.getProgressLabel());
         progressPanel.add(Box.createRigidArea(new Dimension(1, 20)));
 
-        Java2Demo.progressBar = new JProgressBar();
-        Java2Demo.progressBar.setStringPainted(true);
-        Java2Demo.progressLabel.setLabelFor(Java2Demo.progressBar);
-        Java2Demo.progressBar.setAlignmentX(CENTER_ALIGNMENT);
-        Java2Demo.progressBar.setMaximumSize(d);
-        Java2Demo.progressBar.setMinimum(0);
-        Java2Demo.progressBar.setValue(0);
-        progressPanel.add(Java2Demo.progressBar);
+        Java2Demo.Companion.setProgressBar(new JProgressBar());
+        Java2Demo.Companion.getProgressBar().setStringPainted(true);
+        Java2Demo.Companion.getProgressLabel().setLabelFor(Java2Demo.Companion.getProgressBar());
+        Java2Demo.Companion.getProgressBar().setAlignmentX(CENTER_ALIGNMENT);
+        Java2Demo.Companion.getProgressBar().setMaximumSize(d);
+        Java2Demo.Companion.getProgressBar().setMinimum(0);
+        Java2Demo.Companion.getProgressBar().setValue(0);
+        progressPanel.add(Java2Demo.Companion.getProgressBar());
         progressPanel.add(Box.createGlue());
         progressPanel.add(Box.createGlue());
 
@@ -119,10 +119,10 @@ public class Java2DemoApplet extends JApplet {
         validate();
         setVisible(true);
 
-        Java2Demo.demo = new Java2Demo();
+        Java2Demo.Companion.setDemo(new Java2Demo());
         getContentPane().remove(panel);
         getContentPane().setLayout(new BorderLayout());
-        getContentPane().add(Java2Demo.demo, BorderLayout.CENTER);
+        getContentPane().add(Java2Demo.Companion.getDemo(), BorderLayout.CENTER);
 
         String param = null;
 
@@ -130,25 +130,25 @@ public class Java2DemoApplet extends JApplet {
             RunWindow.delay = Integer.parseInt(param);
         }
         if (getParameter("ccthread") != null) {
-            Java2Demo.ccthreadCB.setSelected(true);
+            Java2Demo.Companion.getCcthreadCB().setSelected(true);
         }
         if ((param = getParameter("screen")) != null) {
             GlobalControls.screenCombo.setSelectedIndex(Integer.parseInt(param));
         }
         if ((param = getParameter("antialias")) != null) {
-            Java2Demo.controls.aliasCB.setSelected(param.endsWith("true"));
+            Java2Demo.Companion.getControls().aliasCB.setSelected(param.endsWith("true"));
         }
         if ((param = getParameter("rendering")) != null) {
-            Java2Demo.controls.renderCB.setSelected(param.endsWith("true"));
+            Java2Demo.Companion.getControls().renderCB.setSelected(param.endsWith("true"));
         }
         if ((param = getParameter("texture")) != null) {
-            Java2Demo.controls.textureCB.setSelected(param.endsWith("true"));
+            Java2Demo.Companion.getControls().textureCB.setSelected(param.endsWith("true"));
         }
         if ((param = getParameter("composite")) != null) {
-            Java2Demo.controls.compositeCB.setSelected(param.endsWith("true"));
+            Java2Demo.Companion.getControls().compositeCB.setSelected(param.endsWith("true"));
         }
         if (getParameter("verbose") != null) {
-            Java2Demo.verboseCB.setSelected(true);
+            Java2Demo.Companion.getVerboseCB().setSelected(true);
         }
         if ((param = getParameter("columns")) != null) {
             DemoGroup.Companion.setColumns(Integer.parseInt(param));
@@ -167,7 +167,7 @@ public class Java2DemoApplet extends JApplet {
         }
         if ((param = getParameter("runs")) != null) {
             RunWindow.numRuns = Integer.parseInt(param);
-            Java2Demo.demo.createRunWindow();
+            Java2Demo.Companion.getDemo().createRunWindow();
             RunWindow.runB.doClick();
         }
         validate();
@@ -185,11 +185,11 @@ public class Java2DemoApplet extends JApplet {
 
     @Override
     public void start() {
-        Java2Demo.demo.start();
+        Java2Demo.Companion.getDemo().start();
     }
 
     @Override
     public void stop() {
-        Java2Demo.demo.stop();
+        Java2Demo.Companion.getDemo().stop();
     }
 }
