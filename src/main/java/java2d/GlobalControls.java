@@ -125,8 +125,8 @@ public class GlobalControls extends JPanel implements ItemListener,
         JPanel p = dg.getPanel();
         for (int i = 0; i < p.getComponentCount(); i++) {
             DemoPanel dp = (DemoPanel) p.getComponent(i);
-            if (dp.tools != null && dp.tools.slider != null) {
-                dp.tools.slider.setValue(value);
+            if (dp.tools != null && dp.tools.getSlider() != null) {
+                dp.tools.getSlider().setValue(value);
             }
         }
         slider.repaint();

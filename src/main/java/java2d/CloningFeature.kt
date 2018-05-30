@@ -128,7 +128,7 @@ class CloningFeature : JPanel(), Runnable
                 }
                 EventQueue.invokeLater {
                     textArea.append("   Cloning\n")
-                    tools.cloneB.doClick()
+                    tools.cloneB!!.doClick()
                 }
                 Thread.sleep(3333)
             }
@@ -164,7 +164,7 @@ class CloningFeature : JPanel(), Runnable
                         }
                         3 -> {
                             textArea.append("   Removing a clone\n")
-                            tools.cloneB.doClick()
+                            tools.cloneB!!.doClick()
                         }
                     }
                 }

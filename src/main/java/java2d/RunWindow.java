@@ -197,10 +197,10 @@ public class RunWindow extends JPanel implements Runnable, ActionListener {
                     if (dp.tools != null) {
                         if (dp.surface.animating != null) {
                             if (dp.surface.animating.running()) {
-                                dp.tools.startStopB.doClick();
+                                dp.tools.getStartStopB().doClick();
                             }
                         }
-                        dp.tools.printB.doClick();
+                        dp.tools.getPrintB().doClick();
                     }
                 }
             }
@@ -289,17 +289,17 @@ public class RunWindow extends JPanel implements Runnable, ActionListener {
 
                                     @Override
                                     public void run() {
-                                        dp.tools.cloneB.doClick();
+                                        dp.tools.getCloneB().doClick();
                                         int n = p.getComponentCount();
                                         DemoPanel clone = (DemoPanel) p.
                                                 getComponent(n - 1);
                                         if (clone.surface.animating != null) {
                                             clone.surface.animating.stop();
                                         }
-                                        clone.tools.issueRepaint = true;
-                                        clone.tools.screenCombo.setSelectedIndex(
+                                        clone.tools.setIssueRepaint(true);
+                                        clone.tools.getScreenCombo().setSelectedIndex(
                                                 cloneIndex);
-                                        clone.tools.issueRepaint = false;
+                                        clone.tools.setIssueRepaint(false);
                                     }
                                 };
                                 invokeAndWait(cloneRunnable);
