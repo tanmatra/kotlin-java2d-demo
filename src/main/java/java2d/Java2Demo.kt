@@ -513,7 +513,7 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
                     Java2Demo.verboseCB.isSelected = true
                 } else if (arg.startsWith("-print")) {
                     Java2Demo.printCB.isSelected = true
-                    RunWindow.printCB.isSelected = true
+                    RunWindow.printCheckBox.isSelected = true
                 } else if (arg.startsWith("-columns=")) {
                     DemoGroup.columns = Integer.parseInt(s)
                 } else if (arg.startsWith("-buffers=")) {
@@ -528,7 +528,7 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
                 } else if (arg.startsWith("-ccthread")) {
                     Java2Demo.ccthreadCB.isSelected = true
                 } else if (arg.startsWith("-zoom")) {
-                    RunWindow.zoomCB.isSelected = true
+                    RunWindow.zoomCheckBox.isSelected = true
                 } else if (arg.startsWith("-maxscreen")) {
                     frame.setLocation(0, 0)
                     frame.setSize(d.width, d.height)

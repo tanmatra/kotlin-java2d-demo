@@ -132,11 +132,11 @@ class Java2DemoApplet : JApplet()
             s1 = it.substring(i + 1, it.length)
             RunWindow.bufEnd = Integer.parseInt(s1)
         }
-        getParameter("zoom")?.let { RunWindow.zoomCB.isSelected = true }
+        getParameter("zoom")?.let { RunWindow.zoomCheckBox.isSelected = true }
         getParameter("runs")?.let {
             RunWindow.numRuns = Integer.parseInt(it)
             Java2Demo.demo!!.createRunWindow()
-            RunWindow.runB.doClick()
+            RunWindow.runButton.doClick()
         }
         validate()
         repaint()

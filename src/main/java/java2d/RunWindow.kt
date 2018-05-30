@@ -31,18 +31,14 @@
  */
 package java2d
 
-import java.awt.Color.BLACK
-import java.awt.Color.GREEN
-import java.awt.Color.RED
+import java.awt.Color
 import java.awt.Dimension
+import java.awt.EventQueue
 import java.awt.Font
 import java.awt.GridBagLayout
 import java.awt.GridLayout
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
 import java.util.Date
 import java.util.logging.Level
-import java.util.logging.Logger
 import javax.swing.JButton
 import javax.swing.JCheckBox
 import javax.swing.JLabel
@@ -50,7 +46,6 @@ import javax.swing.JPanel
 import javax.swing.JProgressBar
 import javax.swing.JTextField
 import javax.swing.SwingConstants
-import javax.swing.SwingUtilities
 import javax.swing.border.BevelBorder
 import javax.swing.border.CompoundBorder
 import javax.swing.border.EmptyBorder
@@ -59,96 +54,96 @@ import javax.swing.border.EmptyBorder
  * A separate window for running the Java2Demo.  Go from tab to tab or demo to
  * demo.
  */
-class RunWindow : JPanel(), Runnable, ActionListener
+class RunWindow : JPanel(GridBagLayout()), Runnable
 {
-    private var delayTextField: JTextField? = null
-    private var runsTextField: JTextField? = null
+    private val delayTextField: JTextField
+    private val runsTextField: JTextField
     private var thread: Thread? = null
-    private val pb: JProgressBar
-    private var dg: DemoGroup? = null
-    private var dp: DemoPanel? = null
+    private val progressBar: JProgressBar
+    private var demoGroup: DemoGroup? = null
+    private var demoPanel: DemoPanel? = null
 
     init {
-        layout = GridBagLayout()
-        val eb = EmptyBorder(5, 5, 5, 5)
-        border = CompoundBorder(eb, BevelBorder(BevelBorder.LOWERED))
+        border = CompoundBorder(EmptyBorder(5, 5, 5, 5), BevelBorder(BevelBorder.LOWERED))
 
-        val font = Font("serif", Font.PLAIN, 10)
+        runButton = JButton("Run").apply {
+            background = Color.GREEN
+            addActionListener {
+                if (text == "Run") {
+                    doRunAction()
+                } else {
+                    stop()
+                }
+            }
+            minimumSize = Dimension(70, 30)
+        }
+        Java2Demo.addToGridBag(this, runButton, 0, 0, 1, 1, 0.0, 0.0)
 
-        runB = JButton("Run")
-        runB.background = GREEN
-        runB.addActionListener(this)
-        runB.minimumSize = Dimension(70, 30)
-        Java2Demo.addToGridBag(this, runB, 0, 0, 1, 1, 0.0, 0.0)
-
-        pb = JProgressBar()
-        pb.preferredSize = Dimension(100, 30)
-        pb.minimum = 0
-        Java2Demo.addToGridBag(this, pb, 1, 0, 2, 1, 1.0, 0.0)
+        progressBar = JProgressBar().apply {
+            preferredSize = Dimension(100, 30)
+            minimum = 0
+        }
+        Java2Demo.addToGridBag(this, progressBar, 1, 0, 2, 1, 1.0, 0.0)
 
         val p1 = JPanel(GridLayout(2, 2))
         var p2 = JPanel()
-        var l = JLabel("Runs:")
-        l.font = font
-        l.foreground = BLACK
-        p2.add(l)
-        runsTextField = JTextField(numRuns.toString())
-        p2.add(runsTextField)
-        runsTextField!!.preferredSize = Dimension(30, 20)
-        runsTextField!!.addActionListener(this)
+        p2.add(JLabel("Runs:").apply {
+            font = FONT
+            foreground = Color.BLACK
+        })
+
+        runsTextField = JTextField(numRuns.toString()).apply {
+            preferredSize = Dimension(30, 20)
+            addActionListener {
+                numRuns = Integer.parseInt(text.trim())
+            }
+        }.also {
+            p2.add(it)
+        }
+
         p1.add(p2)
         p2 = JPanel()
-        l = JLabel("Delay:")
-        l.font = font
-        l.foreground = BLACK
-        p2.add(l)
-        delayTextField = JTextField(delay.toString())
-        p2.add(delayTextField)
-        delayTextField!!.preferredSize = Dimension(30, 20)
-        delayTextField!!.addActionListener(this)
+        p2.add(JLabel("Delay:").apply {
+            font = FONT
+            foreground = Color.BLACK
+        })
+        delayTextField = JTextField(delay.toString()).apply {
+            preferredSize = Dimension(30, 20)
+            addActionListener {
+                delay = Integer.parseInt(text.trim())
+            }
+        }.also {
+            p2.add(it)
+        }
         p1.add(p2)
 
-        zoomCB.horizontalAlignment = SwingConstants.CENTER
-        zoomCB.font = font
-        printCB.font = font
-        p1.add(zoomCB)
-        p1.add(printCB)
-        printCB.addActionListener(this)
+        zoomCheckBox.horizontalAlignment = SwingConstants.CENTER
+        zoomCheckBox.font = FONT
+        printCheckBox.font = FONT
+        p1.add(zoomCheckBox)
+        p1.add(printCheckBox)
+        printCheckBox.addActionListener {
+            Java2Demo.printCB.isSelected = printCheckBox.isSelected
+        }
         Java2Demo.addToGridBag(this, p1, 0, 1, 3, 1, 1.0, 1.0)
     }
 
-    override fun actionPerformed(e: ActionEvent) {
-        if (e.source == printCB) {
-            Java2Demo.printCB.isSelected = printCB.isSelected
-        } else if (e.source == delayTextField) {
-            delay = Integer.parseInt(delayTextField!!.text.trim { it <= ' ' })
-        } else if (e.source == runsTextField) {
-            numRuns = Integer.parseInt(runsTextField!!.text.trim { it <= ' ' })
-        } else if ("Run" == e.actionCommand) {
-            doRunAction()
-        } else if ("Stop" == e.actionCommand) {
-            stop()
-        }
-    }
-
     fun doRunAction() {
-        runB.text = "Stop"
-        runB.background = RED
+        runButton.text = "Stop"
+        runButton.background = Color.RED
         start()
     }
 
     fun start() {
-        thread = Thread(this)
-        thread!!.priority = Thread.NORM_PRIORITY + 1
-        thread!!.name = "RunWindow"
-        thread!!.start()
+        thread = Thread(this, "RunWindow").apply {
+            priority = Thread.NORM_PRIORITY + 1
+            start()
+        }
     }
 
     @Synchronized
     fun stop() {
-        if (thread != null) {
-            thread!!.interrupt()
-        }
+        thread?.interrupt()
         thread = null
         @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
         (this as java.lang.Object).notifyAll()
@@ -166,14 +161,13 @@ class RunWindow : JPanel(), Runnable, ActionListener
 
                 k++
             }
-            val pbUpdateRunnable = Runnable { pb.value = pb.value + 1 }
-            SwingUtilities.invokeLater(pbUpdateRunnable)
+            EventQueue.invokeLater { progressBar.value = progressBar.value + 1 }
             j++
         }
     }
 
     private fun printDemo(dg: DemoGroup?) {
-        val printDemoRunnable = Runnable {
+        invokeAndWait {
             if (!Java2Demo.controls.toolBarCB.isSelected) {
                 Java2Demo.controls.toolBarCB.isSelected = true
                 dg!!.invalidate()
@@ -190,97 +184,85 @@ class RunWindow : JPanel(), Runnable, ActionListener
                 }
             }
         }
-        invokeAndWait(printDemoRunnable)
     }
 
     override fun run() {
-
-        println(
-            "\nJava2D Demo RunWindow : " + numRuns + " Runs, "
-                    + delay + " second delay between tabs\n" + "java version: " + System.getProperty("java.version") + "\n" + System.getProperty(
-                "os.name"
-                                                                                                                                                ) + " " + System.getProperty(
-                "os.version"
-                                                                                                                                                                            ) + "\n"
-               )
-        val r = Runtime.getRuntime()
+        val javaVersion = System.getProperty("java.version")
+        val osName = System.getProperty("os.name")
+        val osVersion = System.getProperty("os.version")
+        println("\nJava2D Demo RunWindow : $numRuns Runs, $delay second delay between tabs\n" +
+                "java version: $javaVersion\n" +
+                "$osName $osVersion\n")
+        val runtime = Runtime.getRuntime()
 
         var runNum = 0
         while (runNum < numRuns && thread != null) {
-
-            val d = Date()
-            print("#" + runNum + " " + d.toString() + ", ")
-            r.gc()
-            val freeMemory = r.freeMemory().toFloat()
-            val totalMemory = r.totalMemory().toFloat()
-            println(((totalMemory - freeMemory) / 1024).toString() + "K used")
+            val date = Date()
+            print("#$runNum $date, ")
+            runtime.gc()
+            val freeMemory = runtime.freeMemory().toFloat()
+            val totalMemory = runtime.totalMemory().toFloat()
+            println("${((totalMemory - freeMemory) / 1024)}K used")
 
             var i = 0
             while (i < Java2Demo.tabbedPane.tabCount && thread != null) {
 
                 val mainTabIndex = i
-                val initDemoRunnable = Runnable {
-                    pb.value = 0
-                    pb.maximum = delay
+                invokeAndWait {
+                    progressBar.value = 0
+                    progressBar.maximum = delay
                     if (mainTabIndex != 0) {
-                        dg = Java2Demo.group[mainTabIndex - 1]
-                        dg!!.invalidate()
+                        demoGroup = Java2Demo.group[mainTabIndex - 1]
+                        demoGroup!!.invalidate()
                     }
                     Java2Demo.tabbedPane.selectedIndex = mainTabIndex
                 }
-                invokeAndWait(initDemoRunnable)
 
-                if (i != 0 && (zoomCB.isSelected || buffersFlag)) {
-                    dp = dg!!.panel.getComponent(0) as DemoPanel
-                    if (dg!!.tabbedPane == null && dp!!.surface != null) {
-                        val mouseClickedRunnable = Runnable { dg!!.mouseClicked(dp!!.surface) }
-                        invokeAndWait(mouseClickedRunnable)
+                if (i != 0 && (zoomCheckBox.isSelected || buffersFlag)) {
+                    demoPanel = demoGroup!!.panel.getComponent(0) as DemoPanel
+                    if (demoGroup!!.tabbedPane == null && demoPanel!!.surface != null) {
+                        invokeAndWait {
+                            demoGroup!!.mouseClicked(demoPanel!!.surface)
+                        }
                     }
                     var j = 1
-                    while (j < dg!!.tabbedPane!!.tabCount && thread != null) {
-
+                    while (j < demoGroup!!.tabbedPane!!.tabCount && thread != null) {
                         val subTabIndex = j
-
-                        val initPanelRunnable = Runnable {
-                            pb.value = 0
-                            pb.maximum = delay
-                            dg!!.tabbedPane!!.selectedIndex = subTabIndex
+                        invokeAndWait {
+                            progressBar.value = 0
+                            progressBar.maximum = delay
+                            demoGroup!!.tabbedPane!!.selectedIndex = subTabIndex
                         }
-                        invokeAndWait(initPanelRunnable)
 
-                        val p = dg!!.panel
+                        val p = demoGroup!!.panel
                         if (buffersFlag && p.componentCount == 1) {
-                            dp = p.getComponent(0) as DemoPanel
-                            if (dp!!.surface.animating != null) {
-                                dp!!.surface.animating.stop()
+                            demoPanel = p.getComponent(0) as DemoPanel
+                            if (demoPanel!!.surface.animating != null) {
+                                demoPanel!!.surface.animating.stop()
                             }
                             var k = bufBeg
                             while (k <= bufEnd && thread != null) {
-
                                 val cloneIndex = k
-                                val cloneRunnable = Runnable {
-                                    dp!!.tools.cloneButton!!.doClick()
+                                invokeAndWait {
+                                    demoPanel!!.tools.cloneButton!!.doClick()
                                     val n = p.componentCount
                                     val clone = p.getComponent(n - 1) as DemoPanel
-                                    if (clone.surface.animating != null) {
-                                        clone.surface.animating.stop()
-                                    }
+                                    clone.surface.animating?.stop()
                                     clone.tools.issueRepaint = true
                                     clone.tools.screenCombo.selectedIndex = cloneIndex
                                     clone.tools.issueRepaint = false
                                 }
-                                invokeAndWait(cloneRunnable)
                                 k++
                             }
                         }
-                        if (printCB.isSelected) {
-                            printDemo(dg)
+                        if (printCheckBox.isSelected) {
+                            printDemo(demoGroup)
                         }
                         sleepPerTab()
                         j++
                     }
-                } else if (i != 0 && printCB.isSelected) {
-                    printDemo(dg)
+                } else if (i != 0 && printCheckBox.isSelected) {
+                    printDemo(demoGroup)
                     sleepPerTab()
                 } else {
                     sleepPerTab()
@@ -296,38 +278,35 @@ class RunWindow : JPanel(), Runnable, ActionListener
             }
             runNum++
         }
-        val resetRunnable = Runnable {
-            runB.text = "Run"
-            runB.background = GREEN
-            pb.value = 0
+        invokeAndWait {
+            runButton.text = "Run"
+            runButton.background = Color.GREEN
+            progressBar.value = 0
         }
-        invokeAndWait(resetRunnable)
 
         thread = null
-        dg = null
-        dp = null
+        demoGroup = null
+        demoPanel = null
     }
 
     companion object
     {
-        lateinit var runB: JButton
+        lateinit var runButton: JButton
         var delay = 10
         var numRuns = 20
         var exit: Boolean = false
-        var zoomCB = JCheckBox("Zoom")
-        var printCB = JCheckBox("Print")
+        val zoomCheckBox = JCheckBox("Zoom")
+        val printCheckBox = JCheckBox("Print")
         var buffersFlag: Boolean = false
         var bufBeg: Int = 0
         var bufEnd: Int = 0
+        private val FONT = Font(Font.SERIF, Font.PLAIN, 10)
 
-        private fun invokeAndWait(run: Runnable) {
+        private fun invokeAndWait(run: () -> Unit) {
             try {
-                SwingUtilities.invokeAndWait(run)
+                EventQueue.invokeAndWait(run)
             } catch (e: Exception) {
-                Logger.getLogger(RunWindow::class.java.name).log(
-                    Level.SEVERE,
-                    "ERROR in invokeAndWait", e
-                                                                )
+                getLogger<RunWindow>().log(Level.SEVERE, "ERROR in invokeAndWait", e)
             }
         }
     }
