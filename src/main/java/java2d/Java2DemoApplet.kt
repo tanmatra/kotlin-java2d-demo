@@ -126,11 +126,10 @@ class Java2DemoApplet : JApplet()
         getParameter("buffers")?.let {
             // usage -buffers=3,10
             RunWindow.buffersFlag = true
-            val i = it.indexOf(',')
-            var s1 = it.substring(0, i)
-            RunWindow.bufBeg = Integer.parseInt(s1)
-            s1 = it.substring(i + 1, it.length)
-            RunWindow.bufEnd = Integer.parseInt(s1)
+            it.split(',').let { (s1, s2) ->
+                RunWindow.bufBeg = Integer.parseInt(s1)
+                RunWindow.bufEnd = Integer.parseInt(s2)
+            }
         }
         getParameter("zoom")?.let { RunWindow.zoomCheckBox.isSelected = true }
         getParameter("runs")?.let {

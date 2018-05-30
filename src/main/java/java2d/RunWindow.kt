@@ -51,17 +51,18 @@ import javax.swing.border.CompoundBorder
 import javax.swing.border.EmptyBorder
 
 /**
- * A separate window for running the Java2Demo.  Go from tab to tab or demo to
- * demo.
+ * A separate window for running the Java2Demo.  Go from tab to tab or demo to demo.
  */
 class RunWindow : JPanel(GridBagLayout()), Runnable
 {
     private val delayTextField: JTextField
+
     private val runsTextField: JTextField
+
+    @Volatile
     private var thread: Thread? = null
+
     private val progressBar: JProgressBar
-    private var demoGroup: DemoGroup? = null
-    private var demoPanel: DemoPanel? = null
 
     init {
         border = CompoundBorder(EmptyBorder(5, 5, 5, 5), BevelBorder(BevelBorder.LOWERED))
@@ -150,37 +151,33 @@ class RunWindow : JPanel(GridBagLayout()), Runnable
     }
 
     fun sleepPerTab() {
-        var j = 0
-        while (j < delay + 1 && thread != null) {
-            var k = 0
-            while (k < 10 && thread != null) {
+        repeat(delay + 1) {
+            repeat(10) {
+                if (thread == null) return
                 try {
                     Thread.sleep(100)
                 } catch (e: Exception) {
                 }
-
-                k++
             }
             EventQueue.invokeLater { progressBar.value = progressBar.value + 1 }
-            j++
         }
     }
 
-    private fun printDemo(dg: DemoGroup?) {
+    private fun printDemo(demoGroup: DemoGroup) {
         invokeAndWait {
             if (!Java2Demo.controls.toolBarCB.isSelected) {
                 Java2Demo.controls.toolBarCB.isSelected = true
-                dg!!.invalidate()
+                demoGroup.invalidate()
             }
-            for (comp in dg!!.panel.components) {
-                val dp = comp as DemoPanel
-                if (dp.tools != null) {
-                    if (dp.surface.animating != null) {
-                        if (dp.surface.animating.running()) {
-                            dp.tools.startStopButton!!.doClick()
+            for (component in demoGroup.panel.components) {
+                val demoPanel = component as DemoPanel
+                demoPanel.tools?.let { tools ->
+                    if (demoPanel.surface.animating != null) {
+                        if (demoPanel.surface.animating.running()) {
+                            tools.startStopButton!!.doClick()
                         }
                     }
-                    dp.tools.printButton.doClick()
+                    tools.printButton.doClick()
                 }
             }
         }
@@ -204,70 +201,58 @@ class RunWindow : JPanel(GridBagLayout()), Runnable
             val totalMemory = runtime.totalMemory().toFloat()
             println("${((totalMemory - freeMemory) / 1024)}K used")
 
-            var i = 0
-            while (i < Java2Demo.tabbedPane.tabCount && thread != null) {
-
-                val mainTabIndex = i
+            for (mainTabIndex in 0 until Java2Demo.tabbedPane.tabCount) {
+                if (thread == null) break
+                val demoGroup: DemoGroup? = if (mainTabIndex != 0) Java2Demo.group[mainTabIndex - 1] else null
                 invokeAndWait {
                     progressBar.value = 0
                     progressBar.maximum = delay
-                    if (mainTabIndex != 0) {
-                        demoGroup = Java2Demo.group[mainTabIndex - 1]
-                        demoGroup!!.invalidate()
-                    }
+                    demoGroup?.invalidate()
                     Java2Demo.tabbedPane.selectedIndex = mainTabIndex
                 }
 
-                if (i != 0 && (zoomCheckBox.isSelected || buffersFlag)) {
-                    demoPanel = demoGroup!!.panel.getComponent(0) as DemoPanel
-                    if (demoGroup!!.tabbedPane == null && demoPanel!!.surface != null) {
+                if (demoGroup != null && (zoomCheckBox.isSelected || buffersFlag)) {
+                    var demoPanel: DemoPanel = demoGroup.panel.getComponent(0) as DemoPanel
+                    if (demoGroup.tabbedPane == null && demoPanel.surface != null) {
                         invokeAndWait {
-                            demoGroup!!.mouseClicked(demoPanel!!.surface)
+                            demoGroup.mouseClicked(demoPanel.surface)
                         }
                     }
-                    var j = 1
-                    while (j < demoGroup!!.tabbedPane!!.tabCount && thread != null) {
-                        val subTabIndex = j
+                    for (subTabIndex in 1 until demoGroup.tabbedPane!!.tabCount) {
+                        if (thread == null) break
                         invokeAndWait {
                             progressBar.value = 0
                             progressBar.maximum = delay
-                            demoGroup!!.tabbedPane!!.selectedIndex = subTabIndex
+                            demoGroup.tabbedPane!!.selectedIndex = subTabIndex
                         }
-
-                        val p = demoGroup!!.panel
+                        val p = demoGroup.panel
                         if (buffersFlag && p.componentCount == 1) {
                             demoPanel = p.getComponent(0) as DemoPanel
-                            if (demoPanel!!.surface.animating != null) {
-                                demoPanel!!.surface.animating.stop()
-                            }
-                            var k = bufBeg
-                            while (k <= bufEnd && thread != null) {
-                                val cloneIndex = k
+                            demoPanel.surface.animating?.stop()
+                            for (cloneIndex in bufBeg .. bufEnd) {
+                                if (thread == null) break
                                 invokeAndWait {
-                                    demoPanel!!.tools.cloneButton!!.doClick()
-                                    val n = p.componentCount
-                                    val clone = p.getComponent(n - 1) as DemoPanel
-                                    clone.surface.animating?.stop()
-                                    clone.tools.issueRepaint = true
-                                    clone.tools.screenCombo.selectedIndex = cloneIndex
-                                    clone.tools.issueRepaint = false
+                                    demoPanel.tools.cloneButton!!.doClick()
+                                    (p.getComponent(p.componentCount - 1) as DemoPanel).let { clone ->
+                                        clone.surface.animating?.stop()
+                                        clone.tools.issueRepaint = true
+                                        clone.tools.screenCombo.selectedIndex = cloneIndex
+                                        clone.tools.issueRepaint = false
+                                    }
                                 }
-                                k++
                             }
                         }
                         if (printCheckBox.isSelected) {
                             printDemo(demoGroup)
                         }
                         sleepPerTab()
-                        j++
                     }
-                } else if (i != 0 && printCheckBox.isSelected) {
+                } else if (demoGroup != null && printCheckBox.isSelected) {
                     printDemo(demoGroup)
                     sleepPerTab()
                 } else {
                     sleepPerTab()
                 }
-                i++
             }
             if (runNum + 1 == numRuns) {
                 println("Finished.")
@@ -285,8 +270,6 @@ class RunWindow : JPanel(GridBagLayout()), Runnable
         }
 
         thread = null
-        demoGroup = null
-        demoPanel = null
     }
 
     companion object
