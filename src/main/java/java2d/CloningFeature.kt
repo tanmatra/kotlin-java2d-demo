@@ -33,9 +33,11 @@ package java2d
 
 import java.awt.BorderLayout
 import java.awt.Color
+import java.awt.Component
 import java.awt.Dimension
 import java.awt.EventQueue
 import java.awt.Font
+import java.io.InterruptedIOException
 import javax.swing.JPanel
 import javax.swing.JScrollPane
 import javax.swing.JTextArea
@@ -54,9 +56,9 @@ class CloningFeature : JPanel(), Runnable
 
     private val textArea= JTextArea("Cloning Demonstrated\n\nClicking once on a demo\n").apply {
         minimumSize = Dimension(300, 500)
-        font = Font("Dialog", Font.PLAIN, 14)
-        foreground = Color.black
-        background = Color.lightGray
+        font = Font(Font.DIALOG, Font.PLAIN, 14)
+        foreground = Color.BLACK
+        background = Color.LIGHT_GRAY
         isEditable = false
     }
 
@@ -80,23 +82,24 @@ class CloningFeature : JPanel(), Runnable
     }
 
     override fun run() {
+        try {
+            runExceptionally()
+        } catch (e: Exception) {
+            // ignore
+        }
+    }
+
+    @Throws(InterruptedIOException::class)
+    private fun runExceptionally() {
         var index = Java2Demo.tabbedPane.selectedIndex
         if (index == 0) {
             Java2Demo.tabbedPane.selectedIndex = 1
-            try {
-                Thread.sleep(3333)
-            } catch (e: Exception) {
-                return
-            }
+            Thread.sleep(3333)
         }
 
         if (!Java2Demo.controls.toolBarCB.isSelected) {
             Java2Demo.controls.toolBarCB.isSelected = true
-            try {
-                Thread.sleep(2222)
-            } catch (e: Exception) {
-                return
-            }
+            Thread.sleep(2222)
         }
 
         index = Java2Demo.tabbedPane.selectedIndex - 1
@@ -111,18 +114,10 @@ class CloningFeature : JPanel(), Runnable
 
         demoGroup.mouseClicked(demoPanel.surface)
 
-        try {
-            Thread.sleep(3333)
-        } catch (e: Exception) {
-            return
-        }
+        Thread.sleep(3333)
 
         textArea.append("Clicking the ToolBar double document button\n")
-        try {
-            Thread.sleep(3333)
-        } catch (e: Exception) {
-            return
-        }
+        Thread.sleep(3333)
 
         demoPanel = demoGroup.clonePanels[0].getComponent(0) as DemoPanel
 
@@ -135,11 +130,7 @@ class CloningFeature : JPanel(), Runnable
                     textArea.append("   Cloning\n")
                     tools.cloneB.doClick()
                 }
-                try {
-                    Thread.sleep(3333)
-                } catch (e: Exception) {
-                    return
-                }
+                Thread.sleep(3333)
             }
         }
 
@@ -147,45 +138,38 @@ class CloningFeature : JPanel(), Runnable
             textArea.append("Changing attributes \n")
         }
 
-        try {
-            Thread.sleep(3333)
-        } catch (e: Exception) {
-            return
-        }
+        Thread.sleep(3333)
 
-        val cmps = demoGroup.clonePanels[0].components
-        var i = 0
-        while (i < cmps.size && thread != null) {
-            demoPanel = cmps[i] as DemoPanel
-            if (demoPanel.tools == null) {
-                i++
-                continue
+        val components: Array<out Component> = demoGroup.clonePanels[0].components
+        for ((i, component) in components.withIndex()) {
+            if (thread == null) {
+                break
             }
-            when (i) {
-                0 -> EventQueue.invokeLater {
-                    textArea.append("   Changing AntiAliasing\n")
-                    demoPanel.tools.aliasB.doClick()
-                }
-                1 -> EventQueue.invokeLater {
-                    textArea.append("   Changing Composite & Texture\n")
-                    demoPanel.tools.compositeB.doClick()
-                    demoPanel.tools.textureB.doClick()
-                }
-                2 -> EventQueue.invokeLater {
-                    textArea.append("   Changing Screen\n")
-                    demoPanel.tools.screenCombo.setSelectedIndex(4)
-                }
-                3 -> EventQueue.invokeLater {
-                    textArea.append("   Removing a clone\n")
-                    demoPanel.tools.cloneB.doClick()
+            demoPanel = component as DemoPanel
+            demoPanel.tools?.let { tools ->
+                EventQueue.invokeLater {
+                    when (i) {
+                        0 -> {
+                            textArea.append("   Changing AntiAliasing\n")
+                            tools.aliasB.doClick()
+                        }
+                        1 -> {
+                            textArea.append("   Changing Composite & Texture\n")
+                            tools.compositeB.doClick()
+                            tools.textureB.doClick()
+                        }
+                        2 -> {
+                            textArea.append("   Changing Screen\n")
+                            tools.screenCombo.setSelectedIndex(4)
+                        }
+                        3 -> {
+                            textArea.append("   Removing a clone\n")
+                            tools.cloneB.doClick()
+                        }
+                    }
                 }
             }
-            try {
-                Thread.sleep(3333)
-            } catch (e: Exception) {
-                return
-            }
-            i++
+            Thread.sleep(3333)
         }
         EventQueue.invokeLater {
             textArea.append("\nAll Done!")
