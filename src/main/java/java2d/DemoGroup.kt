@@ -69,10 +69,12 @@ class DemoGroup(private val groupName: String) : JPanel(), ChangeListener, Actio
     private var index: Int = 0
 
     val panel: JPanel
-        get() = if (tabbedPane != null) {
-            tabbedPane!!.selectedComponent as JPanel
-        } else {
-            getComponent(0) as JPanel
+        get() = tabbedPane.let { tabbedPane ->
+            if (tabbedPane != null) {
+                tabbedPane.selectedComponent as JPanel
+            } else {
+                getComponent(0) as JPanel
+            }
         }
 
     init {
@@ -95,7 +97,6 @@ class DemoGroup(private val groupName: String) : JPanel(), ChangeListener, Actio
         }
 
         val mouseListener = object : MouseAdapter() {
-
             override fun mouseClicked(e: MouseEvent) {
                 this@DemoGroup.mouseClicked(e.component)
             }
@@ -103,19 +104,19 @@ class DemoGroup(private val groupName: String) : JPanel(), ChangeListener, Actio
 
         // For each demo in the group, prepare a DemoPanel.
         for (i in 1..numDemos) {
-            val dp = DemoPanel("java2d.demos." + groupName + "." + demos[i])
-            dp.setDemoBorder(p)
-            if (dp.surface != null) {
-                dp.surface.addMouseListener(mouseListener)
-                dp.surface.setMonitor(Java2Demo.performancemonitor != null)
+            val demoPanel = DemoPanel("java2d.demos.${groupName}.${demos[i]}")
+            demoPanel.setDemoBorder(p)
+            demoPanel.surface?.run {
+                addMouseListener(mouseListener)
+                setMonitor(Java2Demo.performancemonitor != null)
             }
             if (p.layout is GridBagLayout) {
                 val x = p.componentCount % 2
                 val y = p.componentCount / 2
                 val w = if (i == numDemos) 2 else 1
-                Java2Demo.addToGridBag(p, dp, x, y, w, 1, 1.0, 1.0)
+                Java2Demo.addToGridBag(p, demoPanel, x, y, w, 1, 1.0, 1.0)
             } else {
-                p.add(dp)
+                p.add(demoPanel)
             }
         }
 
@@ -200,9 +201,9 @@ class DemoGroup(private val groupName: String) : JPanel(), ChangeListener, Actio
         val p = panel
 
         // Let PerformanceMonitor know which demos are running
-        if (Java2Demo.performancemonitor != null) {
-            Java2Demo.performancemonitor.surf.setPanel(p)
-            Java2Demo.performancemonitor.surf.setSurfaceState()
+        Java2Demo.performancemonitor?.run {
+            surf.setPanel(p)
+            surf.setSurfaceState()
         }
 
         val c = Java2Demo.controls
