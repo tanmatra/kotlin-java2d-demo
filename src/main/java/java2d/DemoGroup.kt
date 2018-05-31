@@ -216,7 +216,7 @@ class DemoGroup(private val groupName: String) : JPanel(), ChangeListener, Actio
                 t.isVisible = isValid
                 t.issueRepaint = issueRepaint
                 val b = arrayOf(t.toggleButton, t.antialiasButton, t.renderButton, t.textureButton, t.compositeB)
-                val cb = arrayOf(c.toolBarCB, c.aliasCB, c.renderCB, c.textureCB, c.compositeCB)
+                val cb = arrayOf(c.toolBarCB, c.aliasCB, c.renderCB, c.textureCheckBox, c.compositeCB)
                 for (j in b.indices) {
                     if (c.obj != null && c.obj == cb[j]) {
                         if (b[j].isSelected != cb[j].isSelected) {

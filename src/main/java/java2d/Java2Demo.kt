@@ -506,7 +506,7 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
                 } else if (arg.startsWith("-rendering=")) {
                     Java2Demo.controls.renderCB.isSelected = s.endsWith("true")
                 } else if (arg.startsWith("-texture=")) {
-                    Java2Demo.controls.textureCB.isSelected = s.endsWith("true")
+                    Java2Demo.controls.textureCheckBox.isSelected = s.endsWith("true")
                 } else if (arg.startsWith("-composite=")) {
                     Java2Demo.controls.compositeCB.isSelected = s.endsWith("true")
                 } else if (arg.startsWith("-verbose")) {

@@ -162,9 +162,9 @@ public final class TextureChooser extends JPanel {
                     }
 
                     // ABP
-                    if (Java2Demo.Companion.getControls().textureCB.isSelected()) {
-                        Java2Demo.Companion.getControls().textureCB.doClick();
-                        Java2Demo.Companion.getControls().textureCB.doClick();
+                    if (Java2Demo.Companion.getControls().getTextureCheckBox().isSelected()) {
+                        Java2Demo.Companion.getControls().getTextureCheckBox().doClick();
+                        Java2Demo.Companion.getControls().getTextureCheckBox().doClick();
                     }
                 }
 

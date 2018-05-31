@@ -119,7 +119,7 @@ class Java2DemoApplet : JApplet()
         getParameter("screen")?.let { GlobalControls.screenCombo.selectedIndex = Integer.parseInt(it) }
         getParameter("antialias")?.let { Java2Demo.controls.aliasCB.isSelected = it.endsWith("true") }
         getParameter("rendering")?.let { Java2Demo.controls.renderCB.isSelected = it.endsWith("true") }
-        getParameter("texture")?.let { Java2Demo.controls.textureCB.isSelected = it.endsWith("true") }
+        getParameter("texture")?.let { Java2Demo.controls.textureCheckBox.isSelected = it.endsWith("true") }
         getParameter("composite")?.let { Java2Demo.controls.compositeCB.isSelected = it.endsWith("true") }
         getParameter("verbose")?.let { Java2Demo.verboseCB.isSelected = true }
         getParameter("columns")?.let { DemoGroup.columns = Integer.parseInt(it) }
