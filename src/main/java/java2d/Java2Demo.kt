@@ -345,17 +345,15 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
     /**
      * The Icon for the Intro tab.
      */
-    internal class J2DIcon : Icon {
+    internal class J2DIcon : Icon
+    {
         private val frc = FontRenderContext(null, true, true)
-        private val tl = TextLayout("Java2D", font, frc)
+        private val tl = TextLayout("Java2D", FONT, frc)
 
         override fun paintIcon(c: Component, g: Graphics, x: Int, y: Int) {
             val g2 = g as Graphics2D
-            g2.setRenderingHint(
-                RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON
-                               )
-            g2.font = font
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+            g2.font = FONT
             if (tabbedPane.selectedIndex == 0) {
                 g2.color = myBlue
             } else {
@@ -364,19 +362,15 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
             tl.draw(g2, x.toFloat(), (y + 15).toFloat())
         }
 
-        override fun getIconWidth(): Int {
-            return 40
-        }
+        override fun getIconWidth(): Int = 40
 
-        override fun getIconHeight(): Int {
-            return 22
-        }
+        override fun getIconHeight(): Int = 22
 
-        companion object {
-
+        companion object
+        {
             private val myBlue = Color(94, 105, 176)
             private val myBlack = Color(20, 20, 20)
-            private val font = Font("serif", Font.BOLD, 12)
+            private val FONT = Font(Font.SERIF, Font.BOLD, 12)
         }
     }
 
@@ -492,46 +486,43 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
             frame.setSize(FRAME_WIDTH, FRAME_HEIGHT)
             frame.cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR)
 
-            for (i in args.indices) {
-                val arg = args[i]
-                val s = arg.substring(arg.indexOf('=') + 1)
-                if (arg.startsWith("-runs=")) {
-                    RunWindow.numRuns = Integer.parseInt(s)
-                    RunWindow.exit = true
-                    demo!!.createRunWindow()
-                } else if (arg.startsWith("-screen=")) {
-                    GlobalControls.screenComboBox.setSelectedIndex(Integer.parseInt(s))
-                } else if (arg.startsWith("-antialias=")) {
-                    Java2Demo.controls.antialiasingCheckBox.isSelected = s.endsWith("true")
-                } else if (arg.startsWith("-rendering=")) {
-                    Java2Demo.controls.renderCheckBox.isSelected = s.endsWith("true")
-                } else if (arg.startsWith("-texture=")) {
-                    Java2Demo.controls.textureCheckBox.isSelected = s.endsWith("true")
-                } else if (arg.startsWith("-composite=")) {
-                    Java2Demo.controls.compositeCheckBox.isSelected = s.endsWith("true")
-                } else if (arg.startsWith("-verbose")) {
-                    Java2Demo.verboseCB.isSelected = true
-                } else if (arg.startsWith("-print")) {
-                    Java2Demo.printCB.isSelected = true
-                    RunWindow.printCheckBox.isSelected = true
-                } else if (arg.startsWith("-columns=")) {
-                    DemoGroup.columns = Integer.parseInt(s)
-                } else if (arg.startsWith("-buffers=")) {
-                    // usage -buffers=3,10
-                    RunWindow.buffersFlag = true
-                    val i1 = arg.indexOf('=') + 1
-                    val i2 = arg.indexOf(',')
-                    var s1 = arg.substring(i1, i2)
-                    RunWindow.bufBeg = Integer.parseInt(s1)
-                    s1 = arg.substring(i2 + 1, arg.length)
-                    RunWindow.bufEnd = Integer.parseInt(s1)
-                } else if (arg.startsWith("-ccthread")) {
-                    Java2Demo.ccthreadCB.isSelected = true
-                } else if (arg.startsWith("-zoom")) {
-                    RunWindow.zoomCheckBox.isSelected = true
-                } else if (arg.startsWith("-maxscreen")) {
-                    frame.setLocation(0, 0)
-                    frame.setSize(d.width, d.height)
+            for (arg in args) {
+                val value = arg.substringAfter('=', "")
+                when {
+                    arg.startsWith("-runs=") -> {
+                        RunWindow.numRuns = Integer.parseInt(value)
+                        RunWindow.exit = true
+                        demo!!.createRunWindow()
+                    }
+                    arg.startsWith("-screen=") ->
+                        GlobalControls.screenComboBox.setSelectedIndex(Integer.parseInt(value))
+                    arg.startsWith("-antialias=") ->
+                        Java2Demo.controls.antialiasingCheckBox.isSelected = value.endsWith("true")
+                    arg.startsWith("-rendering=") ->
+                        Java2Demo.controls.renderCheckBox.isSelected = value.endsWith("true")
+                    arg.startsWith("-texture=") ->
+                        Java2Demo.controls.textureCheckBox.isSelected = value.endsWith("true")
+                    arg.startsWith("-composite=") ->
+                        Java2Demo.controls.compositeCheckBox.isSelected = value.endsWith("true")
+                    arg.startsWith("-verbose") -> Java2Demo.verboseCB.isSelected = true
+                    arg.startsWith("-print") -> {
+                        Java2Demo.printCB.isSelected = true
+                        RunWindow.printCheckBox.isSelected = true
+                    }
+                    arg.startsWith("-columns=") -> DemoGroup.columns = Integer.parseInt(value)
+                    arg.startsWith("-buffers=") -> {
+                        // usage -buffers=3,10
+                        RunWindow.buffersFlag = true
+                        val (v1, v2) = value.split(',')
+                        RunWindow.bufBeg = Integer.parseInt(v1)
+                        RunWindow.bufEnd = Integer.parseInt(v2)
+                    }
+                    arg.startsWith("-ccthread") -> Java2Demo.ccthreadCB.isSelected = true
+                    arg.startsWith("-zoom") -> RunWindow.zoomCheckBox.isSelected = true
+                    arg.startsWith("-maxscreen") -> {
+                        frame.setLocation(0, 0)
+                        frame.setSize(d.width, d.height)
+                    }
                 }
             }
 

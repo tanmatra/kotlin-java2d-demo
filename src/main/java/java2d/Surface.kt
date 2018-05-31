@@ -305,9 +305,7 @@ abstract class Surface : JPanel(), Printable
         }
 
         if (toBeInitialized) {
-            if (animating != null) {
-                animating!!.reset(d.width, d.height)
-            }
+            animating?.reset(d.width, d.height)
             toBeInitialized = false
             startClock()
         }
@@ -394,32 +392,29 @@ abstract class Surface : JPanel(), Printable
 
     // System.out graphics state information.
     fun verbose() {
-        var str = "  $name "
-        if (animating != null && animating!!.running()) {
-            str = "$str Running"
-        } else if (this is AnimatingSurface) {
-            str = "$str Stopped"
+        val string = buildString {
+            append("  $name")
+            if (animating != null && animating.running()) {
+                append(" Running")
+            } else if (this@Surface is AnimatingSurface) {
+                append(" Stopped")
+            }
+            append(" ${GlobalControls.screenComboBox.selectedItem!!}")
+            append(if (antiAlias === VALUE_ANTIALIAS_ON) " ANTIALIAS_ON " else " ANTIALIAS_OFF ")
+            append(if (rendering === VALUE_RENDER_QUALITY) " RENDER_QUALITY " else " RENDER_SPEED ")
+            if (texture != null) {
+                append(" Texture")
+            }
+            composite?.let { composite ->
+                append(" Composite=${composite.alpha}")
+            }
+            val runtime = Runtime.getRuntime()
+            runtime.gc()
+            val freeMemory = runtime.freeMemory().toFloat()
+            val totalMemory = runtime.totalMemory().toFloat()
+            append(" ${(totalMemory - freeMemory) / 1024}K used")
         }
-
-        str = str + (" " + GlobalControls.screenComboBox.selectedItem!!)
-
-        str = str + if (antiAlias === VALUE_ANTIALIAS_ON) " ANTIALIAS_ON " else " ANTIALIAS_OFF "
-        str = str + if (rendering === VALUE_RENDER_QUALITY) "RENDER_QUALITY " else "RENDER_SPEED "
-
-        if (texture != null) {
-            str = str + "Texture "
-        }
-
-        if (composite != null) {
-            str = str + ("Composite=" + composite!!.alpha + " ")
-        }
-
-        val r = Runtime.getRuntime()
-        r.gc()
-        val freeMemory = r.freeMemory().toFloat()
-        val totalMemory = r.totalMemory().toFloat()
-        str = str + (((totalMemory - freeMemory) / 1024).toString() + "K used")
-        println(str)
+        println(string)
     }
 
     companion object
