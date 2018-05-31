@@ -97,8 +97,8 @@ class CloningFeature : JPanel(), Runnable
             Thread.sleep(3333)
         }
 
-        if (!Java2Demo.controls.toolBarCB.isSelected) {
-            Java2Demo.controls.toolBarCB.isSelected = true
+        if (!Java2Demo.controls.toolBarCheckBox.isSelected) {
+            Java2Demo.controls.toolBarCheckBox.isSelected = true
             Thread.sleep(2222)
         }
 

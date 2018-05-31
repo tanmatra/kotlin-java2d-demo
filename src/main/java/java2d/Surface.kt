@@ -401,7 +401,7 @@ abstract class Surface : JPanel(), Printable
             str = "$str Stopped"
         }
 
-        str = str + (" " + GlobalControls.screenCombo.selectedItem!!)
+        str = str + (" " + GlobalControls.screenComboBox.selectedItem!!)
 
         str = str + if (antiAlias === VALUE_ANTIALIAS_ON) " ANTIALIAS_ON " else " ANTIALIAS_OFF "
         str = str + if (rendering === VALUE_RENDER_QUALITY) "RENDER_QUALITY " else "RENDER_SPEED "

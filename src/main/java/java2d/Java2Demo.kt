@@ -275,7 +275,7 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
         if (e.source == controlsCB) {
             val newVisibility = !controls.isVisible
             controls.isVisible = newVisibility
-            for (cmp in controls.texturechooser.components) {
+            for (cmp in controls.textureChooser.components) {
                 cmp.isVisible = newVisibility
             }
         } else if (e.source == memoryCB) {
@@ -500,15 +500,15 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
                     RunWindow.exit = true
                     demo!!.createRunWindow()
                 } else if (arg.startsWith("-screen=")) {
-                    GlobalControls.screenCombo.setSelectedIndex(Integer.parseInt(s))
+                    GlobalControls.screenComboBox.setSelectedIndex(Integer.parseInt(s))
                 } else if (arg.startsWith("-antialias=")) {
-                    Java2Demo.controls.aliasCB.isSelected = s.endsWith("true")
+                    Java2Demo.controls.antialiasingCheckBox.isSelected = s.endsWith("true")
                 } else if (arg.startsWith("-rendering=")) {
-                    Java2Demo.controls.renderCB.isSelected = s.endsWith("true")
+                    Java2Demo.controls.renderCheckBox.isSelected = s.endsWith("true")
                 } else if (arg.startsWith("-texture=")) {
                     Java2Demo.controls.textureCheckBox.isSelected = s.endsWith("true")
                 } else if (arg.startsWith("-composite=")) {
-                    Java2Demo.controls.compositeCB.isSelected = s.endsWith("true")
+                    Java2Demo.controls.compositeCheckBox.isSelected = s.endsWith("true")
                 } else if (arg.startsWith("-verbose")) {
                     Java2Demo.verboseCB.isSelected = true
                 } else if (arg.startsWith("-print")) {

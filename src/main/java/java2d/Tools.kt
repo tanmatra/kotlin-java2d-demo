@@ -152,7 +152,7 @@ class Tools(private val surface: Surface) : JPanel(BorderLayout()), ActionListen
         screenCombo = JComboBox<String>().apply {
             preferredSize = Dimension(100, 18)
             font = FONT
-            for (name in GlobalControls.screenNames) {
+            for (name in GlobalControls.SCREEN_NAMES) {
                 addItem(name)
             }
             addActionListener(this@Tools)

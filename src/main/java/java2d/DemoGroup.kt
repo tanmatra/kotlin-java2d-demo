@@ -198,50 +198,52 @@ class DemoGroup(private val groupName: String) : JPanel(), ChangeListener, Actio
     }
 
     fun setup(issueRepaint: Boolean) {
-        val p = panel
+        val panel = panel
 
         // Let PerformanceMonitor know which demos are running
         Java2Demo.performancemonitor?.run {
-            surf.setPanel(p)
+            surf.setPanel(panel)
             surf.setSurfaceState()
         }
 
-        val c = Java2Demo.controls
+        val controls = Java2Demo.controls
         // .. tools check against global controls settings ..
         // .. & start demo & custom control thread if need be ..
-        for (i in 0 until p.componentCount) {
-            val dp = p.getComponent(i) as DemoPanel
-            if (dp.surface != null && c != null) {
-                val t = dp.tools
-                t.isVisible = isValid
-                t.issueRepaint = issueRepaint
-                val b = arrayOf(t.toggleButton, t.antialiasButton, t.renderButton, t.textureButton, t.compositeB)
-                val cb = arrayOf(c.toolBarCB, c.aliasCB, c.renderCB, c.textureCheckBox, c.compositeCB)
-                for (j in b.indices) {
-                    if (c.obj != null && c.obj == cb[j]) {
-                        if (b[j].isSelected != cb[j].isSelected) {
-                            b[j].doClick()
+        for (i in 0 until panel.componentCount) {
+            val demoPanel = panel.getComponent(i) as DemoPanel
+            if (demoPanel.surface != null && controls != null) {
+                val tools = demoPanel.tools
+                tools.isVisible = isValid
+                tools.issueRepaint = issueRepaint
+                val buttons = arrayOf(tools.toggleButton, tools.antialiasButton, tools.renderButton,
+                                      tools.textureButton, tools.compositeB)
+                val checkBoxes = arrayOf(controls.toolBarCheckBox, controls.antialiasingCheckBox,
+                                         controls.renderCheckBox, controls.textureCheckBox, controls.compositeCheckBox)
+                for (j in buttons.indices) {
+                    if (controls.itemEventSource != null && controls.itemEventSource == checkBoxes[j]) {
+                        if (buttons[j].isSelected != checkBoxes[j].isSelected) {
+                            buttons[j].doClick()
                         }
-                    } else if (c.obj == null) {
-                        if (b[j].isSelected != cb[j].isSelected) {
-                            b[j].doClick()
+                    } else if (controls.itemEventSource == null) {
+                        if (buttons[j].isSelected != checkBoxes[j].isSelected) {
+                            buttons[j].doClick()
                         }
                     }
                 }
-                t.isVisible = true
-                if (GlobalControls.screenCombo.selectedIndex != t.screenCombo.selectedIndex) {
-                    t.screenCombo.selectedIndex = GlobalControls.screenCombo.selectedIndex
+                tools.isVisible = true
+                if (GlobalControls.screenComboBox.selectedIndex != tools.screenCombo.selectedIndex) {
+                    tools.screenCombo.selectedIndex = GlobalControls.screenComboBox.selectedIndex
                 }
                 if (Java2Demo.verboseCB.isSelected) {
-                    dp.surface.verbose()
+                    demoPanel.surface.verbose()
                 }
-                dp.surface.sleepAmount = c.slider.value.toLong()
+                demoPanel.surface.sleepAmount = controls.slider.value.toLong()
                 Java2Demo.backgroundColor?.let { backgroundColor ->
-                    dp.surface.background = backgroundColor
+                    demoPanel.surface.background = backgroundColor
                 }
-                t.issueRepaint = true
+                tools.issueRepaint = true
             }
-            dp.start()
+            demoPanel.start()
         }
         revalidate()
     }
@@ -273,7 +275,7 @@ class DemoGroup(private val groupName: String) : JPanel(), ChangeListener, Actio
             clone.surface.background = backgroundColor
         }
         if (Java2Demo.controls != null) {
-            if (clone.tools.isExpanded != Java2Demo.controls.toolBarCB.isSelected) {
+            if (clone.tools.isExpanded != Java2Demo.controls.toolBarCheckBox.isSelected) {
                 clone.tools.toggleButton.doClick()
             }
         }

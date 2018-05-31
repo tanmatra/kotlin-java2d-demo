@@ -50,38 +50,37 @@ import javax.swing.event.ChangeListener
  * Global Controls panel for changing graphic attributes of
  * the demo surface.
  */
-class GlobalControls : JPanel(), ItemListener, ChangeListener
+class GlobalControls : JPanel(GridBagLayout()), ItemListener, ChangeListener
 {
-    val texturechooser: TextureChooser
-    val aliasCB: JCheckBox
-    val renderCB: JCheckBox
-    val toolBarCB: JCheckBox
-    val compositeCB: JCheckBox
+    val textureChooser: TextureChooser
+    val antialiasingCheckBox: JCheckBox
+    val renderCheckBox: JCheckBox
+    val toolBarCheckBox: JCheckBox
+    val compositeCheckBox: JCheckBox
     val textureCheckBox: JCheckBox
     val slider: JSlider
-    var obj: Any? = null
+    var itemEventSource: Any? = null
 
     init {
-        layout = GridBagLayout()
         border = TitledBorder(EtchedBorder(), "Global Controls")
 
-        aliasCB = createCheckBox("Anti-Aliasing", true, 0)
-        renderCB = createCheckBox("Rendering Quality", false, 1)
+        antialiasingCheckBox = createCheckBox("Anti-Aliasing", true, 0)
+        renderCheckBox = createCheckBox("Rendering Quality", false, 1)
         textureCheckBox = createCheckBox("Texture", false, 2)
-        compositeCB = createCheckBox("AlphaComposite", false, 3)
+        compositeCheckBox = createCheckBox("AlphaComposite", false, 3)
 
-        screenCombo = JComboBox<String>().apply {
+        screenComboBox = JComboBox<String>().apply {
             preferredSize = Dimension(120, 18)
             isLightWeightPopupEnabled = true
             font = FONT
-            for (s in screenNames) {
+            for (s in SCREEN_NAMES) {
                 addItem(s)
             }
         }
-        screenCombo.addItemListener(this)
-        Java2Demo.addToGridBag(this, screenCombo, 0, 4, 1, 1, 0.0, 0.0)
+        screenComboBox.addItemListener(this)
+        Java2Demo.addToGridBag(this, screenComboBox, 0, 4, 1, 1, 0.0, 0.0)
 
-        toolBarCB = createCheckBox("Tools", false, 5)
+        toolBarCheckBox = createCheckBox("Tools", false, 5)
 
         slider = JSlider(SwingConstants.HORIZONTAL, 0, 200, 30).apply {
             addChangeListener(this@GlobalControls)
@@ -93,52 +92,47 @@ class GlobalControls : JPanel(), ItemListener, ChangeListener
         }
         Java2Demo.addToGridBag(this, slider, 0, 6, 1, 1, 1.0, 1.0)
 
-        texturechooser = TextureChooser(0)
-        Java2Demo.addToGridBag(this, texturechooser, 0, 7, 1, 1, 1.0, 1.0)
+        textureChooser = TextureChooser(0)
+        Java2Demo.addToGridBag(this, textureChooser, 0, 7, 1, 1, 1.0, 1.0)
     }
 
     private fun createCheckBox(s: String, b: Boolean, y: Int): JCheckBox {
-        val cb = JCheckBox(s, b).apply {
+        val checkBox = JCheckBox(s, b).apply {
             font = FONT
             horizontalAlignment = SwingConstants.LEFT
             addItemListener(this@GlobalControls)
         }
-        Java2Demo.addToGridBag(this, cb, 0, y, 1, 1, 1.0, 1.0)
-        return cb
+        Java2Demo.addToGridBag(this, checkBox, 0, y, 1, 1, 1.0, 1.0)
+        return checkBox
     }
 
     override fun stateChanged(e: ChangeEvent) {
         val value = slider.value
-        val tb = slider.border as TitledBorder
-        tb.title = "Anim delay = " + value.toString() + " ms"
+        (slider.border as TitledBorder).title = "Anim delay = $value ms"
         val index = Java2Demo.tabbedPane.selectedIndex - 1
-        val dg = Java2Demo.group[index]
-        val p = dg.panel
-        for (i in 0 until p.componentCount) {
-            val dp = p.getComponent(i) as DemoPanel
-            if (dp.tools != null && dp.tools.slider != null) {
-                dp.tools.slider!!.value = value
-            }
+        val demoGroup = Java2Demo.group[index]
+        val panel = demoGroup.panel
+        for (i in 0 until panel.componentCount) {
+            val demoPanel = panel.getComponent(i) as DemoPanel
+            demoPanel.tools?.slider?.value = value
         }
         slider.repaint()
     }
 
-    override fun itemStateChanged(e: ItemEvent) {
+    override fun itemStateChanged(event: ItemEvent) {
         if (Java2Demo.tabbedPane.selectedIndex != 0) {
-            obj = e.source
+            itemEventSource = event.source
             val index = Java2Demo.tabbedPane.selectedIndex - 1
             Java2Demo.group[index].setup(true)
-            obj = null
+            itemEventSource = null
         }
     }
 
-    override fun getPreferredSize(): Dimension {
-        return Dimension(135, 260)
-    }
+    override fun getPreferredSize() = Dimension(135, 260)
 
     companion object
     {
-        internal val screenNames = arrayOf(
+        internal val SCREEN_NAMES = arrayOf(
             "Auto Screen",
             "On Screen",
             "Off Screen",
@@ -160,7 +154,7 @@ class GlobalControls : JPanel(), ItemListener, ChangeListener
             "INT_RGBx",
             "USHORT_555x_RGB")
 
-        lateinit var screenCombo: JComboBox<String>
+        lateinit var screenComboBox: JComboBox<String>
 
         private val FONT = Font("serif", Font.PLAIN, 12)
     }

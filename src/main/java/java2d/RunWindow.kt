@@ -165,8 +165,8 @@ class RunWindow : JPanel(GridBagLayout()), Runnable
 
     private fun printDemo(demoGroup: DemoGroup) {
         invokeAndWait {
-            if (!Java2Demo.controls.toolBarCB.isSelected) {
-                Java2Demo.controls.toolBarCB.isSelected = true
+            if (!Java2Demo.controls.toolBarCheckBox.isSelected) {
+                Java2Demo.controls.toolBarCheckBox.isSelected = true
                 demoGroup.invalidate()
             }
             for (component in demoGroup.panel.components) {
