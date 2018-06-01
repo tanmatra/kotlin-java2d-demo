@@ -62,7 +62,10 @@ import javax.swing.event.ChangeListener
  * java DemoGroup Fonts
  * Loads all the demos found in the demos/Fonts directory.
  */
-class DemoGroup(private val groupName: String) : JPanel(), ChangeListener, ActionListener
+class DemoGroup(
+    private val groupName: String,
+    private val java2Demo: Java2Demo? = null
+) : JPanel(), ChangeListener, ActionListener
 {
     lateinit var clonePanels: Array<JPanel>
     var tabbedPane: JTabbedPane? = null
@@ -108,7 +111,7 @@ class DemoGroup(private val groupName: String) : JPanel(), ChangeListener, Actio
             demoPanel.setDemoBorder(p)
             demoPanel.surface?.run {
                 addMouseListener(mouseListener)
-                monitor = Java2Demo.performancemonitor != null
+                monitor = java2Demo?.performanceMonitor != null
             }
             if (p.layout is GridBagLayout) {
                 val x = p.componentCount % 2
@@ -148,7 +151,7 @@ class DemoGroup(private val groupName: String) : JPanel(), ChangeListener, Actio
                 val c = DemoPanel(dp.className)
                 c.setDemoBorder(clonePanels[i])
                 if (c.surface != null) {
-                    c.surface.monitor = Java2Demo.performancemonitor != null
+                    c.surface.monitor = java2Demo?.performanceMonitor != null
                     val cloneImg = DemoImages.getImage("clone.gif", this)
                     c.tools.cloneButton = c.tools.addTool(cloneImg, "Clone the Surface", this)
                     val d = c.tools.toolbar.preferredSize
@@ -201,7 +204,7 @@ class DemoGroup(private val groupName: String) : JPanel(), ChangeListener, Actio
         val panel = panel
 
         // Let PerformanceMonitor know which demos are running
-        Java2Demo.performancemonitor?.run {
+        java2Demo?.performanceMonitor?.run {
             surf.setPanel(panel)
             surf.setSurfaceState()
         }
@@ -280,7 +283,7 @@ class DemoGroup(private val groupName: String) : JPanel(), ChangeListener, Actio
             }
         }
         clone.start()
-        clone.surface.monitor = Java2Demo.performancemonitor != null
+        clone.surface.monitor = java2Demo?.performanceMonitor != null
         panel.add(clone)
         panel.repaint()
         panel.revalidate()
@@ -319,7 +322,7 @@ class DemoGroup(private val groupName: String) : JPanel(), ChangeListener, Actio
 
         @JvmStatic
         fun main(args: Array<String>) {
-            val group = DemoGroup(args[0])
+            val group = DemoGroup(args[0], null)
             JFrame("Java2D Demo - DemoGroup").apply {
                 addWindowListener(object : WindowAdapter() {
                     override fun windowClosing(e: WindowEvent?) {

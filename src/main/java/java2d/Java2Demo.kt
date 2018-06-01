@@ -94,6 +94,7 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
     private var cf: JFrame? = null
 
     val memoryMonitor = MemoryMonitor()
+    val performanceMonitor = PerformanceMonitor()
 
     /**
      * Construct the Java2D Demo.
@@ -118,7 +119,6 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
         UIManager.put("Button.margin", Insets(0, 0, 0, 0))
 
         controls = GlobalControls()
-        performancemonitor = PerformanceMonitor()
 
         val globalPanel = GlobalPanel(this)
 
@@ -132,7 +132,7 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
         groups = Array(demos.size) { i ->
             val groupName = demos[i][0]
             progressLabel.text = "Loading demos." + groupName
-            val demoGroup = DemoGroup(groupName)
+            val demoGroup = DemoGroup(groupName, this)
             tabbedPane.addTab(groupName, null)
             progressBar.value = progressBar.value + 1
             demoGroup
@@ -289,7 +289,7 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
                 memoryMonitor.surf.start()
             }
         } else if (e.source == perfCB) {
-            performancemonitor?.run {
+            performanceMonitor?.run {
                 if (isVisible) {
                     isVisible = false
                     surf.isVisible = false
@@ -323,7 +323,7 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
             if (memoryMonitor.surf.thread == null && memoryCB.state) {
                 memoryMonitor.surf.start()
             }
-            performancemonitor?.run {
+            performanceMonitor?.run {
                 if (surf.thread == null && perfCB.state) {
                     surf.start()
                 }
@@ -336,7 +336,7 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
             intro.stop()
         } else {
             memoryMonitor.surf.stop()
-            performancemonitor?.surf?.stop()
+            performanceMonitor?.surf?.stop()
             val i = tabbedPane.selectedIndex - 1
             groups[i].shutDown(groups[i].panel)
         }
@@ -378,7 +378,6 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
     {
         var demo: Java2Demo? = null
         lateinit var controls: GlobalControls
-        var performancemonitor: PerformanceMonitor? = null
         lateinit var tabbedPane: JTabbedPane
         lateinit var progressLabel: JLabel
         lateinit var progressBar: JProgressBar

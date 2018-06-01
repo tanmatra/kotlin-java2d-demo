@@ -54,7 +54,7 @@ class GlobalPanel(private val java2Demo: Java2Demo) : JPanel()
         layout = BorderLayout()
         panel.addToGridBag(Java2Demo.controls, 0, 0, 1, 1, 0.0, 0.0)
         panel.addToGridBag(java2Demo.memoryMonitor, 0, 1, 1, 1, 0.0, 0.0)
-        panel.addToGridBag(Java2Demo.performancemonitor!!, 0, 2, 1, 1, 0.0, 0.0)
+        panel.addToGridBag(java2Demo.performanceMonitor, 0, 2, 1, 1, 0.0, 0.0)
         add(Java2Demo.intro)
     }
 
@@ -64,7 +64,7 @@ class GlobalPanel(private val java2Demo: Java2Demo) : JPanel()
         }
         if (selectedIndex == 0) {
             java2Demo.memoryMonitor.surf.stop()
-            Java2Demo.performancemonitor!!.surf.stop()
+            java2Demo.performanceMonitor.surf.stop()
             removeAll()
             add(Java2Demo.intro)
             Java2Demo.intro.start()
@@ -77,7 +77,7 @@ class GlobalPanel(private val java2Demo: Java2Demo) : JPanel()
                     java2Demo.memoryMonitor.surf.start()
                 }
                 if (Java2Demo.perfCB.state) {
-                    Java2Demo.performancemonitor!!.surf.start()
+                    java2Demo.performanceMonitor.surf.start()
                 }
             } else {
                 remove(Java2Demo.groups[index])
