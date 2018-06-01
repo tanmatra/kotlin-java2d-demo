@@ -76,7 +76,7 @@ class GlobalControls : JPanel(GridBagLayout()), ItemListener
             }
             addItemListener(this@GlobalControls)
         }
-        addToGridBag(this, screenComboBox, 0, 4, 1, 1, 0.0, 0.0)
+        addToGridBag(screenComboBox, 0, 4, 1, 1, 0.0, 0.0)
 
         toolBarCheckBox = createCheckBox("Tools", false, 5)
 
@@ -88,9 +88,9 @@ class GlobalControls : JPanel(GridBagLayout()), ItemListener
             }
             minimumSize = Dimension(80, 46)
         }
-        addToGridBag(this, slider, 0, 6, 1, 1, 1.0, 1.0)
+        addToGridBag(slider, 0, 6, 1, 1, 1.0, 1.0)
 
-        addToGridBag(this, textureChooser, 0, 7, 1, 1, 1.0, 1.0)
+        addToGridBag(textureChooser, 0, 7, 1, 1, 1.0, 1.0)
     }
 
     private fun createCheckBox(text: String, selected: Boolean, y: Int): JCheckBox {
@@ -99,7 +99,7 @@ class GlobalControls : JPanel(GridBagLayout()), ItemListener
             horizontalAlignment = SwingConstants.LEFT
             addItemListener(this@GlobalControls)
         }
-        addToGridBag(this, checkBox, 0, y, 1, 1, 1.0, 1.0)
+        addToGridBag(checkBox, 0, y, 1, 1, 1.0, 1.0)
         return checkBox
     }
 

@@ -51,20 +51,22 @@ var Graphics2D.antialiasing: Boolean
             if (value) RenderingHints.VALUE_ANTIALIAS_ON else RenderingHints.VALUE_ANTIALIAS_OFF)
     }
 
-fun addToGridBag(
-    panel: JComponent, comp: Component,
-    x: Int, y: Int, w: Int, h: Int, weightx: Double, weighty: Double
+fun JComponent.addToGridBag(
+    component: Component,
+    x: Int, y: Int,
+    w: Int, h: Int,
+    weightx: Double, weighty: Double
 ) {
-    val layout = panel.layout as GridBagLayout
-    val gbc = GridBagConstraints().apply {
+    val layout = layout as GridBagLayout
+    val gbc = GridBagConstraints().apply gbc@{
         fill = GridBagConstraints.BOTH
         gridx = x
         gridy = y
         gridwidth = w
         gridheight = h
-        this.weightx = weightx
-        this.weighty = weighty
+        this@gbc.weightx = weightx
+        this@gbc.weighty = weighty
     }
-    panel.add(comp)
-    layout.setConstraints(comp, gbc)
+    add(component)
+    layout.setConstraints(component, gbc)
 }
