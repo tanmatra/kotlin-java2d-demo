@@ -43,8 +43,6 @@ import java.awt.Dimension
 import java.awt.Font
 import java.awt.Graphics
 import java.awt.Graphics2D
-import java.awt.GridBagConstraints
-import java.awt.GridBagLayout
 import java.awt.Insets
 import java.awt.RenderingHints
 import java.awt.Toolkit
@@ -406,23 +404,6 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
             arrayOf("Paint", "GradAnim", "Gradient", "Texture", "TextureAnim"),
             arrayOf("Paths", "Append", "CurveQuadTo", "FillStroke", "WindingRule"),
             arrayOf("Transforms", "Rotate", "SelectTx", "TransformAnim"))
-
-        fun addToGridBag(
-            panel: JPanel, comp: Component,
-            x: Int, y: Int, w: Int, h: Int, weightx: Double, weighty: Double
-        ) {
-            val gbl = panel.layout as GridBagLayout
-            val c = GridBagConstraints()
-            c.fill = GridBagConstraints.BOTH
-            c.gridx = x
-            c.gridy = y
-            c.gridwidth = w
-            c.gridheight = h
-            c.weightx = weightx
-            c.weighty = weighty
-            panel.add(comp)
-            gbl.setConstraints(comp, c)
-        }
 
         private fun initFrame(args: Array<String>) {
             val frame = JFrame("Java 2D(TM) Demo")

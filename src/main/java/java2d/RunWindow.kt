@@ -78,13 +78,13 @@ class RunWindow : JPanel(GridBagLayout()), Runnable
             }
             minimumSize = Dimension(70, 30)
         }
-        Java2Demo.addToGridBag(this, runButton, 0, 0, 1, 1, 0.0, 0.0)
+        addToGridBag(this, runButton, 0, 0, 1, 1, 0.0, 0.0)
 
         progressBar = JProgressBar().apply {
             preferredSize = Dimension(100, 30)
             minimum = 0
         }
-        Java2Demo.addToGridBag(this, progressBar, 1, 0, 2, 1, 1.0, 0.0)
+        addToGridBag(this, progressBar, 1, 0, 2, 1, 1.0, 0.0)
 
         val p1 = JPanel(GridLayout(2, 2))
         var p2 = JPanel()
@@ -126,7 +126,7 @@ class RunWindow : JPanel(GridBagLayout()), Runnable
         printCheckBox.addActionListener {
             Java2Demo.printCB.isSelected = printCheckBox.isSelected
         }
-        Java2Demo.addToGridBag(this, p1, 0, 1, 3, 1, 1.0, 1.0)
+        addToGridBag(this, p1, 0, 1, 3, 1, 1.0, 1.0)
     }
 
     fun doRunAction() {

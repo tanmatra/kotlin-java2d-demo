@@ -1,7 +1,10 @@
 package java2d
 
+import java.awt.Component
 import java.awt.Dimension
 import java.awt.Graphics2D
+import java.awt.GridBagConstraints
+import java.awt.GridBagLayout
 import java.awt.RenderingHints
 import java.util.logging.Logger
 import javax.swing.AbstractButton
@@ -47,3 +50,21 @@ var Graphics2D.antialiasing: Boolean
         setRenderingHint(RenderingHints.KEY_ANTIALIASING,
             if (value) RenderingHints.VALUE_ANTIALIAS_ON else RenderingHints.VALUE_ANTIALIAS_OFF)
     }
+
+fun addToGridBag(
+    panel: JComponent, comp: Component,
+    x: Int, y: Int, w: Int, h: Int, weightx: Double, weighty: Double
+) {
+    val layout = panel.layout as GridBagLayout
+    val gbc = GridBagConstraints().apply {
+        fill = GridBagConstraints.BOTH
+        gridx = x
+        gridy = y
+        gridwidth = w
+        gridheight = h
+        this.weightx = weightx
+        this.weighty = weighty
+    }
+    panel.add(comp)
+    layout.setConstraints(comp, gbc)
+}

@@ -114,7 +114,7 @@ class DemoGroup(private val groupName: String) : JPanel(), ChangeListener, Actio
                 val x = p.componentCount % 2
                 val y = p.componentCount / 2
                 val w = if (i == numDemos) 2 else 1
-                Java2Demo.addToGridBag(p, demoPanel, x, y, w, 1, 1.0, 1.0)
+                addToGridBag(p, demoPanel, x, y, w, 1, 1.0, 1.0)
             } else {
                 p.add(demoPanel)
             }
