@@ -109,7 +109,8 @@ class Java2DemoApplet : JApplet()
         validate()
         isVisible = true
 
-        Java2Demo.demo = Java2Demo()
+        val demo = Java2Demo()
+        Java2Demo.demo = demo
         contentPane.remove(panel)
         contentPane.layout = BorderLayout()
         contentPane.add(Java2Demo.demo!!, BorderLayout.CENTER)
@@ -117,10 +118,10 @@ class Java2DemoApplet : JApplet()
         getParameter("delay")?.let { RunWindow.delay = Integer.parseInt(it) }
         getParameter("ccthread")?.let { Java2Demo.ccthreadCB.isSelected = true }
         getParameter("screen")?.let { GlobalControls.screenComboBox.selectedIndex = Integer.parseInt(it) }
-        getParameter("antialias")?.let { Java2Demo.controls.antialiasingCheckBox.isSelected = it.endsWith("true") }
-        getParameter("rendering")?.let { Java2Demo.controls.renderCheckBox.isSelected = it.endsWith("true") }
-        getParameter("texture")?.let { Java2Demo.controls.textureCheckBox.isSelected = it.endsWith("true") }
-        getParameter("composite")?.let { Java2Demo.controls.compositeCheckBox.isSelected = it.endsWith("true") }
+        getParameter("antialias")?.let { demo.globalControls.antialiasingCheckBox.isSelected = it.endsWith("true") }
+        getParameter("rendering")?.let { demo.globalControls.renderCheckBox.isSelected = it.endsWith("true") }
+        getParameter("texture")?.let { demo.globalControls.textureCheckBox.isSelected = it.endsWith("true") }
+        getParameter("composite")?.let { demo.globalControls.compositeCheckBox.isSelected = it.endsWith("true") }
         getParameter("verbose")?.let { Java2Demo.verboseCB.isSelected = true }
         getParameter("columns")?.let { DemoGroup.columns = Integer.parseInt(it) }
         getParameter("buffers")?.let {

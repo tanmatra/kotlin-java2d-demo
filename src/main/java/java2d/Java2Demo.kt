@@ -88,13 +88,14 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
     private var fileMI: JMenuItem? = null
     private var backgMI: JMenuItem? = null
     // private JMenuItem ccthreadMI, verboseMI;
-    private var runwindow: RunWindow? = null
+    private var runWindow: RunWindow? = null
     private var cloningfeature: CloningFeature? = null
     private var rf: JFrame? = null
     private var cf: JFrame? = null
 
     val memoryMonitor = MemoryMonitor()
     val performanceMonitor = PerformanceMonitor()
+    val globalControls = GlobalControls()
 
     /**
      * Construct the Java2D Demo.
@@ -117,8 +118,6 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
         intro = Intro()
         progressBar.value = progressBar.value + 1
         UIManager.put("Button.margin", Insets(0, 0, 0, 0))
-
-        controls = GlobalControls()
 
         val globalPanel = GlobalPanel(this)
 
@@ -201,21 +200,19 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
             rf!!.toFront()
             return
         }
-        runwindow = RunWindow()
+        runWindow = RunWindow(this)
         val l = object : WindowAdapter() {
-
             override fun windowClosing(e: WindowEvent?) {
-                runwindow!!.stop()
+                runWindow!!.stop()
                 rf!!.dispose()
             }
-
             override fun windowClosed(e: WindowEvent?) {
                 rf = null
             }
         }
         rf = JFrame("Run")
         rf!!.addWindowListener(l)
-        rf!!.contentPane.add("Center", runwindow)
+        rf!!.contentPane.add("Center", runWindow)
         rf!!.pack()
         if (Java2DemoApplet.applet == null) {
             rf!!.size = Dimension(200, 125)
@@ -226,7 +223,7 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
     }
 
     fun startRunWindow() {
-        SwingUtilities.invokeLater { runwindow!!.doRunAction() }
+        SwingUtilities.invokeLater { runWindow!!.doRunAction() }
     }
 
     override fun actionPerformed(e: ActionEvent) {
@@ -236,7 +233,7 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
             createRunWindow()
         } else if (e.source == cloneMI) {
             if (cloningfeature == null) {
-                cloningfeature = CloningFeature()
+                cloningfeature = CloningFeature(this)
                 val l = object : WindowAdapter() {
 
                     override fun windowClosing(e: WindowEvent?) {
@@ -273,9 +270,9 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
 
     override fun itemStateChanged(e: ItemEvent) {
         if (e.source == controlsCB) {
-            val newVisibility = !controls.isVisible
-            controls.isVisible = newVisibility
-            for (cmp in controls.textureChooser.components) {
+            val newVisibility = !globalControls.isVisible
+            globalControls.isVisible = newVisibility
+            for (cmp in globalControls.textureChooser.components) {
                 cmp.isVisible = newVisibility
             }
         } else if (e.source == memoryCB) {
@@ -377,7 +374,6 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
     companion object
     {
         var demo: Java2Demo? = null
-        lateinit var controls: GlobalControls
         lateinit var tabbedPane: JTabbedPane
         lateinit var progressLabel: JLabel
         lateinit var progressBar: JProgressBar
@@ -456,7 +452,8 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
 
             frame.isVisible = true
 
-            demo = Java2Demo()
+            val java2Demo = Java2Demo()
+            demo = java2Demo //FIXME
 
             frame.contentPane.removeAll()
             frame.contentPane.layout = BorderLayout()
@@ -478,13 +475,13 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
                     arg.startsWith("-screen=") ->
                         GlobalControls.screenComboBox.setSelectedIndex(Integer.parseInt(value))
                     arg.startsWith("-antialias=") ->
-                        Java2Demo.controls.antialiasingCheckBox.isSelected = value.endsWith("true")
+                        java2Demo.globalControls.antialiasingCheckBox.isSelected = value.endsWith("true")
                     arg.startsWith("-rendering=") ->
-                        Java2Demo.controls.renderCheckBox.isSelected = value.endsWith("true")
+                        java2Demo.globalControls.renderCheckBox.isSelected = value.endsWith("true")
                     arg.startsWith("-texture=") ->
-                        Java2Demo.controls.textureCheckBox.isSelected = value.endsWith("true")
+                        java2Demo.globalControls.textureCheckBox.isSelected = value.endsWith("true")
                     arg.startsWith("-composite=") ->
-                        Java2Demo.controls.compositeCheckBox.isSelected = value.endsWith("true")
+                        java2Demo.globalControls.compositeCheckBox.isSelected = value.endsWith("true")
                     arg.startsWith("-verbose") -> Java2Demo.verboseCB.isSelected = true
                     arg.startsWith("-print") -> {
                         Java2Demo.printCB.isSelected = true

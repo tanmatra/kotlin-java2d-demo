@@ -49,12 +49,12 @@ import javax.swing.border.SoftBevelBorder
 /**
  * Illustration of how to use the clone feature of the demo.
  */
-class CloningFeature : JPanel(), Runnable
+class CloningFeature(private val java2Demo: Java2Demo) : JPanel(), Runnable
 {
     @Volatile
     private var thread: Thread? = null
 
-    private val textArea= JTextArea("Cloning Demonstrated\n\nClicking once on a demo\n").apply {
+    private val textArea = JTextArea("Cloning Demonstrated\n\nClicking once on a demo\n").apply {
         minimumSize = Dimension(300, 500)
         font = Font(Font.DIALOG, Font.PLAIN, 14)
         foreground = Color.BLACK
@@ -97,8 +97,8 @@ class CloningFeature : JPanel(), Runnable
             Thread.sleep(3333)
         }
 
-        if (!Java2Demo.controls.toolBarCheckBox.isSelected) {
-            Java2Demo.controls.toolBarCheckBox.isSelected = true
+        if (!java2Demo.globalControls.toolBarCheckBox.isSelected) {
+            java2Demo.globalControls.toolBarCheckBox.isSelected = true
             Thread.sleep(2222)
         }
 

@@ -60,7 +60,10 @@ import javax.swing.border.TitledBorder
  * Four types of Paint displayed: Geometry, Text & Image Textures and a Gradient Paint.
  * Paints can be selected with the Mouse.
  */
-class TextureChooser(var num: Int) : JPanel(GridLayout(0, 2, 5, 5))
+class TextureChooser(
+    private val globalControls: GlobalControls?,
+    var num: Int)
+: JPanel(GridLayout(0, 2, 5, 5))
 {
     val imageTexture: TexturePaint
         get() {
@@ -129,7 +132,7 @@ class TextureChooser(var num: Int) : JPanel(GridLayout(0, 2, 5, 5))
                         }
                     }
                     // ABP
-                    Java2Demo.controls.textureCheckBox.run {
+                    globalControls?.textureCheckBox?.run {
                         if (isSelected) {
                             doClick()
                             doClick()
@@ -200,7 +203,7 @@ class TextureChooser(var num: Int) : JPanel(GridLayout(0, 2, 5, 5))
                         System.exit(0)
                     }
                 })
-                contentPane.add(TextureChooser(0), BorderLayout.CENTER)
+                contentPane.add(TextureChooser(null, 0), BorderLayout.CENTER)
                 pack()
                 size = Dimension(400, 400)
                 isVisible = true

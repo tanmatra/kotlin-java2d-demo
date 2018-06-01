@@ -53,7 +53,7 @@ import javax.swing.border.EmptyBorder
 /**
  * A separate window for running the Java2Demo.  Go from tab to tab or demo to demo.
  */
-class RunWindow : JPanel(GridBagLayout()), Runnable
+class RunWindow(private val java2Demo: Java2Demo) : JPanel(GridBagLayout()), Runnable
 {
     private val delayTextField: JTextField
 
@@ -165,8 +165,8 @@ class RunWindow : JPanel(GridBagLayout()), Runnable
 
     private fun printDemo(demoGroup: DemoGroup) {
         invokeAndWait {
-            if (!Java2Demo.controls.toolBarCheckBox.isSelected) {
-                Java2Demo.controls.toolBarCheckBox.isSelected = true
+            if (!java2Demo.globalControls.toolBarCheckBox.isSelected) {
+                java2Demo.globalControls.toolBarCheckBox.isSelected = true
                 demoGroup.invalidate()
             }
             for (component in demoGroup.panel.components) {

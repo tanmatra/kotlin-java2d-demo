@@ -209,7 +209,7 @@ class DemoGroup(
             surf.setSurfaceState()
         }
 
-        val controls = Java2Demo.controls
+        val controls = java2Demo?.globalControls
         // .. tools check against global controls settings ..
         // .. & start demo & custom control thread if need be ..
         for (i in 0 until panel.componentCount) {
@@ -277,8 +277,8 @@ class DemoGroup(
         Java2Demo.backgroundColor?.let { backgroundColor ->
             clone.surface.background = backgroundColor
         }
-        if (Java2Demo.controls != null) {
-            if (clone.tools.isExpanded != Java2Demo.controls.toolBarCheckBox.isSelected) {
+        if (java2Demo?.globalControls != null) {
+            if (clone.tools.isExpanded != java2Demo.globalControls.toolBarCheckBox.isSelected) {
                 clone.tools.toggleButton.doClick()
             }
         }

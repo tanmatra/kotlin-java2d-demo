@@ -52,7 +52,7 @@ class GlobalPanel(private val java2Demo: Java2Demo) : JPanel()
 
     init {
         layout = BorderLayout()
-        panel.addToGridBag(Java2Demo.controls, 0, 0, 1, 1, 0.0, 0.0)
+        panel.addToGridBag(java2Demo.globalControls, 0, 0, 1, 1, 0.0, 0.0)
         panel.addToGridBag(java2Demo.memoryMonitor, 0, 1, 1, 1, 0.0, 0.0)
         panel.addToGridBag(java2Demo.performanceMonitor, 0, 2, 1, 1, 0.0, 0.0)
         add(Java2Demo.intro)

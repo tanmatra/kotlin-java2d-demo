@@ -50,7 +50,7 @@ import javax.swing.border.TitledBorder
  */
 class GlobalControls : JPanel(GridBagLayout()), ItemListener
 {
-    val textureChooser = TextureChooser(0)
+    val textureChooser = TextureChooser(this, 0)
     val antialiasingCheckBox: JCheckBox
     val renderCheckBox: JCheckBox
     val toolBarCheckBox: JCheckBox
