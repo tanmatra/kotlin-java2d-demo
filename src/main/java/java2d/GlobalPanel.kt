@@ -63,8 +63,8 @@ class GlobalPanel(private val java2Demo: Java2Demo) : JPanel()
             oldGroup.shutDown(oldGroup.panel)
         }
         if (selectedIndex == 0) {
-            java2Demo.memoryMonitor.surf.stop()
-            java2Demo.performanceMonitor.surf.stop()
+            java2Demo.memoryMonitor.surface.stop()
+            java2Demo.performanceMonitor.surface.stop()
             removeAll()
             add(Java2Demo.intro)
             Java2Demo.intro.start()
@@ -73,11 +73,11 @@ class GlobalPanel(private val java2Demo: Java2Demo) : JPanel()
                 Java2Demo.intro.stop()
                 remove(Java2Demo.intro)
                 add(panel, BorderLayout.EAST)
-                if (Java2Demo.memoryCB.state) {
-                    java2Demo.memoryMonitor.surf.start()
+                if (java2Demo.memoryMonitorCheckBox.isSelected) {
+                    java2Demo.memoryMonitor.surface.start()
                 }
-                if (Java2Demo.perfCB.state) {
-                    java2Demo.performanceMonitor.surf.start()
+                if (java2Demo.performanceMontiorCheckBox.isSelected) {
+                    java2Demo.performanceMonitor.surface.start()
                 }
             } else {
                 remove(Java2Demo.groups[index])

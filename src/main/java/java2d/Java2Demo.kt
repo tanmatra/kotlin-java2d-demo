@@ -31,8 +31,6 @@
  */
 package java2d
 
-import java2d.CustomControlsContext.State.START
-import java2d.CustomControlsContext.State.STOP
 import java2d.DemoFonts.newDemoFonts
 import java2d.DemoImages.newDemoImages
 import java.awt.BorderLayout
@@ -48,8 +46,6 @@ import java.awt.RenderingHints
 import java.awt.Toolkit
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
-import java.awt.event.ItemEvent
-import java.awt.event.ItemListener
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import java.awt.font.FontRenderContext
@@ -81,21 +77,22 @@ import javax.swing.border.EtchedBorder
  * @author Jim Graham           (demos)
  * @author Alexander Kouznetsov (code beautification)
  */
-class Java2Demo : JPanel(), ItemListener, ActionListener {
-    private var controlsCB: JCheckBoxMenuItem? = null
+class Java2Demo : JPanel(), ActionListener
+{
     private var runMI: JMenuItem? = null
     private var cloneMI: JMenuItem? = null
-    private var fileMI: JMenuItem? = null
     private var backgMI: JMenuItem? = null
     // private JMenuItem ccthreadMI, verboseMI;
     private var runWindow: RunWindow? = null
-    private var cloningfeature: CloningFeature? = null
-    private var rf: JFrame? = null
-    private var cf: JFrame? = null
+    private var cloningFeature: CloningFeature? = null
+    private var runFrame: JFrame? = null
+    private var cloningFrame: JFrame? = null
 
     val memoryMonitor = MemoryMonitor()
     val performanceMonitor = PerformanceMonitor()
     val globalControls = GlobalControls()
+    lateinit var memoryMonitorCheckBox: JCheckBoxMenuItem
+    lateinit var performanceMontiorCheckBox: JCheckBoxMenuItem
 
     /**
      * Construct the Java2D Demo.
@@ -141,85 +138,116 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
     }
 
     private fun createMenuBar(): JMenuBar {
-
         JPopupMenu.setDefaultLightWeightPopupEnabled(false)
         val menuBar = JMenuBar()
 
         if (Java2DemoApplet.applet == null) {
             val file = menuBar.add(JMenu("File"))
-            fileMI = file.add(JMenuItem("Exit"))
-            fileMI!!.addActionListener(this)
+            file.add(JMenuItem("Exit").apply {
+                addActionListener {
+                    System.exit(0)
+                }
+            })
         }
 
-        val options = menuBar.add(JMenu("Options"))
+        val optionsMenu = menuBar.add(JMenu("Options"))
 
-        controlsCB = options.add(
-            JCheckBoxMenuItem("Global Controls", true)
-                                ) as JCheckBoxMenuItem
-        controlsCB!!.addItemListener(this)
+        optionsMenu.add(JCheckBoxMenuItem("Global Controls", true).apply {
+            addItemListener {
+                val newVisibility = !globalControls.isVisible
+                globalControls.isVisible = newVisibility
+                for (cmp in globalControls.textureChooser.components) {
+                    cmp.isVisible = newVisibility
+                }
+            }
+        }) as JCheckBoxMenuItem
 
-        memoryCB = options.add(
-            JCheckBoxMenuItem("Memory Monitor", true)
-                              ) as JCheckBoxMenuItem
-        memoryCB.addItemListener(this)
+        memoryMonitorCheckBox = optionsMenu.add(JCheckBoxMenuItem("Memory Monitor", true).apply {
+            addItemListener {
+                val visible = !memoryMonitor.isVisible
+                memoryMonitor.isVisible = visible
+                memoryMonitor.surface.isVisible = visible
+                if (visible) memoryMonitor.surface.start() else memoryMonitor.surface.stop()
+            }
+        }) as JCheckBoxMenuItem
 
-        perfCB = options.add(
-            JCheckBoxMenuItem("Performance Monitor", true)
-                            ) as JCheckBoxMenuItem
-        perfCB.addItemListener(this)
+        performanceMontiorCheckBox = optionsMenu.add(JCheckBoxMenuItem("Performance Monitor", true).apply {
+            addItemListener {
+                performanceMonitor.run {
+                    if (isVisible) {
+                        isVisible = false
+                        surface.isVisible = false
+                        surface.stop()
+                    } else {
+                        isVisible = true
+                        surface.isVisible = true
+                        surface.start()
+                    }
+                }
+            }
+        }) as JCheckBoxMenuItem
 
-        options.add(JSeparator())
+        optionsMenu.add(JSeparator())
 
-        ccthreadCB = options.add(
-            JCheckBoxMenuItem("Custom Controls Thread")
-                                ) as JCheckBoxMenuItem
-        ccthreadCB.addItemListener(this)
+        ccthreadCB = optionsMenu.add(JCheckBoxMenuItem("Custom Controls Thread").apply {
+            addItemListener {
+                val state = if (ccthreadCB.isSelected) CustomControlsContext.State.START
+                    else CustomControlsContext.State.STOP
+                if (tabbedPane.selectedIndex != 0) {
+                    val p = groups[tabbedPane.selectedIndex - 1].panel
+                    for (i in 0 until p.componentCount) {
+                        val dp = p.getComponent(i) as DemoPanel
+                        if (dp.ccc != null) {
+                            dp.ccc.handleThread(state)
+                        }
+                    }
+                }
+            }
+        }) as JCheckBoxMenuItem
 
-        printCB = options.add(printCB) as JCheckBoxMenuItem
+        printCB = optionsMenu.add(printCB) as JCheckBoxMenuItem
 
-        verboseCB = options.add(
-            JCheckBoxMenuItem("Verbose")
-                               ) as JCheckBoxMenuItem
+        verboseCB = optionsMenu.add(JCheckBoxMenuItem("Verbose")) as JCheckBoxMenuItem
 
-        options.add(JSeparator())
+        optionsMenu.add(JSeparator())
 
-        backgMI = options.add(JMenuItem("Background Color"))
+        backgMI = optionsMenu.add(JMenuItem("Background Color"))
         backgMI!!.addActionListener(this)
 
-        runMI = options.add(JMenuItem("Run Window"))
+        runMI = optionsMenu.add(JMenuItem("Run Window"))
         runMI!!.addActionListener(this)
 
-        cloneMI = options.add(JMenuItem("Cloning Feature"))
+        cloneMI = optionsMenu.add(JMenuItem("Cloning Feature"))
         cloneMI!!.addActionListener(this)
 
         return menuBar
     }
 
     fun createRunWindow() {
-        if (rf != null) {
-            rf!!.toFront()
+        if (runFrame != null) {
+            runFrame!!.toFront()
             return
         }
         runWindow = RunWindow(this)
-        val l = object : WindowAdapter() {
-            override fun windowClosing(e: WindowEvent?) {
-                runWindow!!.stop()
-                rf!!.dispose()
+        runFrame = JFrame("Run").apply {
+            addWindowListener(object : WindowAdapter() {
+                override fun windowClosing(e: WindowEvent?) {
+                    runWindow!!.stop()
+                    dispose()
+                }
+                override fun windowClosed(e: WindowEvent?) {
+                    runFrame = null
+                }
+            })
+            contentPane.add(runWindow, BorderLayout.CENTER)
+            pack()
+            if (Java2DemoApplet.applet == null) {
+                size = Dimension(200, 125)
+            } else {
+                size = Dimension(200, 150)
             }
-            override fun windowClosed(e: WindowEvent?) {
-                rf = null
-            }
+            isVisible = true
         }
-        rf = JFrame("Run")
-        rf!!.addWindowListener(l)
-        rf!!.contentPane.add("Center", runWindow)
-        rf!!.pack()
-        if (Java2DemoApplet.applet == null) {
-            rf!!.size = Dimension(200, 125)
-        } else {
-            rf!!.size = Dimension(200, 150)
-        }
-        rf!!.isVisible = true
     }
 
     fun startRunWindow() {
@@ -227,89 +255,41 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
     }
 
     override fun actionPerformed(e: ActionEvent) {
-        if (e.source == fileMI) {
-            System.exit(0)
-        } else if (e.source == runMI) {
-            createRunWindow()
-        } else if (e.source == cloneMI) {
-            if (cloningfeature == null) {
-                cloningfeature = CloningFeature(this)
-                val l = object : WindowAdapter() {
-
-                    override fun windowClosing(e: WindowEvent?) {
-                        cloningfeature!!.stop()
-                        cf!!.dispose()
-                    }
-
-                    override fun windowClosed(e: WindowEvent?) {
-                        cloningfeature = null
-                    }
-                }
-                cf = JFrame("Cloning Demo")
-                cf!!.addWindowListener(l)
-                cf!!.contentPane.add("Center", cloningfeature)
-                cf!!.pack()
-                cf!!.size = Dimension(320, 330)
-                cf!!.isVisible = true
-            } else {
-                cf!!.toFront()
-            }
-        } else if (e.source == backgMI) {
-            backgroundColor = JColorChooser.showDialog(this, "Background Color", Color.WHITE)
-            for (i in 1 until tabbedPane.tabCount) {
-                val p = groups[i - 1].panel
-                for (j in 0 until p.componentCount) {
-                    val dp = p.getComponent(j) as DemoPanel
-                    if (dp.surface != null) {
-                        dp.surface.background = backgroundColor
-                    }
-                }
-            }
-        }
-    }
-
-    override fun itemStateChanged(e: ItemEvent) {
-        if (e.source == controlsCB) {
-            val newVisibility = !globalControls.isVisible
-            globalControls.isVisible = newVisibility
-            for (cmp in globalControls.textureChooser.components) {
-                cmp.isVisible = newVisibility
-            }
-        } else if (e.source == memoryCB) {
-            if (memoryMonitor.isVisible) {
-                memoryMonitor.isVisible = false
-                memoryMonitor.surf.isVisible = false
-                memoryMonitor.surf.stop()
-            } else {
-                memoryMonitor.isVisible = true
-                memoryMonitor.surf.isVisible = true
-                memoryMonitor.surf.start()
-            }
-        } else if (e.source == perfCB) {
-            performanceMonitor?.run {
-                if (isVisible) {
-                    isVisible = false
-                    surf.isVisible = false
-                    surf.stop()
-                } else {
+        when {
+            e.source == runMI -> createRunWindow()
+            e.source == cloneMI -> if (cloningFeature == null) {
+                cloningFeature = CloningFeature(this)
+                cloningFrame = JFrame("Cloning Demo").apply {
+                    addWindowListener(object : WindowAdapter() {
+                        override fun windowClosing(e: WindowEvent?) {
+                            cloningFeature!!.stop()
+                            dispose()
+                        }
+                        override fun windowClosed(e: WindowEvent?) {
+                            cloningFeature = null
+                        }
+                    })
+                    contentPane.add(cloningFeature, BorderLayout.CENTER)
+                    pack()
+                    size = Dimension(320, 330)
                     isVisible = true
-                    surf.isVisible = true
-                    surf.start()
                 }
+            } else {
+                cloningFrame!!.toFront()
             }
-        } else if (e.source == ccthreadCB) {
-            val state = if (ccthreadCB.isSelected) START else STOP
-            if (tabbedPane.selectedIndex != 0) {
-                val p = groups[tabbedPane.selectedIndex - 1].panel
-                for (i in 0 until p.componentCount) {
-                    val dp = p.getComponent(i) as DemoPanel
-                    if (dp.ccc != null) {
-                        dp.ccc.handleThread(state)
+            e.source == backgMI -> {
+                backgroundColor = JColorChooser.showDialog(this, "Background Color", Color.WHITE)
+                for (i in 1 until tabbedPane.tabCount) {
+                    val p = groups[i - 1].panel
+                    for (j in 0 until p.componentCount) {
+                        val dp = p.getComponent(j) as DemoPanel
+                        if (dp.surface != null) {
+                            dp.surface.background = backgroundColor
+                        }
                     }
                 }
             }
         }
-        revalidate()
     }
 
     fun start() {
@@ -317,12 +297,12 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
             intro.start()
         } else {
             groups[tabbedPane.selectedIndex - 1].setup(false)
-            if (memoryMonitor.surf.thread == null && memoryCB.state) {
-                memoryMonitor.surf.start()
+            if (memoryMonitor.surface.thread == null && memoryMonitorCheckBox.isSelected) {
+                memoryMonitor.surface.start()
             }
-            performanceMonitor?.run {
-                if (surf.thread == null && perfCB.state) {
-                    surf.start()
+            performanceMonitor.run {
+                if (surface.thread == null && performanceMontiorCheckBox.isSelected) {
+                    surface.start()
                 }
             }
         }
@@ -332,8 +312,8 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
         if (tabbedPane.selectedIndex == 0) {
             intro.stop()
         } else {
-            memoryMonitor.surf.stop()
-            performanceMonitor?.surf?.stop()
+            memoryMonitor.surface.stop()
+            performanceMonitor.surface?.stop()
             val i = tabbedPane.selectedIndex - 1
             groups[i].shutDown(groups[i].panel)
         }
@@ -344,8 +324,7 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
      */
     internal class J2DIcon : Icon
     {
-        private val frc = FontRenderContext(null, true, true)
-        private val tl = TextLayout("Java2D", FONT, frc)
+        private val textLayout = TextLayout("Java2D", FONT, FontRenderContext(null, true, true))
 
         override fun paintIcon(c: Component, g: Graphics, x: Int, y: Int) {
             val g2 = g as Graphics2D
@@ -356,7 +335,7 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
             } else {
                 g2.color = myBlack
             }
-            tl.draw(g2, x.toFloat(), (y + 15).toFloat())
+            textLayout.draw(g2, x.toFloat(), (y + 15).toFloat())
         }
 
         override fun getIconWidth(): Int = 40
@@ -382,8 +361,6 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
         lateinit var ccthreadCB: JCheckBoxMenuItem
         var printCB = JCheckBoxMenuItem("Default Printer")
         var backgroundColor: Color? = null
-        lateinit var memoryCB: JCheckBoxMenuItem
-        lateinit var perfCB: JCheckBoxMenuItem
         lateinit var intro: Intro
 
         internal var demos = arrayOf(
@@ -400,69 +377,64 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
             arrayOf("Transforms", "Rotate", "SelectTx", "TransformAnim"))
 
         private fun initFrame(args: Array<String>) {
-            val frame = JFrame("Java 2D(TM) Demo")
-            frame.accessibleContext.accessibleDescription = "A sample application to demonstrate Java2D features"
-            var FRAME_WIDTH = 400
-            var FRAME_HEIGHT = 200
-            frame.setSize(FRAME_WIDTH, FRAME_HEIGHT)
-            val d = Toolkit.getDefaultToolkit().screenSize
-            frame.setLocation(d.width / 2 - FRAME_WIDTH / 2, d.height / 2 - FRAME_HEIGHT / 2)
-            frame.cursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR)
-            frame.addWindowListener(object : WindowAdapter() {
-                override fun windowClosing(e: WindowEvent?) {
-                    System.exit(0)
-                }
-                override fun windowDeiconified(e: WindowEvent?) {
-                    if (demo != null) {
-                        demo!!.start()
+            val frame = JFrame("Java 2D(TM) Demo").apply {
+                accessibleContext.accessibleDescription = "A sample application to demonstrate Java2D features"
+                setSize(400, 200)
+                setLocationRelativeTo(null)
+                cursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR)
+                addWindowListener(object : WindowAdapter() {
+                    override fun windowClosing(e: WindowEvent?) {
+                        System.exit(0)
                     }
-                }
-                override fun windowIconified(e: WindowEvent?) {
-                    if (demo != null) {
-                        demo!!.stop()
+                    override fun windowDeiconified(e: WindowEvent?) {
+                        demo?.start()
                     }
-                }
-            })
-            JOptionPane.setRootFrame(frame)
+                    override fun windowIconified(e: WindowEvent?) {
+                        demo?.stop()
+                    }
+                })
+                JOptionPane.setRootFrame(this)
+            }
 
             val progressPanel = object : JPanel() {
-                override fun getInsets(): Insets {
-                    return Insets(40, 30, 20, 30)
-                }
+                override fun getInsets() = Insets(40, 30, 20, 30)
+            }.apply {
+                layout = BoxLayout(this, BoxLayout.Y_AXIS)
             }
-            progressPanel.layout = BoxLayout(progressPanel, BoxLayout.Y_AXIS)
             frame.contentPane.add(progressPanel, BorderLayout.CENTER)
 
-            val labelSize = Dimension(400, 20)
-            progressLabel = JLabel("Loading, please wait...")
-            progressLabel.alignmentX = Component.CENTER_ALIGNMENT
-            progressLabel.maximumSize = labelSize
-            progressLabel.preferredSize = labelSize
+            progressLabel = JLabel("Loading, please wait...").apply {
+                alignmentX = Component.CENTER_ALIGNMENT
+                val labelSize = Dimension(400, 20)
+                maximumSize = labelSize
+                preferredSize = labelSize
+            }
             progressPanel.add(progressLabel)
             progressPanel.add(Box.createRigidArea(Dimension(1, 20)))
 
-            progressBar = JProgressBar()
-            progressBar.isStringPainted = true
-            progressLabel.labelFor = progressBar
-            progressBar.alignmentX = Component.CENTER_ALIGNMENT
-            progressBar.minimum = 0
-            progressBar.value = 0
-            progressBar.accessibleContext.accessibleName = "Java2D loading progress"
+            progressBar = JProgressBar().apply {
+                isStringPainted = true
+                alignmentX = Component.CENTER_ALIGNMENT
+                minimum = 0
+                value = 0
+                accessibleContext.accessibleName = "Java2D loading progress"
+            }
             progressPanel.add(progressBar)
+            progressLabel.labelFor = progressBar
 
             frame.isVisible = true
 
             val java2Demo = Java2Demo()
             demo = java2Demo //FIXME
 
-            frame.contentPane.removeAll()
-            frame.contentPane.layout = BorderLayout()
-            frame.contentPane.add(demo!!, BorderLayout.CENTER)
-            FRAME_WIDTH = 730
-            FRAME_HEIGHT = 570
-            frame.setLocation(d.width / 2 - FRAME_WIDTH / 2, d.height / 2 - FRAME_HEIGHT / 2)
-            frame.setSize(FRAME_WIDTH, FRAME_HEIGHT)
-            frame.cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR)
+            frame.run {
+                contentPane.removeAll()
+                contentPane.layout = BorderLayout()
+                contentPane.add(java2Demo, BorderLayout.CENTER)
+                setSize(730, 570)
+                setLocationRelativeTo(null)
+                cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR)
+            }
 
             for (arg in args) {
                 val value = arg.substringAfter('=', "")
@@ -470,7 +442,7 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
                     arg.startsWith("-runs=") -> {
                         RunWindow.numRuns = Integer.parseInt(value)
                         RunWindow.exit = true
-                        demo!!.createRunWindow()
+                        java2Demo.createRunWindow()
                     }
                     arg.startsWith("-screen=") ->
                         GlobalControls.screenComboBox.setSelectedIndex(Integer.parseInt(value))
@@ -499,7 +471,8 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
                     arg.startsWith("-zoom") -> RunWindow.zoomCheckBox.isSelected = true
                     arg.startsWith("-maxscreen") -> {
                         frame.setLocation(0, 0)
-                        frame.setSize(d.width, d.height)
+                        val screenSize = Toolkit.getDefaultToolkit().screenSize
+                        frame.setSize(screenSize.width, screenSize.height)
                     }
                 }
             }
@@ -507,10 +480,10 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
             frame.validate()
             frame.repaint()
             frame.focusTraversalPolicy.getDefaultComponent(frame).requestFocus()
-            demo!!.start()
+            java2Demo.start()
 
             if (RunWindow.exit) {
-                demo!!.startRunWindow()
+                java2Demo.startRunWindow()
             }
         }
 
@@ -518,33 +491,7 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
         fun main(args: Array<String>) {
             for (i in args.indices) {
                 if (args[i].startsWith("-h") || args[i].startsWith("-help")) {
-                    var s = ("\njava -jar Java2Demo.jar -runs=5 -delay=5 -screen=5 "
-                            + "-antialias=true -rendering=true -texture=true "
-                            + "-composite=true -verbose -print -columns=3 "
-                            + "-buffers=5,10 -ccthread -zoom -maxscreen \n")
-                    println(s)
-                    s = ("    -runs=5       Number of runs to execute\n"
-                            + "    -delay=5      Sleep amount between tabs\n"
-                            + "    -antialias=   true or false for antialiasing\n"
-                            + "    -rendering=   true or false for quality or speed\n"
-                            + "    -texture=     true or false for texturing\n"
-                            + "    -composite=   true or false for compositing\n"
-                            + "    -verbose      output Surface graphic states \n"
-                            + "    -print        during run print the Surface, "
-                            + "use the Default Printer\n"
-                            + "    -columns=3    # of columns to use in clone layout \n"
-                            + "    -screen=3     demos all use this screen type \n"
-                            + "    -buffers=5,10 during run - clone to see screens "
-                            + "five through ten\n"
-                            + "    -ccthread     Invoke the Custom Controls Thread \n"
-                            + "    -zoom         mouseClick on surface for zoom in  \n"
-                            + "    -maxscreen    take up the entire monitor screen \n")
-                    println(s)
-                    s = ("Examples : \n" + "    Print all of the demos : \n"
-                            + "        java -jar Java2Demo.jar -runs=1 -delay=60 -print \n"
-                            + "    Run zoomed in with custom control thread \n"
-                            + "        java -jar Java2Demo.jar -runs=10 -zoom -ccthread\n")
-                    println(s)
+                    printHelp()
                     System.exit(0)
                 } else if (args[i].startsWith("-delay=")) {
                     val s = args[i].substring(args[i].indexOf('=') + 1)
@@ -553,6 +500,33 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
             }
 
             SwingUtilities.invokeLater { initFrame(args) }
+        }
+
+        private fun printHelp() {
+            println(
+                "\njava -jar Java2Demo.jar -runs=5 -delay=5 -screen=5 "
+                + "-antialias=true -rendering=true -texture=true "
+                + "-composite=true -verbose -print -columns=3 "
+                + "-buffers=5,10 -ccthread -zoom -maxscreen\n"
+                + "    -runs=5       Number of runs to execute\n"
+                + "    -delay=5      Sleep amount between tabs\n"
+                + "    -antialias=   true or false for antialiasing\n"
+                + "    -rendering=   true or false for quality or speed\n"
+                + "    -texture=     true or false for texturing\n"
+                + "    -composite=   true or false for compositing\n"
+                + "    -verbose      output Surface graphic states \n"
+                + "    -print        during run print the Surface, use the Default Printer\n"
+                + "    -columns=3    # of columns to use in clone layout\n"
+                + "    -screen=3     demos all use this screen type\n"
+                + "    -buffers=5,10 during run - clone to see screens five through ten\n"
+                + "    -ccthread     Invoke the Custom Controls Thread\n"
+                + "    -zoom         mouseClick on surface for zoom in\n"
+                + "    -maxscreen    take up the entire monitor screen\n"
+                + "Examples:\n"
+                + "    Print all of the demos:\n"
+                + "        java -jar Java2Demo.jar -runs=1 -delay=60 -print \n"
+                + "    Run zoomed in with custom control thread:\n"
+                + "        java -jar Java2Demo.jar -runs=10 -zoom -ccthread\n")
         }
     }
 }

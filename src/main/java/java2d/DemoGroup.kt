@@ -205,8 +205,8 @@ class DemoGroup(
 
         // Let PerformanceMonitor know which demos are running
         java2Demo?.performanceMonitor?.run {
-            surf.setPanel(panel)
-            surf.setSurfaceState()
+            surface.setPanel(panel)
+            surface.setSurfaceState()
         }
 
         val controls = java2Demo?.globalControls

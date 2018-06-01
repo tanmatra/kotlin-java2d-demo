@@ -32,9 +32,6 @@
 package java2d;
 
 
-import static java.awt.Color.BLACK;
-import static java.awt.Color.GREEN;
-import static java.awt.Color.YELLOW;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -60,6 +57,10 @@ import javax.swing.JTextField;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
+import static java.awt.Color.BLACK;
+import static java.awt.Color.GREEN;
+import static java.awt.Color.YELLOW;
+
 
 /**
  * Tracks Memory allocated & used, displayed in graph form.
@@ -68,7 +69,7 @@ import javax.swing.border.TitledBorder;
 public class MemoryMonitor extends JPanel {
 
     static JCheckBox dateStampCB = new JCheckBox("Output Date Stamp");
-    public Surface surf;
+    public Surface surface;
     JPanel controls;
     boolean doControls;
     JTextField tf;
@@ -76,7 +77,7 @@ public class MemoryMonitor extends JPanel {
     public MemoryMonitor() {
         setLayout(new BorderLayout());
         setBorder(new TitledBorder(new EtchedBorder(), "Memory Monitor"));
-        add(surf = new Surface());
+        add(surface = new Surface());
         controls = new JPanel();
         controls.setPreferredSize(new Dimension(135, 80));
         Font font = new Font("serif", Font.PLAIN, 10);
@@ -98,15 +99,15 @@ public class MemoryMonitor extends JPanel {
             public void mouseClicked(MouseEvent e) {
                 removeAll();
                 if ((doControls = !doControls)) {
-                    surf.stop();
+                    surface.stop();
                     add(controls);
                 } else {
                     try {
-                        surf.sleepAmount = Long.parseLong(tf.getText().trim());
+                        surface.sleepAmount = Long.parseLong(tf.getText().trim());
                     } catch (Exception ex) {
                     }
-                    surf.start();
-                    add(surf);
+                    surface.start();
+                    add(surface);
                 }
                 revalidate();
                 repaint();
@@ -348,12 +349,12 @@ public class MemoryMonitor extends JPanel {
 
             @Override
             public void windowDeiconified(WindowEvent e) {
-                demo.surf.start();
+                demo.surface.start();
             }
 
             @Override
             public void windowIconified(WindowEvent e) {
-                demo.surf.stop();
+                demo.surface.stop();
             }
         };
         JFrame f = new JFrame("Java2D Demo - MemoryMonitor");
@@ -362,6 +363,6 @@ public class MemoryMonitor extends JPanel {
         f.pack();
         f.setSize(new Dimension(200, 200));
         f.setVisible(true);
-        demo.surf.start();
+        demo.surface.start();
     }
 }

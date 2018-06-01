@@ -56,12 +56,12 @@ import javax.swing.border.TitledBorder;
 @SuppressWarnings("serial")
 public class PerformanceMonitor extends JPanel {
 
-    Surface surf;
+    Surface surface;
 
     public PerformanceMonitor() {
         setLayout(new BorderLayout());
         setBorder(new TitledBorder(new EtchedBorder(), "Performance"));
-        add(surf = new Surface());
+        add(surface = new Surface());
     }
 
 
