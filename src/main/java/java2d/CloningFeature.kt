@@ -103,7 +103,7 @@ class CloningFeature : JPanel(), Runnable
         }
 
         index = Java2Demo.tabbedPane.selectedIndex - 1
-        val demoGroup: DemoGroup = Java2Demo.group[index]
+        val demoGroup: DemoGroup = Java2Demo.groups[index]
         var demoPanel: DemoPanel = demoGroup.panel.getComponent(0) as DemoPanel
         if (demoPanel.surface == null) {
             EventQueue.invokeLater {

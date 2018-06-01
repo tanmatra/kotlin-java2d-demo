@@ -122,14 +122,16 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
         memorymonitor = MemoryMonitor()
         performancemonitor = PerformanceMonitor()
 
-        val gp = GlobalPanel()
+        val globalPanel = GlobalPanel(this)
 
         tabbedPane = JTabbedPane()
         tabbedPane.font = Font("serif", Font.PLAIN, 12)
-        tabbedPane.addTab("", J2DIcon(), gp)
-        tabbedPane.addChangeListener(gp)
+        tabbedPane.addTab("", J2DIcon(), globalPanel)
+        tabbedPane.addChangeListener {
+            globalPanel.onDemoTabChanged(tabbedPane.selectedIndex)
+        }
 
-        group = Array(demos.size) { i ->
+        groups = Array(demos.size) { i ->
             val groupName = demos[i][0]
             progressLabel.text = "Loading demos." + groupName
             val demoGroup = DemoGroup(groupName)
@@ -260,7 +262,7 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
         } else if (e.source == backgMI) {
             backgroundColor = JColorChooser.showDialog(this, "Background Color", Color.WHITE)
             for (i in 1 until tabbedPane.tabCount) {
-                val p = group[i - 1].panel
+                val p = groups[i - 1].panel
                 for (j in 0 until p.componentCount) {
                     val dp = p.getComponent(j) as DemoPanel
                     if (dp.surface != null) {
@@ -303,7 +305,7 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
         } else if (e.source == ccthreadCB) {
             val state = if (ccthreadCB.isSelected) START else STOP
             if (tabbedPane.selectedIndex != 0) {
-                val p = group[tabbedPane.selectedIndex - 1].panel
+                val p = groups[tabbedPane.selectedIndex - 1].panel
                 for (i in 0 until p.componentCount) {
                     val dp = p.getComponent(i) as DemoPanel
                     if (dp.ccc != null) {
@@ -319,7 +321,7 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
         if (tabbedPane.selectedIndex == 0) {
             intro.start()
         } else {
-            group[tabbedPane.selectedIndex - 1].setup(false)
+            groups[tabbedPane.selectedIndex - 1].setup(false)
             if (memorymonitor.surf.thread == null && memoryCB.state) {
                 memorymonitor.surf.start()
             }
@@ -338,7 +340,7 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
             memorymonitor.surf.stop()
             performancemonitor?.surf?.stop()
             val i = tabbedPane.selectedIndex - 1
-            group[i].shutDown(group[i].panel)
+            groups[i].shutDown(groups[i].panel)
         }
     }
 
@@ -383,7 +385,7 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
         lateinit var tabbedPane: JTabbedPane
         lateinit var progressLabel: JLabel
         lateinit var progressBar: JProgressBar
-        lateinit var group: Array<DemoGroup>
+        lateinit var groups: Array<DemoGroup>
         lateinit var verboseCB: JCheckBoxMenuItem
         lateinit var ccthreadCB: JCheckBoxMenuItem
         var printCB = JCheckBoxMenuItem("Default Printer")

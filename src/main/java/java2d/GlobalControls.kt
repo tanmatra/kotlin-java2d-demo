@@ -107,7 +107,7 @@ class GlobalControls : JPanel(GridBagLayout()), ItemListener
         val value = slider.value
         (slider.border as TitledBorder).title = "Anim delay = $value ms"
         val index = Java2Demo.tabbedPane.selectedIndex - 1
-        val demoGroup = Java2Demo.group[index]
+        val demoGroup = Java2Demo.groups[index]
         val panel = demoGroup.panel
         for (i in 0 until panel.componentCount) {
             val demoPanel = panel.getComponent(i) as DemoPanel
@@ -120,7 +120,7 @@ class GlobalControls : JPanel(GridBagLayout()), ItemListener
         if (Java2Demo.tabbedPane.selectedIndex != 0) {
             itemEventSource = event.source
             val index = Java2Demo.tabbedPane.selectedIndex - 1
-            Java2Demo.group[index].setup(true)
+            Java2Demo.groups[index].setup(true)
             itemEventSource = null
         }
     }

@@ -37,32 +37,32 @@ import javax.swing.JPanel
 import javax.swing.border.BevelBorder
 import javax.swing.border.CompoundBorder
 import javax.swing.border.EmptyBorder
-import javax.swing.event.ChangeEvent
-import javax.swing.event.ChangeListener
 
 /**
  * Panel that holds the Demo groups, Controls and Monitors for each tab.
  * It's a special "always visible" panel for the Controls, MemoryMonitor &
  * PerformanceMonitor.
  */
-class GlobalPanel : JPanel(), ChangeListener
+class GlobalPanel(private val java2Demo: Java2Demo) : JPanel()
 {
-    private val panel: JPanel
+    private val panel = JPanel(GridBagLayout()).apply {
+        border = CompoundBorder(EmptyBorder(5, 0, 5, 5), BevelBorder(BevelBorder.LOWERED))
+    }
     private var index: Int = 0
 
     init {
         layout = BorderLayout()
-        panel = JPanel(GridBagLayout())
-        panel.border = CompoundBorder(EmptyBorder(5, 0, 5, 5), BevelBorder(BevelBorder.LOWERED))
         Java2Demo.addToGridBag(panel, Java2Demo.controls, 0, 0, 1, 1, 0.0, 0.0)
         Java2Demo.addToGridBag(panel, Java2Demo.memorymonitor, 0, 1, 1, 1, 0.0, 0.0)
         Java2Demo.addToGridBag(panel, Java2Demo.performancemonitor!!, 0, 2, 1, 1, 0.0, 0.0)
         add(Java2Demo.intro)
     }
 
-    override fun stateChanged(e: ChangeEvent) {
-        Java2Demo.group[index].shutDown(Java2Demo.group[index].panel)
-        if (Java2Demo.tabbedPane.selectedIndex == 0) {
+    fun onDemoTabChanged(selectedIndex: Int) {
+        Java2Demo.groups[index].let { oldGroup ->
+            oldGroup.shutDown(oldGroup.panel)
+        }
+        if (selectedIndex == 0) {
             Java2Demo.memorymonitor.surf.stop()
             Java2Demo.performancemonitor!!.surf.stop()
             removeAll()
@@ -80,11 +80,13 @@ class GlobalPanel : JPanel(), ChangeListener
                     Java2Demo.performancemonitor!!.surf.start()
                 }
             } else {
-                remove(Java2Demo.group[index])
+                remove(Java2Demo.groups[index])
             }
-            index = Java2Demo.tabbedPane.selectedIndex - 1
-            add(Java2Demo.group[index])
-            Java2Demo.group[index].setup(false)
+            index = selectedIndex - 1
+            Java2Demo.groups[index].let { newGroup ->
+                add(newGroup)
+                newGroup.setup(false)
+            }
         }
         revalidate()
     }
