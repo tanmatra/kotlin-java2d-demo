@@ -34,16 +34,13 @@ package java2d
 import java.awt.BasicStroke
 import java.awt.BorderLayout
 import java.awt.Color
-import java.awt.Color.GRAY
-import java.awt.Color.GREEN
-import java.awt.Color.LIGHT_GRAY
-import java.awt.Color.WHITE
 import java.awt.Dimension
 import java.awt.Font
 import java.awt.GradientPaint
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.GridLayout
+import java.awt.Paint
 import java.awt.Rectangle
 import java.awt.TexturePaint
 import java.awt.event.MouseAdapter
@@ -63,67 +60,67 @@ import javax.swing.border.TitledBorder
  * Four types of Paint displayed: Geometry, Text & Image Textures and a Gradient Paint.
  * Paints can be selected with the Mouse.
  */
-class TextureChooser(var num: Int) : JPanel()
+class TextureChooser(var num: Int) : JPanel(GridLayout(0, 2, 5, 5))
 {
     val imageTexture: TexturePaint
         get() {
             val img = DemoImages.getImage("java-logo.gif", this)
-            val iw = img.getWidth(this)
-            val ih = img.getHeight(this)
-            val bi = BufferedImage(iw, ih, BufferedImage.TYPE_INT_RGB)
-            val tG2 = bi.createGraphics()
-            tG2.drawImage(img, 0, 0, this)
-            val r = Rectangle(0, 0, iw, ih)
-            return TexturePaint(bi, r)
+            val imgWidth = img.getWidth(this)
+            val imgHeight = img.getHeight(this)
+            val bufferedImage = BufferedImage(imgWidth, imgHeight, BufferedImage.TYPE_INT_RGB)
+            bufferedImage.createGraphics().use { imgGr ->
+                imgGr.drawImage(img, 0, 0, this)
+            }
+            return TexturePaint(bufferedImage, Rectangle(0, 0, imgWidth, imgHeight))
         }
 
     val textTexture: TexturePaint
         get() {
-            val f = Font("Times New Roman", Font.BOLD, 10)
-            val tl = TextLayout("Java2D", f, FontRenderContext(null, false, false))
-            val sw = tl.bounds.width.toInt()
-            val sh = (tl.ascent + tl.descent).toInt()
-            val bi = BufferedImage(sw, sh, BufferedImage.TYPE_INT_RGB)
-            val tG2 = bi.createGraphics()
-            tG2.background = WHITE
-            tG2.clearRect(0, 0, sw, sh)
-            tG2.color = LIGHT_GRAY
-            tl.draw(tG2, 0f, tl.ascent)
-            val r = Rectangle(0, 0, sw, sh)
-            return TexturePaint(bi, r)
+            val font = Font("Times New Roman", Font.BOLD, 10)
+            val textLayout = TextLayout("Java2D", font, FontRenderContext(null, true, false))
+            val textWidth = textLayout.bounds.width.toInt()
+            val textHeight = (textLayout.ascent + textLayout.descent).toInt()
+            val bufferedImage = BufferedImage(textWidth, textHeight, BufferedImage.TYPE_INT_RGB)
+            bufferedImage.createGraphics().use { imgGr ->
+                imgGr.background = Color.WHITE
+                imgGr.clearRect(0, 0, textWidth, textHeight)
+                imgGr.color = Color.LIGHT_GRAY
+                textLayout.draw(imgGr, 0f, textLayout.ascent)
+            }
+            return TexturePaint(bufferedImage, Rectangle(0, 0, textWidth, textHeight))
         }
 
     val gradientPaint: GradientPaint
-        get() = GradientPaint(0f, 0f, WHITE, 80f, 0f, GREEN)
+        get() = GradientPaint(0f, 0f, Color.WHITE, 80f, 0f, Color.GREEN)
 
     init {
-        layout = GridLayout(0, 2, 5, 5)
         border = TitledBorder(EtchedBorder(), "Texture Chooser")
-
         add(Surface(geomTexture, this, 0))
         add(Surface(imageTexture, this, 1))
         add(Surface(textTexture, this, 2))
         add(Surface(gradientPaint, this, 3))
     }
 
-    inner class Surface(private val t: Any, private val tc: TextureChooser, private val num: Int) : JPanel()
+    inner class Surface(
+        private val paint: Paint,
+        private val textureChooser: TextureChooser,
+        private val num: Int)
+    : JPanel()
     {
         var clickedFrame: Boolean = false
         private var enterExitFrame = false
 
         init {
             background = Color.WHITE
-            clickedFrame = num == tc.num
-            if (num == tc.num) {
-                TextureChooser.texture = t
+            clickedFrame = (num == textureChooser.num)
+            if (num == textureChooser.num) {
+                TextureChooser.texture = paint
             }
             addMouseListener(object : MouseAdapter() {
-
                 override fun mouseClicked(e: MouseEvent?) {
-                    TextureChooser.texture = t
+                    TextureChooser.texture = paint
                     clickedFrame = true
-
-                    for (component in tc.components) {
+                    for (component in textureChooser.components) {
                         if (component is Surface) {
                             if (component != this@Surface && component.clickedFrame) {
                                 component.clickedFrame = false
@@ -131,7 +128,6 @@ class TextureChooser(var num: Int) : JPanel()
                             }
                         }
                     }
-
                     // ABP
                     Java2Demo.controls.textureCheckBox.run {
                         if (isSelected) {
@@ -140,12 +136,10 @@ class TextureChooser(var num: Int) : JPanel()
                         }
                     }
                 }
-
                 override fun mouseEntered(e: MouseEvent?) {
                     enterExitFrame = true
                     repaint()
                 }
-
                 override fun mouseExited(e: MouseEvent?) {
                     enterExitFrame = false
                     repaint()
@@ -158,35 +152,25 @@ class TextureChooser(var num: Int) : JPanel()
             val g2 = g as Graphics2D
             val w = size.width
             val h = size.height
-            if (t is TexturePaint) {
-                g2.paint = t
+            if (paint is TexturePaint) {
+                g2.paint = paint
             } else {
-                g2.paint = t as GradientPaint
+                g2.paint = paint as GradientPaint
             }
             g2.fill(Rectangle(0, 0, w, h))
             if (clickedFrame || enterExitFrame) {
-                g2.color = GRAY
-                val bs = BasicStroke(
-                    3f, BasicStroke.CAP_BUTT,
-                    BasicStroke.JOIN_MITER
-                                    )
-                g2.stroke = bs
+                g2.color = Color.GRAY
+                g2.stroke = BasicStroke(3f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER)
                 g2.drawRect(0, 0, w - 1, h - 1)
-                tc.num = num
+                textureChooser.num = num
             }
         }
 
-        override fun getMinimumSize(): Dimension {
-            return preferredSize
-        }
+        override fun getMinimumSize() = preferredSize
 
-        override fun getMaximumSize(): Dimension {
-            return preferredSize
-        }
+        override fun getMaximumSize() = preferredSize
 
-        override fun getPreferredSize(): Dimension {
-            return Dimension(30, 30)
-        }
+        override fun getPreferredSize() = Dimension(30, 30)
     }
 
     companion object
@@ -195,14 +179,17 @@ class TextureChooser(var num: Int) : JPanel()
 
         val geomTexture: TexturePaint
             get() {
-                val bi = BufferedImage(5, 5, BufferedImage.TYPE_INT_RGB)
-                val tG2 = bi.createGraphics()
-                tG2.background = WHITE
-                tG2.clearRect(0, 0, 5, 5)
-                tG2.color = Color(211, 211, 211, 200)
-                tG2.fill(Ellipse2D.Float(0f, 0f, 5f, 5f))
-                val r = Rectangle(0, 0, 5, 5)
-                return TexturePaint(bi, r)
+                val SIZE = 12
+                val bufferedImage = BufferedImage(SIZE, SIZE, BufferedImage.TYPE_INT_RGB)
+                bufferedImage.createGraphics().use { imgGr ->
+                    imgGr.antialiasing = true
+                    imgGr.background = Color.WHITE
+                    imgGr.clearRect(0, 0, SIZE, SIZE)
+                    imgGr.color = Color(211, 211, 211, 200)
+                    val ellipseSize = (SIZE - 1).toFloat()
+                    imgGr.fill(Ellipse2D.Float(1f, 1f, ellipseSize, ellipseSize))
+                }
+                return TexturePaint(bufferedImage, Rectangle(0, 0, SIZE, SIZE))
             }
 
         @JvmStatic

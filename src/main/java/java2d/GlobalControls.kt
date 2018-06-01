@@ -43,16 +43,14 @@ import javax.swing.JSlider
 import javax.swing.SwingConstants
 import javax.swing.border.EtchedBorder
 import javax.swing.border.TitledBorder
-import javax.swing.event.ChangeEvent
-import javax.swing.event.ChangeListener
 
 /**
  * Global Controls panel for changing graphic attributes of
  * the demo surface.
  */
-class GlobalControls : JPanel(GridBagLayout()), ItemListener, ChangeListener
+class GlobalControls : JPanel(GridBagLayout()), ItemListener
 {
-    val textureChooser: TextureChooser
+    val textureChooser = TextureChooser(0)
     val antialiasingCheckBox: JCheckBox
     val renderCheckBox: JCheckBox
     val toolBarCheckBox: JCheckBox
@@ -76,14 +74,14 @@ class GlobalControls : JPanel(GridBagLayout()), ItemListener, ChangeListener
             for (s in SCREEN_NAMES) {
                 addItem(s)
             }
+            addItemListener(this@GlobalControls)
         }
-        screenComboBox.addItemListener(this)
         Java2Demo.addToGridBag(this, screenComboBox, 0, 4, 1, 1, 0.0, 0.0)
 
         toolBarCheckBox = createCheckBox("Tools", false, 5)
 
         slider = JSlider(SwingConstants.HORIZONTAL, 0, 200, 30).apply {
-            addChangeListener(this@GlobalControls)
+            addChangeListener { onSliderChange() }
             border = TitledBorder(EtchedBorder()).apply {
                 titleFont = FONT
                 title = "Anim delay = 30 ms"
@@ -92,12 +90,11 @@ class GlobalControls : JPanel(GridBagLayout()), ItemListener, ChangeListener
         }
         Java2Demo.addToGridBag(this, slider, 0, 6, 1, 1, 1.0, 1.0)
 
-        textureChooser = TextureChooser(0)
         Java2Demo.addToGridBag(this, textureChooser, 0, 7, 1, 1, 1.0, 1.0)
     }
 
-    private fun createCheckBox(s: String, b: Boolean, y: Int): JCheckBox {
-        val checkBox = JCheckBox(s, b).apply {
+    private fun createCheckBox(text: String, selected: Boolean, y: Int): JCheckBox {
+        val checkBox = JCheckBox(text, selected).apply {
             font = FONT
             horizontalAlignment = SwingConstants.LEFT
             addItemListener(this@GlobalControls)
@@ -106,7 +103,7 @@ class GlobalControls : JPanel(GridBagLayout()), ItemListener, ChangeListener
         return checkBox
     }
 
-    override fun stateChanged(e: ChangeEvent) {
+    private fun onSliderChange() {
         val value = slider.value
         (slider.border as TitledBorder).title = "Anim delay = $value ms"
         val index = Java2Demo.tabbedPane.selectedIndex - 1
