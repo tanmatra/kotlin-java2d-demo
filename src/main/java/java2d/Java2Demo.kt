@@ -87,12 +87,13 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
     private var cloneMI: JMenuItem? = null
     private var fileMI: JMenuItem? = null
     private var backgMI: JMenuItem? = null
-    //    private JMenuItem ccthreadMI, verboseMI;
+    // private JMenuItem ccthreadMI, verboseMI;
     private var runwindow: RunWindow? = null
     private var cloningfeature: CloningFeature? = null
     private var rf: JFrame? = null
     private var cf: JFrame? = null
-    //    private GlobalPanel gp;
+
+    val memoryMonitor = MemoryMonitor()
 
     /**
      * Construct the Java2D Demo.
@@ -117,7 +118,6 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
         UIManager.put("Button.margin", Insets(0, 0, 0, 0))
 
         controls = GlobalControls()
-        memorymonitor = MemoryMonitor()
         performancemonitor = PerformanceMonitor()
 
         val globalPanel = GlobalPanel(this)
@@ -279,14 +279,14 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
                 cmp.isVisible = newVisibility
             }
         } else if (e.source == memoryCB) {
-            if (memorymonitor.isVisible) {
-                memorymonitor.isVisible = false
-                memorymonitor.surf.isVisible = false
-                memorymonitor.surf.stop()
+            if (memoryMonitor.isVisible) {
+                memoryMonitor.isVisible = false
+                memoryMonitor.surf.isVisible = false
+                memoryMonitor.surf.stop()
             } else {
-                memorymonitor.isVisible = true
-                memorymonitor.surf.isVisible = true
-                memorymonitor.surf.start()
+                memoryMonitor.isVisible = true
+                memoryMonitor.surf.isVisible = true
+                memoryMonitor.surf.start()
             }
         } else if (e.source == perfCB) {
             performancemonitor?.run {
@@ -320,8 +320,8 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
             intro.start()
         } else {
             groups[tabbedPane.selectedIndex - 1].setup(false)
-            if (memorymonitor.surf.thread == null && memoryCB.state) {
-                memorymonitor.surf.start()
+            if (memoryMonitor.surf.thread == null && memoryCB.state) {
+                memoryMonitor.surf.start()
             }
             performancemonitor?.run {
                 if (surf.thread == null && perfCB.state) {
@@ -335,7 +335,7 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
         if (tabbedPane.selectedIndex == 0) {
             intro.stop()
         } else {
-            memorymonitor.surf.stop()
+            memoryMonitor.surf.stop()
             performancemonitor?.surf?.stop()
             val i = tabbedPane.selectedIndex - 1
             groups[i].shutDown(groups[i].panel)
@@ -378,7 +378,6 @@ class Java2Demo : JPanel(), ItemListener, ActionListener {
     {
         var demo: Java2Demo? = null
         lateinit var controls: GlobalControls
-        lateinit var memorymonitor: MemoryMonitor
         var performancemonitor: PerformanceMonitor? = null
         lateinit var tabbedPane: JTabbedPane
         lateinit var progressLabel: JLabel
