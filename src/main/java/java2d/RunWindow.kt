@@ -172,7 +172,7 @@ class RunWindow(private val java2Demo: Java2Demo) : JPanel(GridBagLayout()), Run
             for (component in demoGroup.panel.components) {
                 val demoPanel = component as DemoPanel
                 demoPanel.tools?.let { tools ->
-                    demoPanel.surface.animating?.let { animating ->
+                    demoPanel.surface!!.animating?.let { animating ->
                         if (animating.running()) {
                             tools.startStopButton!!.doClick()
                         }
@@ -215,7 +215,7 @@ class RunWindow(private val java2Demo: Java2Demo) : JPanel(GridBagLayout()), Run
                     var demoPanel: DemoPanel = demoGroup.panel.getComponent(0) as DemoPanel
                     if (demoGroup.tabbedPane == null && demoPanel.surface != null) {
                         invokeAndWait {
-                            demoGroup.mouseClicked(demoPanel.surface)
+                            demoGroup.mouseClicked(demoPanel.surface!!)
                         }
                     }
                     for (subTabIndex in 1 until demoGroup.tabbedPane!!.tabCount) {
@@ -228,16 +228,18 @@ class RunWindow(private val java2Demo: Java2Demo) : JPanel(GridBagLayout()), Run
                         val p = demoGroup.panel
                         if (buffersFlag && p.componentCount == 1) {
                             demoPanel = p.getComponent(0) as DemoPanel
-                            demoPanel.surface.animating?.stop()
+                            demoPanel.surface!!.animating?.stop()
                             for (cloneIndex in bufBeg .. bufEnd) {
                                 if (thread == null) break
                                 invokeAndWait {
-                                    demoPanel.tools.cloneButton!!.doClick()
+                                    demoPanel.tools!!.cloneButton!!.doClick()
                                     (p.getComponent(p.componentCount - 1) as DemoPanel).let { clone ->
-                                        clone.surface.animating?.stop()
-                                        clone.tools.issueRepaint = true
-                                        clone.tools.screenCombo.selectedIndex = cloneIndex
-                                        clone.tools.issueRepaint = false
+                                        clone.surface!!.animating?.stop()
+                                        clone.tools?.let { tools ->
+                                            tools.issueRepaint = true
+                                            tools.screenCombo.selectedIndex = cloneIndex
+                                            tools.issueRepaint = false
+                                        }
                                     }
                                 }
                             }

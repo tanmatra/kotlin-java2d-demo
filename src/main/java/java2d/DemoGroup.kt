@@ -148,14 +148,15 @@ class DemoGroup(
             for (i in clonePanels.indices) {
 //              clonePanels[i] = JPanel(BorderLayout())
                 val dp = tmpP.getComponent(i) as DemoPanel
-                val c = DemoPanel(dp.className)
+                val c = dp.clone()
                 c.setDemoBorder(clonePanels[i])
                 if (c.surface != null) {
                     c.surface.monitor = java2Demo?.performanceMonitor != null
                     val cloneImg = DemoImages.getImage("clone.gif", this)
-                    c.tools.cloneButton = c.tools.addTool(cloneImg, "Clone the Surface", this)
-                    val d = c.tools.toolbar.preferredSize
-                    c.tools.toolbar.preferredSize = Dimension(d.width + 27, d.height)
+                    val tools = c.tools!!
+                    tools.cloneButton = tools.addTool(cloneImg, "Clone the Surface", this)
+                    val d = tools.toolbar.preferredSize
+                    tools.toolbar.preferredSize = Dimension(d.width + 27, d.height)
                     Java2Demo.backgroundColor?.let { backgroundColor ->
                         c.surface.background = backgroundColor
                     }
@@ -215,7 +216,7 @@ class DemoGroup(
         for (i in 0 until panel.componentCount) {
             val demoPanel = panel.getComponent(i) as DemoPanel
             if (demoPanel.surface != null && controls != null) {
-                val tools = demoPanel.tools
+                val tools = demoPanel.tools!!
                 tools.isVisible = isValid
                 tools.issueRepaint = issueRepaint
                 val buttons = arrayOf(tools.toggleButton, tools.antialiasButton, tools.renderButton,
@@ -266,24 +267,25 @@ class DemoGroup(
             panel.revalidate()
         }
         val original = panel.getComponent(0) as DemoPanel
-        val clone = DemoPanel(original.className)
+        val clone = original.clone()
         if (columns == 2) {
             clone.setDemoBorder(panel)
         }
         val removeImg = DemoImages.getImage("remove.gif", this)
-        clone.tools.cloneButton = clone.tools.addTool(removeImg, "Remove the Surface", this)
-        val d = clone.tools.toolbar.preferredSize
-        clone.tools.toolbar.preferredSize = Dimension(d.width + 27, d.height)
+        val tools = clone.tools!!
+        tools.cloneButton = tools.addTool(removeImg, "Remove the Surface", this)
+        val d = tools.toolbar.preferredSize
+        tools.toolbar.preferredSize = Dimension(d.width + 27, d.height)
         Java2Demo.backgroundColor?.let { backgroundColor ->
-            clone.surface.background = backgroundColor
+            clone.surface?.background = backgroundColor
         }
         if (java2Demo?.globalControls != null) {
-            if (clone.tools.isExpanded != java2Demo.globalControls.toolBarCheckBox.isSelected) {
-                clone.tools.toggleButton.doClick()
+            if (tools.isExpanded != java2Demo.globalControls.toolBarCheckBox.isSelected) {
+                tools.toggleButton.doClick()
             }
         }
         clone.start()
-        clone.surface.monitor = java2Demo?.performanceMonitor != null
+        clone.surface!!.monitor = java2Demo?.performanceMonitor != null
         panel.add(clone)
         panel.repaint()
         panel.revalidate()

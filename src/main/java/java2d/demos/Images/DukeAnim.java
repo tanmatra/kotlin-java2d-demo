@@ -63,7 +63,7 @@ public class DukeAnim extends AnimatingSurface implements ImageObserver {
 
     @Override
     public void reset(int w, int h) {
-        b = ((DemoPanel) getParent()).tools.getStartStopButton();
+        b = ((DemoPanel) getParent()).getTools().getStartStopButton();
     }
 
     @Override

@@ -196,9 +196,7 @@ class Java2Demo : JPanel(), ActionListener
                     val p = groups[tabbedPane.selectedIndex - 1].panel
                     for (i in 0 until p.componentCount) {
                         val dp = p.getComponent(i) as DemoPanel
-                        if (dp.ccc != null) {
-                            dp.ccc.handleThread(state)
-                        }
+                        dp.customControlsContext?.handleThread(state)
                     }
                 }
             }

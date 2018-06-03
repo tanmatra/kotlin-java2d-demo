@@ -128,7 +128,7 @@ class PerformanceMonitor : JPanel(BorderLayout())
             panel?.let { panel ->
                 for (component in panel.components) {
                     if ((component as DemoPanel).surface != null) {
-                        component.surface.monitor = (timer != null)
+                        component.surface!!.monitor = (timer != null)
                     }
                 }
             }
