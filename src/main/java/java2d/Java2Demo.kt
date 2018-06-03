@@ -42,7 +42,6 @@ import java.awt.Font
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.Insets
-import java.awt.RenderingHints
 import java.awt.Toolkit
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
@@ -177,11 +176,11 @@ class Java2Demo : JPanel(), ActionListener
                     if (isVisible) {
                         isVisible = false
                         surface.isVisible = false
-                        surface.stop()
+                        stop()
                     } else {
                         isVisible = true
                         surface.isVisible = true
-                        surface.start()
+                        start()
                     }
                 }
             }
@@ -301,8 +300,8 @@ class Java2Demo : JPanel(), ActionListener
                 memoryMonitor.surface.start()
             }
             performanceMonitor.run {
-                if (surface.thread == null && performanceMontiorCheckBox.isSelected) {
-                    surface.start()
+                if (!isRunning && performanceMontiorCheckBox.isSelected) {
+                    start()
                 }
             }
         }
@@ -313,7 +312,7 @@ class Java2Demo : JPanel(), ActionListener
             intro.stop()
         } else {
             memoryMonitor.surface.stop()
-            performanceMonitor.surface?.stop()
+            performanceMonitor.stop()
             val i = tabbedPane.selectedIndex - 1
             groups[i].shutDown(groups[i].panel)
         }
@@ -328,7 +327,7 @@ class Java2Demo : JPanel(), ActionListener
 
         override fun paintIcon(c: Component, g: Graphics, x: Int, y: Int) {
             val g2 = g as Graphics2D
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+            g2.antialiasing = true
             g2.font = FONT
             if (tabbedPane.selectedIndex == 0) {
                 g2.color = myBlue

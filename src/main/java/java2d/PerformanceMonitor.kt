@@ -37,11 +37,11 @@ import java.awt.Dimension
 import java.awt.Font
 import java.awt.FontMetrics
 import java.awt.Graphics
-import java.awt.Graphics2D
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.awt.image.BufferedImage
 import javax.swing.JPanel
+import javax.swing.Timer
 import javax.swing.border.EtchedBorder
 import javax.swing.border.TitledBorder
 
@@ -50,30 +50,35 @@ import javax.swing.border.TitledBorder
  * of frames per second on animated demos.  Up to four surfaces fit
  * in the display area.
  */
-class PerformanceMonitor : JPanel()
+class PerformanceMonitor : JPanel(BorderLayout())
 {
-    internal var surface: Surface
+    val surface = Surface()
 
     init {
-        layout = BorderLayout()
         border = TitledBorder(EtchedBorder(), "Performance")
-        surface = Surface()
         add(surface)
     }
 
-    inner class Surface : JPanel(), Runnable
+    val isRunning get() = surface.isRunning
+
+    fun start() = surface.start()
+
+    fun stop() = surface.stop()
+
+    inner class Surface : JPanel()
     {
-        var thread: Thread? = null
-        private var bimg: BufferedImage? = null
-        private val FONT = Font("Times New Roman", Font.PLAIN, 12)
-        private var panel: JPanel? = null
+        private var bufferedImage: BufferedImage? = null
+        var panel: JPanel? = null
+        private var fontMetrics: FontMetrics? = null
+        private var timer: Timer? = null
+
+        internal val isRunning: Boolean get() = (timer != null)
 
         init {
-            background = Color.black
+            background = Color.BLACK
             addMouseListener(object : MouseAdapter() {
-
                 override fun mouseClicked(e: MouseEvent?) {
-                    if (thread == null) {
+                    if (timer == null) {
                         start()
                     } else {
                         stop()
@@ -82,110 +87,85 @@ class PerformanceMonitor : JPanel()
             })
         }
 
-        override fun getMinimumSize(): Dimension {
-            return preferredSize
-        }
+        override fun getMinimumSize(): Dimension = preferredSize
 
-        override fun getMaximumSize(): Dimension {
-            return preferredSize
-        }
+        override fun getMaximumSize(): Dimension = preferredSize
 
         override fun getPreferredSize(): Dimension {
-            val textH = getFontMetrics(FONT).height
-            return Dimension(135, 2 + textH * 4)
+            val textHeight = getFontMetrics(FONT).height
+            return Dimension(135, 2 + textHeight * 4)
         }
 
-        override fun paint(g: Graphics?) {
-            if (bimg != null) {
-                g!!.drawImage(bimg, 0, 0, this)
+        override fun paintComponent(g: Graphics) {
+            super.paintComponent(g)
+            if (bufferedImage != null) {
+                g.drawImage(bufferedImage, 0, 0, null)
             }
         }
 
-        fun start() {
-            thread = Thread(this)
-            thread!!.priority = Thread.MIN_PRIORITY
-            thread!!.name = "PerformanceMonitor"
-            thread!!.start()
+        internal fun start() {
+            if (timer == null) {
+                timer = Timer(990) {
+                    if (isShowing && width != 0 && height != 0) {
+                        render()
+                        repaint()
+                    }
+                }.apply {
+                    initialDelay = 0
+                    start()
+                }
+            }
         }
 
-        @Synchronized
-        fun stop() {
-            thread = null
-            setSurfaceState()
-            @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
-            (this as java.lang.Object).notify()
+        internal fun stop() {
+            timer?.let { timer ->
+                timer.stop()
+                this.timer = null
+            }
         }
 
         fun setSurfaceState() {
-            if (panel != null) {
-                for (comp in panel!!.components) {
-                    if ((comp as DemoPanel).surface != null) {
-                        comp.surface.monitor = thread != null
+            panel?.let { panel ->
+                for (component in panel.components) {
+                    if ((component as DemoPanel).surface != null) {
+                        component.surface.monitor = (timer != null)
                     }
                 }
             }
         }
 
-        fun setPanel(panel: JPanel) {
-            this.panel = panel
-        }
-
-        override fun run() {
-            val me = Thread.currentThread()
-
-            while (thread === me && !isShowing || size.width == 0) {
-                try {
-                    Thread.sleep(500)
-                } catch (e: InterruptedException) {
-                    return
-                }
-            }
-
-            var d = Dimension(0, 0)
-            var big: Graphics2D? = null
-            var fm: FontMetrics? = null
-            var ascent = 0
-            var descent = 0
-
-            while (thread === me && isShowing) {
-
-                if (width != d.width || height != d.height) {
-                    d = size
-                    bimg = createImage(d.width, d.height) as BufferedImage
-                    big = bimg!!.createGraphics()
-                    big!!.font = FONT
-                    fm = big.fontMetrics
-                    ascent = fm!!.ascent
-                    descent = fm.descent
+        private fun render() {
+            val image = bufferedImage?.takeIf { it.width == width && it.height == height }
+                ?: BufferedImage(width, height, BufferedImage.TYPE_INT_RGB).also {
+                    bufferedImage = it
+                    fontMetrics = null
                     setSurfaceState()
                 }
-
-                big!!.background = background
-                big.clearRect(0, 0, d.width, d.height)
-                if (panel == null) {
-                    continue
-                }
-                big.color = Color.green
-                var ssH = 1
-                for (comp in panel!!.components) {
-                    if ((comp as DemoPanel).surface != null) {
-                        val pStr = comp.surface.perfStr
-                        if (pStr != null) {
-                            ssH += ascent
-                            big.drawString(pStr, 4, ssH + 1)
-                            ssH += descent
+            image.createGraphics().use { imgGr ->
+                imgGr.textAntialiasing = systemTextAntialiasing
+                imgGr.font = FONT
+                val fontMetrics = fontMetrics ?: imgGr.fontMetrics.also { fontMetrics = it }
+                imgGr.background = background
+                imgGr.clearRect(0, 0, image.width, image.height)
+                panel?.let { panel ->
+                    imgGr.color = Color.GREEN
+                    var y = 1
+                    val ascent = fontMetrics.ascent
+                    val descent = fontMetrics.descent
+                    for (component in panel.components) {
+                        (component as? DemoPanel)?.surface?.performanceString?.let { performanceString ->
+                            y += ascent
+                            imgGr.drawString(performanceString, 4, y + 1)
+                            y += descent
                         }
                     }
                 }
-                repaint()
-
-                try {
-                    Thread.sleep(999)
-                } catch (e: InterruptedException) {
-                    break
-                }
             }
-            thread = null
         }
+    }
+
+    companion object
+    {
+        private val FONT = Font(Font.DIALOG, Font.PLAIN, 12)
     }
 }

@@ -205,7 +205,7 @@ class DemoGroup(
 
         // Let PerformanceMonitor know which demos are running
         java2Demo?.performanceMonitor?.run {
-            surface.setPanel(panel)
+            surface.panel = panel
             surface.setSurfaceState()
         }
 

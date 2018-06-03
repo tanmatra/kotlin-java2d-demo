@@ -6,6 +6,7 @@ import java.awt.Graphics2D
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.RenderingHints
+import java.awt.Toolkit
 import java.util.logging.Logger
 import javax.swing.AbstractButton
 import javax.swing.JComponent
@@ -50,6 +51,16 @@ var Graphics2D.antialiasing: Boolean
         setRenderingHint(RenderingHints.KEY_ANTIALIASING,
             if (value) RenderingHints.VALUE_ANTIALIAS_ON else RenderingHints.VALUE_ANTIALIAS_OFF)
     }
+
+var Graphics2D.textAntialiasing: Any?
+    get() = getRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING)
+    set(value) = setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, value)
+
+val systemTextAntialiasing: Any? = run {
+    val hints = Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints")
+    (hints as? Map<*, *>)?.get(RenderingHints.KEY_TEXT_ANTIALIASING)
+}
+
 
 fun JComponent.addToGridBag(
     component: Component,

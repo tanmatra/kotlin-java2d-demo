@@ -77,7 +77,7 @@ abstract class Surface : JPanel(), Printable
     var rendering = VALUE_RENDER_SPEED
     var composite: AlphaComposite? = null
     var texture: Paint? = null
-    var perfStr: String? = null // PerformanceMonitor
+    var performanceString: String? = null // PerformanceMonitor
 
     var bufferedImage: BufferedImage? = null
 
@@ -370,7 +370,7 @@ abstract class Surface : JPanel(), Printable
             val end = System.currentTimeMillis()
             val rel = end - start
             if (frame == 0L) {
-                perfStr = "$name $rel ms"
+                performanceString = "$name $rel ms"
                 if (animating == null || !animating!!.running()) {
                     frame = -1
                 }
@@ -380,10 +380,10 @@ abstract class Surface : JPanel(), Printable
                     s1.substring(0, s1.length)
                 else
                     s1.substring(0, 4)
-                perfStr = "$name $s1 fps"
+                performanceString = "$name $s1 fps"
             }
             if (outputPerf) {
-                println(perfStr)
+                println(performanceString)
             }
             start = end
         }
