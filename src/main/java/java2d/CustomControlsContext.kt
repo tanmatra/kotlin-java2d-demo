@@ -29,23 +29,23 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+package java2d
 
-
-package java2d;
-
-
-import java.awt.Component;
-
+import java.awt.Component
 
 /**
  * ControlsSurface or AnimatingControlsSurface classes implement
  * this interface.
  */
-public interface CustomControlsContext {
-    public static enum State { START, STOP };
-    public String[] getConstraints();
-    public Component[] getControls();
-    public void setControls(Component[] controls);
-    public void setConstraints(String[] constraints);
-    public void handleThread(CustomControlsContext.State state);
+interface CustomControlsContext
+{
+    var controls: Array<Component>
+    var constraints: Array<String>
+
+    enum class State {
+        START,
+        STOP
+    }
+
+    fun handleThread(state: CustomControlsContext.State)
 }
