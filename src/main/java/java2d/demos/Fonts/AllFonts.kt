@@ -35,11 +35,11 @@ import java2d.AnimatingControlsSurface
 import java2d.CustomControls
 import java2d.Surface
 import java.awt.Color
+import java.awt.Component
 import java.awt.Dimension
 import java.awt.Font
 import java.awt.Graphics2D
 import java.awt.GraphicsEnvironment
-import java.util.ArrayList
 import javax.swing.JMenu
 import javax.swing.JMenuBar
 import javax.swing.JMenuItem
@@ -53,45 +53,45 @@ import javax.swing.border.EtchedBorder
 class AllFonts : AnimatingControlsSurface()
 {
     private var nStrs: Int = 0
-    private var strH: Int = 0
+    private var lineHeight: Int = 0
     private var fi: Int = 0
-    private var fsize = 14
-    private var v: MutableList<Font> = ArrayList()
+    private var fontSize = 14
+    private val visibleFonts = mutableListOf<Font>()
 
     init {
         background = Color.WHITE
         sleepAmount = 500
-        controls = arrayOf(DemoControls(this))
     }
 
+    override var controls: Array<out Component> = arrayOf(DemoControls(this))
+
     override fun reset(newWidth: Int, newHeight: Int) {
-        v.clear()
-        val f = fonts[0].deriveFont(Font.PLAIN, fsize.toFloat())
-        val fm = getFontMetrics(f)
-        strH = fm.ascent + fm.descent
-        nStrs = newHeight / strH + 1
+        visibleFonts.clear()
+        val font = fonts[0].deriveFont(Font.PLAIN, fontSize.toFloat())
+        val fontMetrics = getFontMetrics(font)
+        lineHeight = fontMetrics.height
+        nStrs = newHeight / lineHeight + 1
         fi = 0
     }
 
     override fun step(width: Int, height: Int) {
         if (fi < fonts.size) {
-            v.add(fonts[fi].deriveFont(Font.PLAIN, fsize.toFloat()))
+            visibleFonts.add(fonts[fi].deriveFont(Font.PLAIN, fontSize.toFloat()))
         }
-        if (v.size == nStrs && !v.isEmpty() || fi > fonts.size) {
-            v.removeAt(0)
+        if (visibleFonts.size == nStrs && !visibleFonts.isEmpty() || fi > fonts.size) {
+            visibleFonts.removeAt(0)
         }
-        fi = if (v.isEmpty()) 0 else ++fi
+        fi = if (visibleFonts.isEmpty()) 0 else fi + 1 //++fi
     }
 
     override fun render(w: Int, h: Int, g2: Graphics2D) {
         g2.color = Color.BLACK
-        var yy = if (fi >= fonts.size) 0 else h - v.size * strH - strH / 2
-        for (i in v.indices) {
-            val f = v[i]
-            val sw = getFontMetrics(f).stringWidth(f.name)
-            g2.font = f
-            yy += strH
-            g2.drawString(f.name, w / 2 - sw / 2, yy)
+        var yy = if (fi >= fonts.size) 0 else h - visibleFonts.size * lineHeight - lineHeight / 2
+        for (font in visibleFonts) {
+            val stringWidth = getFontMetrics(font).stringWidth(font.name)
+            g2.font = font
+            yy += lineHeight
+            g2.drawString(font.name, w / 2 - stringWidth / 2, yy)
         }
     }
 
@@ -114,9 +114,8 @@ class AllFonts : AnimatingControlsSurface()
                 menu.add(JMenuItem(size.toString()).apply {
                     font = Font(Font.DIALOG, Font.PLAIN, size)
                     addActionListener {
-                        demo.fsize = size
-                        val d = demo.size
-                        demo.reset(d.width, d.height)
+                        demo.fontSize = size
+                        demo.reset(demo.width, demo.height)
                     }
                 })
             }

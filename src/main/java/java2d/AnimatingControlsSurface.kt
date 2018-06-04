@@ -39,6 +39,6 @@ import java.awt.Component
  */
 abstract class AnimatingControlsSurface : AnimatingSurface(), CustomControlsContext
 {
-    override var controls: Array<Component> = emptyArray()
+    override var controls: Array<out Component> = emptyArray()
     override var constraints = arrayOf(BorderLayout.NORTH)
 }

@@ -39,7 +39,7 @@ import java.awt.Component
  */
 interface CustomControlsContext
 {
-    var controls: Array<Component>
+    var controls: Array<out Component>
     var constraints: Array<String>
 
     enum class State {
