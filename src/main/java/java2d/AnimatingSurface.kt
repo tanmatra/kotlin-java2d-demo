@@ -29,81 +29,75 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-
-package java2d;
-
+package java2d
 
 /**
  * Demos that animate extend this class.
  */
-@SuppressWarnings("serial")
-public abstract class AnimatingSurface extends Surface implements Runnable {
+abstract class AnimatingSurface : Surface(), Runnable
+{
+    @Volatile
+    private var running = false
 
-    private volatile boolean running = false;
+    @Volatile
+    private var thread: Thread? = null
 
-    private volatile Thread thread;
+    abstract fun step(width: Int, height: Int)
 
-    public abstract void step(int w, int h);
+    abstract fun reset(newWidth: Int, newHeight: Int)
 
-    public abstract void reset(int newwidth, int newheight);
-
-
-    public void start() {
-        if (!running() && !getDontThread()) {
-            thread = new Thread(this);
-            thread.setPriority(Thread.MIN_PRIORITY);
-            thread.setName(getName() + " Demo");
-            thread.start();
-            running = true;
+    fun start() {
+        if (!running() && !dontThread) {
+            thread = Thread(this, "$name Demo").apply {
+                priority = Thread.MIN_PRIORITY
+                start()
+            }
+            running = true
         }
     }
 
-
-    public synchronized void stop() {
-        if (thread != null) {
-            running = false;
-            thread.interrupt();
+    @Synchronized
+    fun stop() {
+        thread?.let { thread ->
+            running = false
+            thread.interrupt()
         }
-        thread = null;
-        notifyAll();
+        thread = null
+        @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
+        (this as java.lang.Object).notifyAll()
     }
 
-
-    @Override
-    @SuppressWarnings("SleepWhileHoldingLock")
-    public void run() {
-
-        while (running() && !isShowing() || getSize().width == 0) {
+    override fun run() {
+        while (running() && !isShowing || size.width == 0) {
             try {
-                Thread.sleep(200);
-            } catch (InterruptedException ignored) {
+                Thread.sleep(200)
+            } catch (ignored: InterruptedException) {
             }
         }
 
         while (running()) {
-            repaint();
+            repaint()
             try {
-                Thread.sleep(getSleepAmount());
-            } catch (InterruptedException ignored) {
+                Thread.sleep(sleepAmount)
+            } catch (ignored: InterruptedException) {
             }
         }
-        running = false;
+        running = false
     }
 
     /**
      * @return the running
      */
-    public boolean running() {
-        return running;
+    fun running(): Boolean {
+        return running
     }
 
     /**
      * Causes surface to repaint immediately
      */
-    public void doRepaint() {
-        if (running() && thread != null) {
-            thread.interrupt();
+    fun doRepaint() {
+        if (running()) {
+            thread?.interrupt()
         }
     }
 }
