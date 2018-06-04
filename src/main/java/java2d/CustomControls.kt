@@ -29,18 +29,14 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+package java2d
 
-
-package java2d;
-
-
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import javax.swing.JPanel;
-import javax.swing.border.EtchedBorder;
-
+import java.awt.Color
+import java.awt.Graphics
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
+import javax.swing.JPanel
+import javax.swing.border.EtchedBorder
 
 /**
  * A convenience class for demos that use Custom Controls.  This class
@@ -48,86 +44,82 @@ import javax.swing.border.EtchedBorder;
  * is started as well, a flashing 2x2 rect is drawn in the upper right corner
  * while the custom control thread continues to run.
  */
-@SuppressWarnings("serial")
-public abstract class CustomControls extends JPanel implements Runnable {
+abstract class CustomControls(name: String? = null) : JPanel(), Runnable
+{
+    @Volatile
+    protected var thread: Thread? = null
 
+    protected var doNotifier: Boolean = false
 
-    protected Thread thread;
-    protected boolean doNotifier;
-    private CCNotifierThread ccnt;
-    private String name = "foo.bar Demo";
-    private static final Color blue = new Color(204, 204, 255);
+    private var ccnt: CCNotifierThread? = null
 
-
-    public CustomControls() {
-        setBorder(new EtchedBorder());
-        addMouseListener(new MouseAdapter() {
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (thread == null) { start(); } else { stop(); }
+    init {
+        this.name = if (name == null) "Demo" else "$name Demo"
+        border = EtchedBorder()
+        @Suppress("LeakingThis")
+        addMouseListener(object : MouseAdapter() {
+            override fun mouseClicked(e: MouseEvent?) {
+                if (thread == null) {
+                    start()
+                } else {
+                    stop()
+                }
             }
-        });
+        })
     }
 
-    public CustomControls(String name) {
-        this();
-        this.name = name + " Demo";
+    public override fun paintComponent(g: Graphics) {
+        super.paintComponent(g)
+        g.color = if (doNotifier) BLUE else Color.GRAY
+        g.fillRect(size.width - 2, 0, 2, 2)
     }
 
-    @Override
-    public void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        g.setColor(doNotifier ? blue : Color.gray);
-        g.fillRect(getSize().width-2, 0, 2, 2);
-    }
-
-    public void start() {
+    fun start() {
         if (thread == null) {
-            thread = new Thread(this);
-            thread.setPriority(Thread.MIN_PRIORITY);
-            thread.setName(name + " ccthread");
-            thread.start();
-            (ccnt = new CCNotifierThread()).start();
-            ccnt.setName(name + " ccthread notifier");
-        }
-    }
-
-    public synchronized void stop() {
-        if (thread != null) {
-            thread.interrupt();
-            if (ccnt != null) {
-                ccnt.interrupt();
+            thread = Thread(this, "$name ccthread").apply {
+                priority = Thread.MIN_PRIORITY
+                start()
+            }
+            ccnt = CCNotifierThread().apply {
+                name = "$name ccthread notifier"
+                start()
             }
         }
-        thread = null;
     }
 
+    @Synchronized
+    fun stop() {
+        thread?.let { thread ->
+            thread.interrupt()
+            ccnt?.interrupt()
+        }
+        thread = null
+    }
 
     // Custom Controls override the run method
-    @Override
-    public void run() {
-    }
-
+    override fun run() {}
 
     /**
      * Notifier that the custom control thread is running.
      */
-    class CCNotifierThread extends Thread {
-
-        @Override
-        @SuppressWarnings("SleepWhileHoldingLock")
-        public void run() {
+    internal inner class CCNotifierThread : Thread()
+    {
+        override fun run() {
             while (thread != null) {
-                doNotifier = !doNotifier;
-                repaint();
+                doNotifier = !doNotifier
+                repaint()
                 try {
-                    Thread.sleep(444);
-                } catch (Exception ex) {
-                    break;
+                    Thread.sleep(444)
+                } catch (ex: Exception) {
+                    break
                 }
             }
-            doNotifier = false; repaint();
+            doNotifier = false
+            repaint()
         }
+    }
+
+    companion object {
+        private val BLUE = Color(204, 204, 255)
     }
 }

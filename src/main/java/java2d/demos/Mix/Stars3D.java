@@ -309,7 +309,7 @@ public class Stars3D extends ControlsSurface {
             int length = getSize().width / 4;
             int size[] = { length, length };
             String str[] = { "JAVA", "J2D" };
-            while (thread == me) {
+            while (getThread() == me) {
                 for (int i = 0; i < str.length; i++) {
                     demo.fontSize = size[i];
                     tf2.setText(String.valueOf(demo.fontSize));
@@ -322,7 +322,7 @@ public class Stars3D extends ControlsSurface {
                     }
                 }
             }
-            thread = null;
+            setThread(null);
         }
     } // End DemoControls
 } // End Stars3D

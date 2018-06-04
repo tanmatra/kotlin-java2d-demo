@@ -339,7 +339,7 @@ public class Balls extends AnimatingControlsSurface {
             }
             Thread me = Thread.currentThread();
             ((AbstractButton) toolbar.getComponentAtIndex(2)).doClick();
-            while (thread == me) {
+            while (getThread() == me) {
                 try {
                     Thread.sleep(222);
                 } catch (InterruptedException e) {
@@ -353,7 +353,7 @@ public class Balls extends AnimatingControlsSurface {
                     demo.clearToggle = false;
                 }
             }
-            thread = null;
+            setThread(null);
         }
     } // End DemoControls
 } // End Balls

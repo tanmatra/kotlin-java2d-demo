@@ -351,7 +351,7 @@ public class BezierScroller extends AnimatingControlsSurface {
         public void run() {
             Thread me = Thread.currentThread();
             int i = 0;
-            while (thread == me) {
+            while (getThread() == me) {
                 try {
                     Thread.sleep(250);
                 } catch (InterruptedException e) {
@@ -363,7 +363,7 @@ public class BezierScroller extends AnimatingControlsSurface {
                     demo.buttonToggle = false;
                 }
             }
-            thread = null;
+            setThread(null);
         }
     } // End DemoControls
 } // End BezierScroller

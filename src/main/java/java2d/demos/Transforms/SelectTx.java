@@ -302,7 +302,7 @@ public class SelectTx extends AnimatingControlsSurface {
         public void run() {
             Thread me = Thread.currentThread();
             demo.transformToggle = demo.transformType;
-            while (thread == me) {
+            while (getThread() == me) {
                 try {
                     Thread.sleep(222);
                 } catch (InterruptedException e) {
@@ -313,7 +313,7 @@ public class SelectTx extends AnimatingControlsSurface {
                             demo.transformToggle)).doClick();
                 }
             }
-            thread = null;
+            setThread(null);
         }
     } // End DemoControls class
 } // End SelectTx class

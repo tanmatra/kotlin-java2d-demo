@@ -302,7 +302,7 @@ public class GradAnim extends AnimatingControlsSurface {
         @SuppressWarnings("SleepWhileHoldingLock")
         public void run() {
             Thread me = Thread.currentThread();
-            while (thread == me) {
+            while (getThread() == me) {
                 for (int i = 0; i < combo.getItemCount(); i++) {
                     combo.setSelectedIndex(i);
                     try {
@@ -312,7 +312,7 @@ public class GradAnim extends AnimatingControlsSurface {
                     }
                 }
             }
-            thread = null;
+            setThread(null);
         }
     }
 }

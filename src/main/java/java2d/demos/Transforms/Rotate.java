@@ -152,7 +152,7 @@ public class Rotate extends ControlsSurface {
         @SuppressWarnings("SleepWhileHoldingLock")
         public void run() {
             Thread me = Thread.currentThread();
-            while (thread == me) {
+            while (getThread() == me) {
                 for (int i = 3; i < 13; i += 3) {
                     try {
                         Thread.sleep(4444);
@@ -164,7 +164,7 @@ public class Rotate extends ControlsSurface {
                     demo.repaint();
                 }
             }
-            thread = null;
+            setThread(null);
         }
     } // End DemoControls class
 } // End Rotate class

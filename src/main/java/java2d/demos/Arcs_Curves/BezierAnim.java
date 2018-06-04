@@ -290,7 +290,7 @@ public class BezierAnim extends AnimatingControlsSurface {
         @SuppressWarnings("SleepWhileHoldingLock")
         public void run() {
             Thread me = Thread.currentThread();
-            while (thread == me) {
+            while (getThread() == me) {
                 for (JMenuItem dmi : drawMI) {
                     dmi.doClick();
                     for (JMenuItem fmi : fillMI) {
@@ -303,7 +303,7 @@ public class BezierAnim extends AnimatingControlsSurface {
                     }
                 }
             }
-            thread = null;
+            setThread(null);
         }
 
 

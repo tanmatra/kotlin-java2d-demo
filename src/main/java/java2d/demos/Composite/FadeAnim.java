@@ -480,7 +480,7 @@ public final class FadeAnim extends AnimatingControlsSurface {
             }
             shapeSlider.setValue((int) (Math.random() * 5));
             stringSlider.setValue(10);
-            thread = null;
+            setThread(null);
         }
     } // End DemoControls
 } // End FadeAnim

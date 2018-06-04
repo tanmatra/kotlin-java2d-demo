@@ -247,7 +247,7 @@ public class ImageOps extends ControlsSurface implements ChangeListener {
                 return;
             }
             Thread me = Thread.currentThread();
-            while (thread == me) {
+            while (getThread() == me) {
                 for (int i = 0; i < ImageOps.imgName.length; i++) {
                     imgCombo.setSelectedIndex(i);
                     for (int j = 0; j < ImageOps.opsName.length; j++) {
@@ -270,7 +270,7 @@ public class ImageOps extends ControlsSurface implements ChangeListener {
                     }
                 }
             }
-            thread = null;
+            setThread(null);
         }
     } // End DemoControls
 } // End ImageOps

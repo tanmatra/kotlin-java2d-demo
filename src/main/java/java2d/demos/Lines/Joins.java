@@ -188,7 +188,7 @@ public class Joins extends ControlsSurface {
                 return;
             }
             Thread me = Thread.currentThread();
-            while (thread == me) {
+            while (getThread() == me) {
                 for (int i = 0; i < menuitem.length; i++) {
                     menuitem[i].doClick();
                     for (int k = 10; k < 60; k += 2) {
@@ -206,7 +206,7 @@ public class Joins extends ControlsSurface {
                     }
                 }
             }
-            thread = null;
+            setThread(null);
         }
 
 

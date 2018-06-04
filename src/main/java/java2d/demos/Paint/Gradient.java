@@ -169,7 +169,7 @@ public class Gradient extends ControlsSurface {
                 demo.setImageType(2);
             }
             Thread me = Thread.currentThread();
-            while (thread == me) {
+            while (getThread() == me) {
                 for (int i = 0; i < innerMI.length; i++) {
                     if (i != 4) {
                         try {
@@ -181,7 +181,7 @@ public class Gradient extends ControlsSurface {
                     }
                 }
             }
-            thread = null;
+            setThread(null);
         }
 
 

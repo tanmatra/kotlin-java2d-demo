@@ -404,7 +404,7 @@ public final class TextureAnim extends AnimatingControlsSurface {
         @SuppressWarnings("SleepWhileHoldingLock")
         public void run() {
             Thread me = Thread.currentThread();
-            while (thread == me) {
+            while (getThread() == me) {
                 for (int i = 2; i < toolbar.getComponentCount(); i++) {
                     try {
                         Thread.sleep(4444);
@@ -414,7 +414,7 @@ public final class TextureAnim extends AnimatingControlsSurface {
                     ((AbstractButton) toolbar.getComponentAtIndex(i)).doClick();
                 }
             }
-            thread = null;
+            setThread(null);
         }
 
 
