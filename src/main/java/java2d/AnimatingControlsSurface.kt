@@ -29,53 +29,16 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package java2d;
+package java2d
 
-
-import static java2d.CustomControlsContext.State.START;
-import java.awt.Component;
-
+import java.awt.BorderLayout
+import java.awt.Component
 
 /**
  * Demos that animate and have custom controls extend this class.
  */
-@SuppressWarnings("serial")
-public abstract class AnimatingControlsSurface extends AnimatingSurface
-        implements CustomControlsContext {
-
-    @Override
-    public void setControls(Component[] controls) {
-        this.controls = controls;
-    }
-
-    @Override
-    public void setConstraints(String[] constraints) {
-        this.constraints = constraints;
-    }
-
-    @Override
-    public String[] getConstraints() {
-        return constraints;
-    }
-
-    @Override
-    public Component[] getControls() {
-        return controls;
-    }
-
-    @Override
-    public void handleThread(CustomControlsContext.State state) {
-        for (Component control : controls) {
-            if (control instanceof CustomControls) {
-                if (state == START) {
-                    ((CustomControls) control).start();
-                } else {
-                    ((CustomControls) control).stop();
-                }
-            }
-        }
-    }
-
-    private Component[] controls;
-    private String[] constraints = { java.awt.BorderLayout.NORTH };
+abstract class AnimatingControlsSurface : AnimatingSurface(), CustomControlsContext
+{
+    override var controls: Array<Component> = emptyArray()
+    override var constraints = arrayOf(BorderLayout.NORTH)
 }

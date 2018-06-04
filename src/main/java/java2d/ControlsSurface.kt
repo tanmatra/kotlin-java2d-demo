@@ -31,52 +31,16 @@
  */
 
 
-package java2d;
+package java2d
 
-
-import static java2d.CustomControlsContext.State.START;
-import java.awt.Component;
-
+import java.awt.BorderLayout
+import java.awt.Component
 
 /**
  * The class to utilize custom controls for a Demo.
  */
-@SuppressWarnings("serial")
-public abstract class ControlsSurface extends Surface implements CustomControlsContext {
-
-    @Override
-    public void setControls(Component[] controls) {
-        this.controls = controls;
-    }
-
-    @Override
-    public void setConstraints(String[] constraints) {
-        this.constraints = constraints;
-    }
-
-    @Override
-    public String[] getConstraints() {
-        return constraints;
-    }
-
-    @Override
-    public Component[] getControls() {
-        return controls;
-    }
-
-    @Override
-    public void handleThread(CustomControlsContext.State state) {
-        for (Component control : controls) {
-            if (control instanceof CustomControls) {
-                if (state == START) {
-                    ((CustomControls) control).start();
-                } else {
-                    ((CustomControls) control).stop();
-                }
-            }
-        }
-    }
-
-    private Component[] controls;
-    private String[] constraints = { java.awt.BorderLayout.NORTH };
+abstract class ControlsSurface : Surface(), CustomControlsContext
+{
+    override var controls: Array<Component> = emptyArray()
+    override var constraints = arrayOf(BorderLayout.NORTH)
 }

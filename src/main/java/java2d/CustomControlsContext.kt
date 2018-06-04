@@ -47,5 +47,15 @@ interface CustomControlsContext
         STOP
     }
 
-    fun handleThread(state: CustomControlsContext.State)
+    fun handleThread(state: CustomControlsContext.State) {
+        for (control in controls) {
+            if (control is CustomControls) {
+                if (state === State.START) {
+                    control.start()
+                } else {
+                    control.stop()
+                }
+            }
+        }
+    }
 }
