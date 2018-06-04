@@ -390,7 +390,7 @@ public final class TextureAnim extends AnimatingControlsSurface {
                     demo.sheary = b.isSelected();
                 }
             }
-            if (!demo.getAnimating().running()) {
+            if (!demo.getAnimating().isRunning()) {
                 demo.repaint();
             }
         }

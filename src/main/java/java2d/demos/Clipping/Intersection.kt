@@ -76,11 +76,11 @@ class Intersection : AnimatingControlsSurface()
         controls = arrayOf(DemoControls(this))
     }
 
-    override fun reset(w: Int, h: Int) {
+    override fun reset(newWidth: Int, newHeight: Int) {
         yy = 0
         xx = yy
-        ww = w - 1
-        hh = h
+        ww = newWidth - 1
+        hh = newHeight
         direction = HEIGHT_DECREASE
         angdeg = 0
         val frc = FontRenderContext(null, true, false)
@@ -88,7 +88,7 @@ class Intersection : AnimatingControlsSurface()
         val tl = TextLayout("J2D", f, frc)
         sw = tl.bounds.width
         sh = tl.bounds.height
-        val size = Math.min(w, h)
+        val size = Math.min(newWidth, newHeight)
         val sx = (size - 40) / sw
         val sy = (size - 100) / sh
         val tx = AffineTransform.getScaleInstance(sx, sy)
@@ -98,18 +98,18 @@ class Intersection : AnimatingControlsSurface()
         sh = rectshape.height
         ovals = GeneralPath().apply {
             append(Ellipse2D.Double(10.0, 10.0, 20.0, 20.0), false)
-            append(Ellipse2D.Double((w - 30).toDouble(), 10.0, 20.0, 20.0), false)
-            append(Ellipse2D.Double(10.0, (h - 30).toDouble(), 20.0, 20.0), false)
-            append(Ellipse2D.Double((w - 30).toDouble(), (h - 30).toDouble(), 20.0, 20.0), false)
+            append(Ellipse2D.Double((newWidth - 30).toDouble(), 10.0, 20.0, 20.0), false)
+            append(Ellipse2D.Double(10.0, (newHeight - 30).toDouble(), 20.0, 20.0), false)
+            append(Ellipse2D.Double((newWidth - 30).toDouble(), (newHeight - 30).toDouble(), 20.0, 20.0), false)
         }
     }
 
-    override fun step(w: Int, h: Int) {
+    override fun step(width: Int, height: Int) {
         when (direction) {
             HEIGHT_DECREASE -> {
                 yy += 2
                 hh -= 4
-                if (yy >= h / 2) {
+                if (yy >= height / 2) {
                     direction = HEIGHT_INCREASE
                 }
             }
@@ -118,14 +118,14 @@ class Intersection : AnimatingControlsSurface()
                 hh += 4
                 if (yy <= 0) {
                     direction = WIDTH_DECREASE
-                    hh = h - 1
+                    hh = height - 1
                     yy = 0
                 }
             }
             WIDTH_DECREASE -> {
                 xx += 2
                 ww -= 4
-                if (xx >= w / 2) {
+                if (xx >= width / 2) {
                     direction = WIDTH_INCREASE
                 }
             }
@@ -134,7 +134,7 @@ class Intersection : AnimatingControlsSurface()
                 ww += 4
                 if (xx <= 0) {
                     direction = HEIGHT_DECREASE
-                    ww = w - 1
+                    ww = width - 1
                     xx = 0
                 }
             }
@@ -194,7 +194,7 @@ class Intersection : AnimatingControlsSurface()
         private fun addTool(title: String, state: Boolean, property: KMutableProperty0<Boolean>) {
             toolbar.add(createToolButton(title, state) { selected ->
                 property.set(selected)
-                if (!demo.animating!!.running()) {
+                if (!demo.animating!!.isRunning) {
                     demo.repaint()
                 }
             })

@@ -320,7 +320,7 @@ class Tools(private val surface: Surface) : JPanel(BorderLayout()), ActionListen
             val animating = surface.animating
             if (animating != null) {
                 if (surface.sleepAmount != 0L) {
-                    if (animating.running()) {
+                    if (animating.isRunning) {
                         animating.doRepaint()
                     }
                 }
@@ -349,7 +349,7 @@ class Tools(private val surface: Surface) : JPanel(BorderLayout()), ActionListen
     override fun run() {
         var stopped = false
         val animating = surface.animating
-        if (animating != null && animating.running()) {
+        if (animating != null && animating.isRunning) {
             stopped = true
             startStopButton!!.doClick()
         }

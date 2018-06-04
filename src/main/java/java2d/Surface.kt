@@ -205,17 +205,13 @@ abstract class Surface : JPanel(), Printable
                 val imageDataUShort = ShortArray(w * h)
                 dcm = DirectColorModel(16, rMask16, gMask16, bMask16)
                 db = DataBufferUShort(imageDataUShort, imageDataUShort.size)
-                wr = Raster.createPackedRaster(
-                    db, w, h, w,
-                    intArrayOf(rMask16, gMask16, bMask16), null)
+                wr = Raster.createPackedRaster(db, w, h, w, intArrayOf(rMask16, gMask16, bMask16), null)
             }
             32 -> {
                 val imageDataInt = IntArray(w * h)
                 dcm = DirectColorModel(32, rMask32, gMask32, bMask32)
                 db = DataBufferInt(imageDataInt, imageDataInt.size)
-                wr = Raster.createPackedRaster(
-                    db, w, h, w,
-                    intArrayOf(rMask32, gMask32, bMask32), null)
+                wr = Raster.createPackedRaster(db, w, h, w, intArrayOf(rMask32, gMask32, bMask32), null)
             }
             else -> getLogger<Surface>().log(Level.SEVERE, null, Exception("Invalid # of bit per pixel"))
         }
@@ -228,13 +224,7 @@ abstract class Surface : JPanel(), Printable
         bi: BufferedImage?,
         g: Graphics?
     ): Graphics2D {
-        var g2: Graphics2D? = null
-
-        if (bi != null) {
-            g2 = bi.createGraphics()
-        } else {
-            g2 = g as Graphics2D?
-        }
+        val g2: Graphics2D? = if (bi != null) bi.createGraphics() else (g as Graphics2D?)
 
         g2!!.background = background
         g2.setRenderingHint(KEY_ANTIALIASING, antiAlias)
@@ -310,8 +300,8 @@ abstract class Surface : JPanel(), Printable
             startClock()
         }
 
-        if (animating != null && animating!!.running()) {
-            animating!!.step(d.width, d.height)
+        if (animating != null && animating.isRunning) {
+            animating.step(d.width, d.height)
         }
         val g2 = createGraphics2D(d.width, d.height, bufferedImage, g)
         render(d.width, d.height, g2)
@@ -371,7 +361,7 @@ abstract class Surface : JPanel(), Printable
             val rel = end - start
             if (frame == 0L) {
                 performanceString = "$name $rel ms"
-                if (animating == null || !animating!!.running()) {
+                if (animating == null || !animating.isRunning) {
                     frame = -1
                 }
             } else {
@@ -394,7 +384,7 @@ abstract class Surface : JPanel(), Printable
     fun verbose() {
         val string = buildString {
             append("  $name")
-            if (animating != null && animating.running()) {
+            if (animating != null && animating.isRunning) {
                 append(" Running")
             } else if (this@Surface is AnimatingSurface) {
                 append(" Stopped")

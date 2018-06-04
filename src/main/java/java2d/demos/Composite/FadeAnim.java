@@ -461,7 +461,7 @@ public final class FadeAnim extends AnimatingControlsSurface {
                 demo.setImages(value);
             }
             slider.repaint();
-            if (!demo.getAnimating().running()) {
+            if (!demo.getAnimating().isRunning()) {
                 demo.repaint();
             }
         }

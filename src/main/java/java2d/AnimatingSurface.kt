@@ -37,7 +37,8 @@ package java2d
 abstract class AnimatingSurface : Surface(), Runnable
 {
     @Volatile
-    private var running = false
+    var isRunning = false
+        private set
 
     @Volatile
     private var thread: Thread? = null
@@ -47,19 +48,19 @@ abstract class AnimatingSurface : Surface(), Runnable
     abstract fun reset(newWidth: Int, newHeight: Int)
 
     fun start() {
-        if (!running() && !dontThread) {
+        if (!isRunning && !dontThread) {
             thread = Thread(this, "$name Demo").apply {
                 priority = Thread.MIN_PRIORITY
                 start()
             }
-            running = true
+            isRunning = true
         }
     }
 
     @Synchronized
     fun stop() {
         thread?.let { thread ->
-            running = false
+            isRunning = false
             thread.interrupt()
         }
         thread = null
@@ -68,35 +69,28 @@ abstract class AnimatingSurface : Surface(), Runnable
     }
 
     override fun run() {
-        while (running() && !isShowing || size.width == 0) {
+        while (isRunning && !isShowing || size.width == 0) {
             try {
                 Thread.sleep(200)
             } catch (ignored: InterruptedException) {
             }
         }
 
-        while (running()) {
+        while (isRunning) {
             repaint()
             try {
                 Thread.sleep(sleepAmount)
             } catch (ignored: InterruptedException) {
             }
         }
-        running = false
-    }
-
-    /**
-     * @return the running
-     */
-    fun running(): Boolean {
-        return running
+        isRunning = false
     }
 
     /**
      * Causes surface to repaint immediately
      */
     fun doRepaint() {
-        if (running()) {
+        if (isRunning) {
             thread?.interrupt()
         }
     }

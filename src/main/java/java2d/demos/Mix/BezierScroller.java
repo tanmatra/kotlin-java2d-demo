@@ -336,7 +336,7 @@ public class BezierScroller extends AnimatingControlsSurface {
             } else {
                 demo.doText = b.isSelected();
             }
-            if (!demo.getAnimating().running()) {
+            if (!demo.getAnimating().isRunning()) {
                 demo.repaint();
             }
         }

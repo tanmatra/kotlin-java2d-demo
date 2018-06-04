@@ -276,7 +276,7 @@ public class BezierAnim extends AnimatingControlsSurface {
             } else if (obj.equals(drawMI[0])) {
                 demo.doDraw = false;
             }
-            if (!demo.getAnimating().running()) {
+            if (!demo.getAnimating().isRunning()) {
                 demo.repaint();
             }
         }

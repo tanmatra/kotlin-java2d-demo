@@ -288,7 +288,7 @@ public class GradAnim extends AnimatingControlsSurface {
             if (index >= 0) {
                 demo.gradientType = index;
             }
-            if (!demo.getAnimating().running()) {
+            if (!demo.getAnimating().isRunning()) {
                 demo.repaint();
             }
         }

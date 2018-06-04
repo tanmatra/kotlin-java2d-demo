@@ -468,7 +468,7 @@ public final class TransformAnim extends AnimatingControlsSurface {
             } else if (b.getText().equals("SH")) {
                 demo.doShear = b.isSelected();
             }
-            if (!demo.getAnimating().running()) {
+            if (!demo.getAnimating().isRunning()) {
                 demo.repaint();
             }
         }
@@ -489,7 +489,7 @@ public final class TransformAnim extends AnimatingControlsSurface {
                 tb.setTitle(String.valueOf(value) + " Images");
                 demo.setImages(value);
             }
-            if (!demo.getAnimating().running()) {
+            if (!demo.getAnimating().isRunning()) {
                 demo.repaint();
             }
             slider.repaint();

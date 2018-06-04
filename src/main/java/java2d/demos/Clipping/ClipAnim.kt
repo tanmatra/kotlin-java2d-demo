@@ -77,28 +77,28 @@ class ClipAnim : AnimatingControlsSurface()
         controls = arrayOf(DemoControls(this))
     }
 
-    override fun reset(w: Int, h: Int) {
+    override fun reset(newWidth: Int, newHeight: Int) {
         for (a in animval) {
-            a.reset(w, h)
+            a.reset(newWidth, newHeight)
         }
-        gradient = GradientPaint(0f, (h / 2).toFloat(), Color.RED, w * 0.4f, h * 0.9f, Color.YELLOW)
-        dukeX = (w * 0.25 - dimg.getWidth(this) / 2).toInt()
-        dukeY = (h * 0.25 - dimg.getHeight(this) / 2).toInt()
+        gradient = GradientPaint(0f, (newHeight / 2).toFloat(), Color.RED, newWidth * 0.4f, newHeight * 0.9f, Color.YELLOW)
+        dukeX = (newWidth * 0.25 - dimg.getWidth(this) / 2).toInt()
+        dukeY = (newHeight * 0.25 - dimg.getHeight(this) / 2).toInt()
         var fm = getFontMetrics(originalFont)
         val sw = fm.stringWidth(TEXT).toDouble()
         val sh = (fm.ascent + fm.descent).toDouble()
-        val sx = (w / 2 - 30) / sw
-        val sy = (h / 2 - 30) / sh
+        val sx = (newWidth / 2 - 30) / sw
+        val sy = (newHeight / 2 - 30) / sh
         textFont = originalFont.deriveFont(AffineTransform.getScaleInstance(sx, sy))
         fm = getFontMetrics(textFont)
-        strX = (w * 0.75 - fm.stringWidth(TEXT) / 2).toInt()
-        strY = (h * 0.72 + fm.ascent / 2).toInt()
+        strX = (newWidth * 0.75 - fm.stringWidth(TEXT) / 2).toInt()
+        strY = (newHeight * 0.72 + fm.ascent / 2).toInt()
     }
 
-    override fun step(w: Int, h: Int) {
+    override fun step(width: Int, height: Int) {
         for (a in animval) {
             if (a.isSelected) {
-                a.step(w, h)
+                a.step(width, height)
             }
         }
     }
@@ -226,7 +226,7 @@ class ClipAnim : AnimatingControlsSurface()
         }
 
         private fun checkRepaint() {
-            if (!demo.animating!!.running()) {
+            if (!demo.animating!!.isRunning) {
                 demo.repaint()
             }
         }
