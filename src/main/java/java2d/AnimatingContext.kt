@@ -29,15 +29,13 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-
-package java2d;
-
+package java2d
 
 /**
  * The interface for a DemoSurface that animates.
  */
-public interface AnimatingContext {
-        public void step(int w, int h);
-        public void reset(int newwidth, int newheight);
+interface AnimatingContext
+{
+    fun step(width: Int, height: Int)
+    fun reset(newWidth: Int, newHeight: Int)
 }
