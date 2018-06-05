@@ -623,7 +623,7 @@ class Intro : JPanel(BorderLayout())
                 }
             }
 
-            fun setIncrements(numRevolutions: Double) {
+            private fun setIncrements(numRevolutions: Double) {
                 this.numRev = numRevolutions.toInt()
                 rIncr = 360.0 / ((end - begin) / numRevolutions)
                 sIncr = 1.0 / (end - begin)
@@ -684,13 +684,13 @@ class Intro : JPanel(BorderLayout())
                 // avoid over rotation
                 if (Math.abs(rotate) <= numRev * 360) {
                     rotate += rIncr
-                    if (type and SCX != 0) {
-                        sx += sIncr
-                    } else if (type and SCY != 0) {
-                        sy += sIncr
-                    } else {
-                        sx += sIncr
-                        sy += sIncr
+                    when {
+                        type and SCX != 0 -> sx += sIncr
+                        type and SCY != 0 -> sy += sIncr
+                        else -> {
+                            sx += sIncr
+                            sy += sIncr
+                        }
                     }
                 }
             }
@@ -723,6 +723,7 @@ class Intro : JPanel(BorderLayout())
                 }
             }
 
+            @Suppress("unused", "MemberVisibilityCanBePrivate")
             companion object
             {
                 const val INC = 1
@@ -782,62 +783,66 @@ class Intro : JPanel(BorderLayout())
                 rect.clear()
                 grad.clear()
 
-                if (type and WID != 0) {
-                    val w2: Float
-                    val x1: Float
-                    val x2: Float
-                    if (type and SPL != 0) {
-                        w2 = w * 0.5f
-                        x1 = w * (1.0f - index)
-                        x2 = w * index
-                    } else {
-                        w2 = w * index
-                        x2 = w2
-                        x1 = x2
+                when {
+                    type and WID != 0 -> {
+                        val w2: Float
+                        val x1: Float
+                        val x2: Float
+                        if (type and SPL != 0) {
+                            w2 = w * 0.5f
+                            x1 = w * (1.0f - index)
+                            x2 = w * index
+                        } else {
+                            w2 = w * index
+                            x2 = w2
+                            x1 = x2
+                        }
+                        rect.add(Rectangle2D.Float(0f, 0f, w2, h.toFloat()))
+                        rect.add(Rectangle2D.Float(w2, 0f, w - w2, h.toFloat()))
+                        grad.add(GradientPaint(0f, 0f, c1, x1, 0f, c2))
+                        grad.add(GradientPaint(x2, 0f, c2, w.toFloat(), 0f, c1))
                     }
-                    rect.add(Rectangle2D.Float(0f, 0f, w2, h.toFloat()))
-                    rect.add(Rectangle2D.Float(w2, 0f, w - w2, h.toFloat()))
-                    grad.add(GradientPaint(0f, 0f, c1, x1, 0f, c2))
-                    grad.add(GradientPaint(x2, 0f, c2, w.toFloat(), 0f, c1))
-                } else if (type and HEI != 0) {
-                    val h2: Float
-                    val y1: Float
-                    val y2: Float
-                    if (type and SPL != 0) {
-                        h2 = h * 0.5f
-                        y1 = h * (1.0f - index)
-                        y2 = h * index
-                    } else {
-                        h2 = h * index
-                        y2 = h2
-                        y1 = y2
+                    type and HEI != 0 -> {
+                        val h2: Float
+                        val y1: Float
+                        val y2: Float
+                        if (type and SPL != 0) {
+                            h2 = h * 0.5f
+                            y1 = h * (1.0f - index)
+                            y2 = h * index
+                        } else {
+                            h2 = h * index
+                            y2 = h2
+                            y1 = y2
+                        }
+                        rect.add(Rectangle2D.Float(0f, 0f, w.toFloat(), h2))
+                        rect.add(Rectangle2D.Float(0f, h2, w.toFloat(), h - h2))
+                        grad.add(GradientPaint(0f, 0f, c1, 0f, y1, c2))
+                        grad.add(GradientPaint(0f, y2, c2, 0f, h.toFloat(), c1))
                     }
-                    rect.add(Rectangle2D.Float(0f, 0f, w.toFloat(), h2))
-                    rect.add(Rectangle2D.Float(0f, h2, w.toFloat(), h - h2))
-                    grad.add(GradientPaint(0f, 0f, c1, 0f, y1, c2))
-                    grad.add(GradientPaint(0f, y2, c2, 0f, h.toFloat(), c1))
-                } else if (type and BUR != 0) {
+                    type and BUR != 0 -> {
+                        val w2 = (w / 2).toFloat()
+                        val h2 = (h / 2).toFloat()
 
-                    val w2 = (w / 2).toFloat()
-                    val h2 = (h / 2).toFloat()
+                        rect.add(Rectangle2D.Float(0f, 0f, w2, h2))
+                        rect.add(Rectangle2D.Float(w2, 0f, w2, h2))
+                        rect.add(Rectangle2D.Float(0f, h2, w2, h2))
+                        rect.add(Rectangle2D.Float(w2, h2, w2, h2))
 
-                    rect.add(Rectangle2D.Float(0f, 0f, w2, h2))
-                    rect.add(Rectangle2D.Float(w2, 0f, w2, h2))
-                    rect.add(Rectangle2D.Float(0f, h2, w2, h2))
-                    rect.add(Rectangle2D.Float(w2, h2, w2, h2))
+                        val x1 = w * (1.0f - index)
+                        val x2 = w * index
+                        val y1 = h * (1.0f - index)
+                        val y2 = h * index
 
-                    val x1 = w * (1.0f - index)
-                    val x2 = w * index
-                    val y1 = h * (1.0f - index)
-                    val y2 = h * index
-
-                    grad.add(GradientPaint(0f, 0f, c1, x1, y1, c2))
-                    grad.add(GradientPaint(w.toFloat(), 0f, c1, x2, y1, c2))
-                    grad.add(GradientPaint(0f, h.toFloat(), c1, x1, y2, c2))
-                    grad.add(GradientPaint(w.toFloat(), h.toFloat(), c1, x2, y2, c2))
-                } else if (type and NF != 0) {
-                    val y = h * index
-                    grad.add(GradientPaint(0f, 0f, c1, 0f, y, c2))
+                        grad.add(GradientPaint(0f, 0f, c1, x1, y1, c2))
+                        grad.add(GradientPaint(w.toFloat(), 0f, c1, x2, y1, c2))
+                        grad.add(GradientPaint(0f, h.toFloat(), c1, x1, y2, c2))
+                        grad.add(GradientPaint(w.toFloat(), h.toFloat(), c1, x2, y2, c2))
+                    }
+                    type and NF != 0 -> {
+                        val y = h * index
+                        grad.add(GradientPaint(0f, 0f, c1, 0f, y, c2))
+                    }
                 }
 
                 if (type and INC != 0 || type and DEC != 0) {
@@ -856,6 +861,7 @@ class Intro : JPanel(BorderLayout())
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
             }
 
+            @Suppress("unused")
             companion object
             {
                 const val INC = 1               // increasing
@@ -902,7 +908,7 @@ class Intro : JPanel(BorderLayout())
                 setTextureSize(size)
             }
 
-            fun setTextureSize(size: Int) {
+            private fun setTextureSize(size: Int) {
                 this.size = size
                 bimg = BufferedImage(size, size, BufferedImage.TYPE_INT_RGB)
                 rect = Rectangle(0, 0, size, size)
@@ -947,6 +953,7 @@ class Intro : JPanel(BorderLayout())
                 }
             }
 
+            @Suppress("MemberVisibilityCanBePrivate")
             companion object
             {
                 const val INC  =  1 // increasing
@@ -975,26 +982,20 @@ class Intro : JPanel(BorderLayout())
             private var shape: Shape? = null
             private var zoom: Double = 0.toDouble()
             private var extent: Double = 0.toDouble()
-            private val zIncr: Double
-            private val eIncr: Double
-            private val doRandom: Boolean
-
-            init {
-                zIncr = -(2.0 / (this.end - begin))
-                eIncr = 360.0 / (this.end - begin)
-                doRandom = type and RAND != 0
-            }
+            private val zIncr: Double = - (2.0 / (end - begin))
+            private val eIncr: Double = 360.0 / (end - begin)
+            private val doRandom: Boolean = type and RAND != 0
 
             override fun reset(newWidth: Int, newHeight: Int) {
                 if (doRandom) {
                     val num = (Math.random() * 5.0).toInt()
-                    when (num) {
-                        0 -> type = OVAL
-                        1 -> type = RECT
-                        2 -> type = RECT or WID
-                        3 -> type = RECT or HEI
-                        4 -> type = ARC
-                        else -> type = OVAL
+                    type = when (num) {
+                        0 -> OVAL
+                        1 -> RECT
+                        2 -> RECT or WID
+                        3 -> RECT or HEI
+                        4 -> ARC
+                        else -> OVAL
                     }
                 }
                 shape = null
@@ -1012,22 +1013,18 @@ class Intro : JPanel(BorderLayout())
                     big.drawImage(Surface.bimg, 0, 0, null)
                 }
                 val z = Math.min(w, h) * zoom
-                if (type and OVAL != 0) {
-                    shape = Ellipse2D.Double(
-                        w / 2 - z / 2, h / 2 - z / 2, z,
-                        z
-                                            )
-                } else if (type and ARC != 0) {
-                    shape = Arc2D.Double(
-                        -100.0, -100.0, (w + 200).toDouble(), (h + 200).toDouble(), 90.0,
-                        extent, Arc2D.PIE
-                                        )
-                    extent -= eIncr
-                } else if (type and RECT != 0) {
-                    when {
-                        type and WID != 0 -> shape = Rectangle2D.Double(w / 2 - z / 2, 0.0, z, h.toDouble())
-                        type and HEI != 0 -> shape = Rectangle2D.Double(0.0, h / 2 - z / 2, w.toDouble(), z)
-                        else -> shape = Rectangle2D.Double(w / 2 - z / 2, h / 2 - z / 2, z, z)
+                when {
+                    type and OVAL != 0 -> shape = Ellipse2D.Double(w / 2 - z / 2, h / 2 - z / 2, z, z)
+                    type and ARC != 0 -> {
+                        shape = Arc2D.Double(
+                            -100.0, -100.0, (w + 200).toDouble(), (h + 200).toDouble(), 90.0,
+                            extent, Arc2D.PIE)
+                        extent -= eIncr
+                    }
+                    type and RECT != 0 -> shape = when {
+                        type and WID != 0 -> Rectangle2D.Double(w / 2 - z / 2, 0.0, z, h.toDouble())
+                        type and HEI != 0 -> Rectangle2D.Double(0.0, h / 2 - z / 2, w.toDouble(), z)
+                        else -> Rectangle2D.Double(w / 2 - z / 2, h / 2 - z / 2, z, z)
                     }
                 }
                 zoom += zIncr
@@ -1091,9 +1088,9 @@ class Intro : JPanel(BorderLayout())
                 for (i in 0 until end - begin + 1) {
                     list!!.add(i, i)
                 }
-                java.util.Collections.shuffle(xlist!!)
-                java.util.Collections.shuffle(ylist!!)
-                java.util.Collections.shuffle(list!!)
+                xlist!!.shuffle()
+                ylist!!.shuffle()
+                list!!.shuffle()
             }
 
             override fun reset(newWidth: Int, newHeight: Int) {
@@ -1166,17 +1163,12 @@ class Intro : JPanel(BorderLayout())
         ) : Part
         {
             private var bimg: BufferedImage? = null
-            private val rIncr: Double
-            private val sIncr: Double
+            private val rIncr: Double = 360.0 / (end - begin)
+            private val sIncr: Double = 1.0 / (end - begin)
             private var scale: Double = 0.0
             private var rotate: Double = 0.0
             private val subs = ArrayList<BufferedImage>(20)
             private val pts = ArrayList<Point>(20)
-
-            init {
-                rIncr = 360.0 / (this.end - begin)
-                sIncr = 1.0 / (this.end - begin)
-            }
 
             override fun reset(newWidth: Int, newHeight: Int) {
                 scale = 1.0
@@ -1274,7 +1266,7 @@ class Intro : JPanel(BorderLayout())
                 }
             }
 
-            fun generatePts(w: Int, h: Int, sizeF: Double) {
+            private fun generatePts(w: Int, h: Int, sizeF: Double) {
                 pts.clear()
                 val size = Math.min(w, h) * sizeF
                 val ellipse = Ellipse2D.Double(w / 2 - size / 2, h / 2 - size / 2, size, size)
@@ -1345,6 +1337,7 @@ class Intro : JPanel(BorderLayout())
                 }
             }
 
+            @Suppress("MemberVisibilityCanBePrivate")
             companion object
             {
                 const val INC = 1
@@ -1373,7 +1366,7 @@ class Intro : JPanel(BorderLayout())
             override val end: Int
         ) : Part {
             private var alpha: Float = 0.toFloat()
-            private val aIncr: Float
+            private val aIncr: Float = 0.9f / (end - begin)
             private var rect1: Rectangle? = null
             private var rect2: Rectangle? = null
             private var x: Int = 0
@@ -1382,7 +1375,6 @@ class Intro : JPanel(BorderLayout())
             private var yIncr: Int = 0
 
             init {
-                aIncr = 0.9f / (this.end - begin)
                 if (type and NOANIM != 0) {
                     alpha = 1.0f
                 }
@@ -1424,10 +1416,8 @@ class Intro : JPanel(BorderLayout())
                 }
                 if (type and IMG != 0) {
                     val saveAC = g2.composite
-                    if (alpha >= 0 && alpha <= 1) {
-                        g2.composite = AlphaComposite.getInstance(
-                            AlphaComposite.SRC_OVER, alpha
-                                                                 )
+                    if (alpha in 0.0 .. 1.0) {
+                        g2.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha)
                     }
                     g2.drawImage(img, 30, 30, null)
                     g2.composite = saveAC
@@ -1498,15 +1488,15 @@ class Intro : JPanel(BorderLayout())
 
             companion object
             {
-                val GRAPHICS = 0
-                val TEXT = 1
-                val IMAGES = 2
-                val COLOR = 3
+                const val GRAPHICS = 0
+                const val TEXT     = 1
+                const val IMAGES   = 2
+                const val COLOR    = 3
 
                 val font1 = Font("serif", Font.BOLD, 38)
                 val font2 = Font("serif", Font.PLAIN, 24)
 
-                var fm1 = Surface.getMetrics(font1)
+                // var fm1 = Surface.getMetrics(font1)
                 var fm2 = Surface.getMetrics(font2)
 
                 var table = arrayOf(
@@ -1593,7 +1583,7 @@ class Intro : JPanel(BorderLayout())
                 var y = (incr * strH).toInt()
 
                 if (index >= cast.size) {
-                    y = yh + y
+                    y += yh
                 } else {
                     yh = height - v.size * strH + y
                     y = yh
@@ -1650,7 +1640,8 @@ class Intro : JPanel(BorderLayout())
             }
         } // End Contributors class
 
-        companion object {
+        companion object
+        {
             lateinit var surf: Surface
             lateinit var cupanim: Image
             lateinit var java_logo: Image
