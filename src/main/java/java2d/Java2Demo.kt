@@ -31,8 +31,6 @@
  */
 package java2d
 
-import java2d.DemoFonts.newDemoFonts
-import java2d.DemoImages.preloadImages
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Component
@@ -105,10 +103,10 @@ class Java2Demo : JPanel(), ActionListener
         // hard coding 14 = 11 demo dirs + images + fonts + Intro
         progressBar.maximum = 13
         progressLabel.text = "Loading images"
-        preloadImages(this)
+        DemoImages.preloadImages(this)
         progressBar.value = progressBar.value + 1
         progressLabel.text = "Loading fonts"
-        newDemoFonts()
+        DemoFonts.preloadFonts()
         progressBar.value = progressBar.value + 1
         progressLabel.text = "Loading Intro"
         intro = Intro()
@@ -126,7 +124,7 @@ class Java2Demo : JPanel(), ActionListener
 
         groups = Array(demos.size) { i ->
             val groupName = demos[i][0]
-            progressLabel.text = "Loading demos." + groupName
+            progressLabel.text = "Loading demos.$groupName"
             val demoGroup = DemoGroup(groupName, this)
             tabbedPane.addTab(groupName, null)
             progressBar.value = progressBar.value + 1
@@ -238,11 +236,7 @@ class Java2Demo : JPanel(), ActionListener
             })
             contentPane.add(runWindow, BorderLayout.CENTER)
             pack()
-            if (Java2DemoApplet.applet == null) {
-                size = Dimension(200, 125)
-            } else {
-                size = Dimension(200, 150)
-            }
+            size = if (Java2DemoApplet.applet == null) Dimension(200, 125) else Dimension(200, 150)
             isVisible = true
         }
     }

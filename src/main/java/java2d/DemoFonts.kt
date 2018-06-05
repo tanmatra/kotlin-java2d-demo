@@ -29,54 +29,43 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+package java2d
 
-
-package java2d;
-
-
-import java.awt.Font;
-import java.io.InputStream;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import java.awt.Font
+import java.util.concurrent.ConcurrentHashMap
+import java.util.logging.Level
 
 /**
  * A cache of the dynamically loaded fonts found in the fonts directory.
  */
-public class DemoFonts {
-
+object DemoFonts
+{
     // Prepare a static "cache" mapping font names to Font objects.
-    private final static String[] names =  { "A.ttf" };
-    private final static Map<String,Font> cache =
-               new ConcurrentHashMap<String,Font>(names.length);
-    static {
-        for (String name : names) {
-            cache.put(name, getFont(name));
+    private val names = arrayOf("A.ttf")
+
+    private val cache = ConcurrentHashMap<String, Font>(names.size)
+
+    init {
+        for (name in names) {
+            cache[name] = getFont(name)
         }
     }
 
-    public static void newDemoFonts() {
-    }
+    fun preloadFonts() {}
 
-
-    public static Font getFont(String name) {
-        Font font = null;
-        if (cache != null) {
-            if ((font = cache.get(name)) != null) {
-                return font;
+    fun getFont(name: String): Font {
+        val font: Font? = cache[name]
+        if (font != null) {
+            return font
+        }
+        val fName = "/fonts/$name"
+        return try {
+            DemoFonts::class.java.getResourceAsStream(fName).use { inputStream ->
+                Font.createFont(Font.TRUETYPE_FONT, inputStream)
             }
+        } catch (ex: Exception) {
+            getLogger<DemoFonts>().log(Level.SEVERE, "$fName not loaded.  Using serif font.", ex)
+            Font(Font.SERIF, Font.PLAIN, 24)
         }
-        String fName = "/fonts/" + name;
-        try {
-            InputStream is = DemoFonts.class.getResourceAsStream(fName);
-            font = Font.createFont(Font.TRUETYPE_FONT, is);
-        } catch (Exception ex) {
-            Logger.getLogger(DemoFonts.class.getName()).log(Level.SEVERE,
-                    fName + " not loaded.  Using serif font.", ex);
-            font = new Font("serif", Font.PLAIN, 24);
-        }
-        return font;
     }
 }
