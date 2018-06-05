@@ -35,7 +35,6 @@ import java.awt.AlphaComposite
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Color.BLACK
-import java.awt.Color.GRAY
 import java.awt.Color.RED
 import java.awt.Color.WHITE
 import java.awt.Color.YELLOW
@@ -53,7 +52,6 @@ import java.awt.Rectangle
 import java.awt.RenderingHints
 import java.awt.Shape
 import java.awt.TexturePaint
-import java.awt.Toolkit
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.awt.event.MouseAdapter
@@ -72,7 +70,6 @@ import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import java.awt.image.BufferedImage
 import java.util.ArrayList
-import java.util.Arrays
 import javax.swing.JButton
 import javax.swing.JFrame
 import javax.swing.JPanel
@@ -96,17 +93,15 @@ import javax.swing.table.TableModel
  * @author Brian Lichtenwalter
  * @author Alexander Kouznetsov
  */
-class Intro : JPanel()
+class Intro : JPanel(BorderLayout())
 {
     private var scenesTable: ScenesTable? = null
     private var doTable: Boolean = false
+    internal var surface: Surface
 
     init {
-        val eb = EmptyBorder(80, 110, 80, 110)
-        val bb = BevelBorder(BevelBorder.LOWERED)
-        border = CompoundBorder(eb, bb)
-        layout = BorderLayout()
-        background = GRAY
+        border = CompoundBorder(EmptyBorder(80, 110, 80, 110), BevelBorder(BevelBorder.LOWERED))
+        background = Color.GRAY
         toolTipText = "click for scene table"
         surface = Surface()
         add(surface)
@@ -149,8 +144,8 @@ class Intro : JPanel()
      * Scene participation, scene name and scene pause amount columns.
      * Global animation delay for scene's steps.
      */
-    internal class ScenesTable : JPanel(), ActionListener, ChangeListener {
-
+    internal inner class ScenesTable : JPanel(), ActionListener, ChangeListener
+    {
         private val table: JTable
         private val dataModel: TableModel
 
@@ -159,8 +154,8 @@ class Intro : JPanel()
             layout = BorderLayout()
             val names = arrayOf("", "Scenes", "Pause")
 
-            dataModel = object : AbstractTableModel() {
-
+            dataModel = object : AbstractTableModel()
+            {
                 override fun getColumnCount(): Int {
                     return names.size
                 }
@@ -171,12 +166,10 @@ class Intro : JPanel()
 
                 override fun getValueAt(row: Int, col: Int): Any? {
                     val scene = surface.director[row]
-                    return if (col == 0) {
-                        scene.participate
-                    } else if (col == 1) {
-                        scene.name
-                    } else {
-                        scene.pauseAmt
+                    return when (col) {
+                        0 -> scene.participate
+                        1 -> scene.name
+                        else -> scene.pauseAmt
                     }
                 }
 
@@ -189,17 +182,15 @@ class Intro : JPanel()
                 }
 
                 override fun isCellEditable(row: Int, col: Int): Boolean {
-                    return if (col != 1) true else false
+                    return col != 1
                 }
 
                 override fun setValueAt(aValue: Any?, row: Int, col: Int) {
                     val scene = surface.director[row]
-                    if (col == 0) {
-                        scene.participate = aValue
-                    } else if (col == 1) {
-                        scene.name = aValue
-                    } else {
-                        scene.pauseAmt = aValue
+                    when (col) {
+                        0 -> scene.participate = aValue
+                        1 -> scene.name = aValue
+                        else -> scene.pauseAmt = aValue
                     }
                 }
             }
@@ -226,10 +217,7 @@ class Intro : JPanel()
             b.addActionListener(this)
             panel.add("West", b)
 
-            val slider = JSlider(
-                JSlider.HORIZONTAL, 0, 200,
-                surface.sleepAmt.toInt()
-                                )
+            val slider = JSlider(JSlider.HORIZONTAL, 0, 200, surface.sleepAmt.toInt())
             slider.addChangeListener(this)
             val tb = TitledBorder(EtchedBorder())
             tb.titleFont = font
@@ -268,7 +256,8 @@ class Intro : JPanel()
     /**
      * Surface is the stage where the Director plays its scenes.
      */
-    internal class Surface : JPanel(), Runnable {
+    internal class Surface : JPanel(), Runnable
+    {
         var director: Director
         var index: Int = 0
         var sleepAmt: Long = 30
@@ -279,7 +268,6 @@ class Intro : JPanel()
             background = myBlack
             layout = BorderLayout()
             addMouseListener(object : MouseAdapter() {
-
                 override fun mouseClicked(e: MouseEvent?) {
                     if (thread == null) {
                         start()
@@ -336,10 +324,10 @@ class Intro : JPanel()
 
         fun start() {
             if (thread == null) {
-                thread = Thread(this)
-                thread!!.priority = Thread.MIN_PRIORITY
-                thread!!.name = "Intro"
-                thread!!.start()
+                thread = Thread(this, "Intro").apply {
+                    priority = Thread.MIN_PRIORITY
+                    start()
+                }
             }
         }
 
@@ -362,9 +350,7 @@ class Intro : JPanel()
         }
 
         override fun run() {
-
             val me = Thread.currentThread()
-
             while (thread === me && !isShowing || size.width <= 0) {
                 try {
                     Thread.sleep(500)
@@ -406,13 +392,13 @@ class Intro : JPanel()
          * Part is a piece of the scene.  Classes must implement Part
          * in order to participate in a scene.
          */
-        internal interface Part {
-
+        internal interface Part
+        {
             val begin: Int
 
             val end: Int
 
-            fun reset(newwidth: Int, newheight: Int)
+            fun reset(newWidth: Int, newHeight: Int)
 
             fun step(w: Int, h: Int)
 
@@ -423,35 +409,30 @@ class Intro : JPanel()
          * Director is the holder of the scenes, their names & pause amounts
          * between scenes.
          */
-        internal class Director : ArrayList<Scene>() {
+        internal class Director : ArrayList<Scene>()
+        {
+            private var gp = GradientPaint(0f, 40f, myBlue, 38f, 2f, myBlack)
+            private var f1 = Font("serif", Font.PLAIN, 200)
+            private var f2 = Font("serif", Font.PLAIN, 120)
+            private var f3 = Font("serif", Font.PLAIN, 72)
 
-            var gp = GradientPaint(0f, 40f, myBlue, 38f, 2f, myBlack)
-            var f1 = Font("serif", Font.PLAIN, 200)
-            var f2 = Font("serif", Font.PLAIN, 120)
-            var f3 = Font("serif", Font.PLAIN, 72)
-            var partsInfo = arrayOf(
+            private var partsInfo = arrayOf(
                 arrayOf(
                     arrayOf<Any>("J  -  scale text on gradient", "0"),
-                    arrayOf<Any>(GpE(GpE.BURI, myBlack, myBlue, 0, 20), TxE("J", f1, TxE.SCI, myYellow, 2, 20))
-                       ),
+                    arrayOf<Any>(GpE(GpE.BURI, myBlack, myBlue, 0, 20), TxE("J", f1, TxE.SCI, myYellow, 2, 20))),
                 arrayOf(
                     arrayOf<Any>("2  -  scale & rotate text on gradient", "0"),
                     arrayOf<Any>(
                         GpE(GpE.BURI, myBlue, myBlack, 0, 22),
-                        TxE("2", f1, TxE.RI or TxE.SCI, myYellow, 2, 22)
-                                )
-                       ),
+                        TxE("2", f1, TxE.RI or TxE.SCI, myYellow, 2, 22))),
                 arrayOf(
                     arrayOf<Any>("D  -  scale text on gradient", "0"),
-                    arrayOf<Any>(GpE(GpE.BURI, myBlack, myBlue, 0, 20), TxE("D", f1, TxE.SCI, myYellow, 2, 20))
-                       ),
+                    arrayOf<Any>(GpE(GpE.BURI, myBlack, myBlue, 0, 20), TxE("D", f1, TxE.SCI, myYellow, 2, 20))),
                 arrayOf(
                     arrayOf<Any>("Java2D  -  scale & rotate text on gradient", "1000"),
                     arrayOf<Any>(
                         GpE(GpE.SIH, myBlue, myBlack, 0, 40),
-                        TxE("Java2D", f2, TxE.RI or TxE.SCI, myYellow, 0, 40)
-                                )
-                       ),
+                        TxE("Java2D", f2, TxE.RI or TxE.SCI, myYellow, 0, 40))),
                 arrayOf(arrayOf<Any>("Previous scene dither dissolve out", "0"), arrayOf<Any>(DdE(0, 20, 1))),
                 arrayOf(
                     arrayOf<Any>("Graphics Features", "999"),
@@ -459,22 +440,15 @@ class Intro : JPanel()
                         Temp(Temp.RECT, null, 0, 15),
                         Temp(Temp.IMG, java_logo, 2, 15),
                         Temp(Temp.RNA or Temp.INA, java_logo, 16, 130),
-                        Features(Features.GRAPHICS, 16, 130)
-                                )
-                       ),
+                        Features(Features.GRAPHICS, 16, 130))),
                 arrayOf(
                     arrayOf<Any>("Java2D  -  texture text on gradient", "1000"), arrayOf<Any>(
                         GpE(GpE.WI, myBlue, myBlack, 0, 20),
                         GpE(GpE.WD, myBlue, myBlack, 21, 40),
                         TpE(TpE.OI or TpE.NF, myBlack, myYellow, 4, 0, 10),
                         TpE(TpE.OD or TpE.NF, myBlack, myYellow, 4, 11, 20),
-                        TpE(
-                            TpE.OI or TpE.NF or TpE.HAF, myBlack, myYellow, 5,
-                            21, 40
-                           ),
-                        TxE("Java2D", f2, 0, null, 0, 40)
-                                                                                             )
-                       ),
+                        TpE(TpE.OI or TpE.NF or TpE.HAF, myBlack, myYellow, 5, 21, 40),
+                        TxE("Java2D", f2, 0, null, 0, 40))),
                 arrayOf(arrayOf<Any>("Previous scene random close out", "0"), arrayOf<Any>(CoE(CoE.RAND, 0, 20))),
                 arrayOf(
                     arrayOf<Any>("Text Features", "999"),
@@ -482,18 +456,14 @@ class Intro : JPanel()
                         Temp(Temp.RECT, null, 0, 15),
                         Temp(Temp.IMG, java_logo, 2, 15),
                         Temp(Temp.RNA or Temp.INA, java_logo, 16, 130),
-                        Features(Features.TEXT, 16, 130)
-                                )
-                       ),
+                        Features(Features.TEXT, 16, 130))),
                 arrayOf(
                     arrayOf<Any>("Java2D  -  composite text on texture", "1000"),
                     arrayOf<Any>(
                         TpE(TpE.RI, myBlack, gp, 40, 0, 20),
                         TpE(TpE.RD, myBlack, gp, 40, 21, 40),
                         TpE(TpE.RI, myBlack, gp, 40, 41, 60),
-                        TxE("Java2D", f2, TxE.AC, myYellow, 0, 60)
-                                )
-                       ),
+                        TxE("Java2D", f2, TxE.AC, myYellow, 0, 60))),
                 arrayOf(arrayOf<Any>("Previous scene dither dissolve out", "0"), arrayOf<Any>(DdE(0, 20, 4))),
                 arrayOf(
                     arrayOf<Any>("Imaging Features", "999"),
@@ -501,9 +471,7 @@ class Intro : JPanel()
                         Temp(Temp.RECT, null, 0, 15),
                         Temp(Temp.IMG, java_logo, 2, 15),
                         Temp(Temp.RNA or Temp.INA, java_logo, 16, 130),
-                        Features(Features.IMAGES, 16, 130)
-                                )
-                       ),
+                        Features(Features.IMAGES, 16, 130))),
                 arrayOf(
                     arrayOf<Any>("Java2D  -  text on gradient", "1000"),
                     arrayOf<Any>(
@@ -511,29 +479,27 @@ class Intro : JPanel()
                         GpE(GpE.SIH, myBlue, myBlack, 21, 40),
                         GpE(GpE.SDH, myBlue, myBlack, 41, 50),
                         GpE(GpE.INC or GpE.NF, myRed, myYellow, 0, 50),
-                        TxE("Java2D", f2, TxE.NOP, null, 0, 50)
-                                )
-                       ),
-                arrayOf(arrayOf<Any>("Previous scene ellipse close out", "0"), arrayOf<Any>(CoE(CoE.OVAL, 0, 20))),
+                        TxE("Java2D", f2, TxE.NOP, null, 0, 50))),
+                arrayOf(
+                    arrayOf<Any>("Previous scene ellipse close out", "0"),
+                    arrayOf<Any>(CoE(CoE.OVAL, 0, 20))),
                 arrayOf(
                     arrayOf<Any>("Color Features", "999"),
                     arrayOf<Any>(
                         Temp(Temp.RECT, null, 0, 15),
                         Temp(Temp.IMG, java_logo, 2, 15),
                         Temp(Temp.RNA or Temp.INA, java_logo, 16, 99),
-                        Features(Features.COLOR, 16, 99)
-                                )
-                       ),
+                        Features(Features.COLOR, 16, 99))),
                 arrayOf(
                     arrayOf<Any>("Java2D  -  composite and rotate text on paints", "2000"),
                     arrayOf<Any>(
                         GpE(GpE.BURI, myBlack, myBlue, 0, 20),
                         GpE(GpE.BURD, myBlack, myBlue, 21, 30),
                         TpE(TpE.OI or TpE.HAF, myBlack, myBlue, 10, 31, 40),
-                        TxE("Java2D", f2, TxE.AC or TxE.RI, myYellow, 0, 40)
-                                )
-                       ),
-                arrayOf(arrayOf<Any>("Previous scene subimage transform out", "0"), arrayOf<Any>(SiE(60, 60, 0, 40))),
+                        TxE("Java2D", f2, TxE.AC or TxE.RI, myYellow, 0, 40))),
+                arrayOf(
+                    arrayOf<Any>("Previous scene subimage transform out", "0"),
+                    arrayOf<Any>(SiE(60, 60, 0, 40))),
                 arrayOf(
                     arrayOf<Any>("CREDITS  -  transform in", "1000"),
                     arrayOf<Any>(
@@ -542,27 +508,20 @@ class Intro : JPanel()
                         TxE("CREDITS", f3, TxE.SCXD, RED, 31, 38),
                         TxE("CREDITS", f3, TxE.SCXI, RED, 39, 48),
                         TxE("CREDITS", f3, TxE.SCXD, RED, 49, 54),
-                        TxE("CREDITS", f3, TxE.SCXI, RED, 55, 60)
-                                )
-                       ),
+                        TxE("CREDITS", f3, TxE.SCXI, RED, 55, 60))),
                 arrayOf(
                     arrayOf<Any>("CREDITS  -  transform out", "0"),
                     arrayOf<Any>(
                         LnE(LnE.ACD or LnE.ZOOMD or LnE.RD, 0, 45),
                         TxE("CREDITS", f3, 0, RED, 0, 9),
-                        TxE("CREDITS", f3, TxE.SCD or TxE.RD, RED, 10, 30)
-                                )
-                       ),
+                        TxE("CREDITS", f3, TxE.SCD or TxE.RD, RED, 10, 30))),
                 arrayOf(
                     arrayOf<Any>("Contributors", "1000"),
                     arrayOf<Any>(
                         Temp(Temp.RECT, null, 0, 30),
                         Temp(Temp.IMG, cupanim, 4, 30),
                         Temp(Temp.RNA or Temp.INA, cupanim, 31, 200),
-                        Contributors(34, 200)
-                                )
-                       )
-                                   )
+                        Contributors(34, 200))))
 
             init {
                 for (partInfo in partsInfo) {
@@ -578,7 +537,11 @@ class Intro : JPanel()
         /**
          * Scene is the manager of the parts.
          */
-        internal class Scene(var parts: List<Part>, var name: Any?, var pauseAmt: Any?) : Any() {
+        internal class Scene(
+            private var parts: List<Part>,
+            var name: Any?,
+            var pauseAmt: Any?
+        ) {
             var participate: Any? = java.lang.Boolean.TRUE
             var index: Int = 0
             var length: Int = 0
@@ -622,7 +585,6 @@ class Intro : JPanel()
                     Thread.sleep(java.lang.Long.parseLong((pauseAmt as String?)!!))
                 } catch (ignored: Exception) {
                 }
-
                 System.gc()
             }
         } // End Scene class
@@ -674,22 +636,25 @@ class Intro : JPanel()
                 }
             }
 
-            override fun reset(w: Int, h: Int) {
-                if (type == SCXI) {
-                    sx = -1.0
-                    sy = 1.0
-                } else if (type == SCYI) {
-                    sx = 1.0
-                    sy = -1.0
-                } else {
-                    sy = if (type and DEC != 0) 1.0 else 0.0
-                    sx = sy
+            override fun reset(newWidth: Int, newHeight: Int) {
+                when (type) {
+                    SCXI -> {
+                        sx = -1.0
+                        sy = 1.0
+                    }
+                    SCYI -> {
+                        sx = 1.0
+                        sy = -1.0
+                    }
+                    else -> {
+                        sy = if (type and DEC != 0) 1.0 else 0.0
+                        sx = sy
+                    }
                 }
                 rotate = 0.0
             }
 
             override fun step(w: Int, h: Int) {
-
                 var charWidth = (w / 2 - sw / 2).toFloat()
 
                 for (i in shapes.indices) {
@@ -734,9 +699,7 @@ class Intro : JPanel()
                 var saveAC: Composite? = null
                 if (type and AC != 0 && sx > 0 && sx < 1) {
                     saveAC = g2.composite
-                    g2.composite = AlphaComposite.getInstance(
-                        AlphaComposite.SRC_OVER, sx.toFloat()
-                                                             )
+                    g2.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, sx.toFloat())
                 }
                 var path: GeneralPath? = null
                 if (type and CLIP != 0) {
@@ -760,24 +723,25 @@ class Intro : JPanel()
                 }
             }
 
-            companion object {
-                val INC = 1
-                val DEC = 2
-                val R = 4            // rotate
-                val RI = R or INC
-                val RD = R or DEC
-                val SC = 8            // scale
-                val SCI = SC or INC
-                val SCD = SC or DEC
-                val SCX = 16           // scale invert x
-                val SCXI = SCX or SC or INC
-                val SCXD = SCX or SC or DEC
-                val SCY = 32           // scale invert y
-                val SCYI = SCY or SC or INC
-                val SCYD = SCY or SC or DEC
-                val AC = 64           // AlphaComposite
-                val CLIP = 128          // Clipping
-                val NOP = 512          // No Paint
+            companion object
+            {
+                const val INC = 1
+                const val DEC = 2
+                const val R = 4            // rotate
+                const val RI = R or INC
+                const val RD = R or DEC
+                const val SC = 8            // scale
+                const val SCI = SC or INC
+                const val SCD = SC or DEC
+                const val SCX = 16           // scale invert x
+                const val SCXI = SCX or SC or INC
+                const val SCXD = SCX or SC or DEC
+                const val SCY = 32           // scale invert y
+                const val SCYI = SCY or SC or INC
+                const val SCYD = SCY or SC or DEC
+                const val AC = 64           // AlphaComposite
+                const val CLIP = 128          // Clipping
+                const val NOP = 512          // No Paint
             }
         } // End TxE class
 
@@ -791,13 +755,14 @@ class Intro : JPanel()
             private val c2: Color,
             override val begin: Int,
             override val end: Int
-                          ) : Part {
-            private var incr: Float = 0.toFloat()
-            private var index: Float = 0.toFloat()
+        ) : Part
+        {
+            private var incr: Float = 0.0f
+            private var index: Float = 0.0f
             private val rect = ArrayList<Rectangle2D>()
             private val grad = ArrayList<GradientPaint>()
 
-            override fun reset(w: Int, h: Int) {
+            override fun reset(newWidth: Int, newHeight: Int) {
                 incr = 1.0f / (end - begin)
                 if (type and CNT != 0) {
                     incr /= 2.3f
@@ -818,9 +783,9 @@ class Intro : JPanel()
                 grad.clear()
 
                 if (type and WID != 0) {
-                    var w2 = 0f
-                    var x1 = 0f
-                    var x2 = 0f
+                    val w2: Float
+                    val x1: Float
+                    val x2: Float
                     if (type and SPL != 0) {
                         w2 = w * 0.5f
                         x1 = w * (1.0f - index)
@@ -835,9 +800,9 @@ class Intro : JPanel()
                     grad.add(GradientPaint(0f, 0f, c1, x1, 0f, c2))
                     grad.add(GradientPaint(x2, 0f, c2, w.toFloat(), 0f, c1))
                 } else if (type and HEI != 0) {
-                    var h2 = 0f
-                    var y1 = 0f
-                    var y2 = 0f
+                    val h2: Float
+                    val y1: Float
+                    val y2: Float
                     if (type and SPL != 0) {
                         h2 = h * 0.5f
                         y1 = h * (1.0f - index)
@@ -881,42 +846,36 @@ class Intro : JPanel()
             }
 
             override fun render(w: Int, h: Int, g2: Graphics2D) {
-                g2.setRenderingHint(
-                    RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_OFF
-                                   )
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF)
                 for (i in grad.indices) {
                     g2.paint = grad[i]
                     if (type and NF == 0) {
                         g2.fill(rect[i])
                     }
                 }
-                g2.setRenderingHint(
-                    RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON
-                                   )
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
             }
 
-            companion object {
-
-                val INC = 1               // increasing
-                val DEC = 2               // decreasing
-                val CNT = 4               // center
-                val WID = 8               // width
-                val WI = WID or INC
-                val WD = WID or DEC
-                val HEI = 16              // height
-                val HI = HEI or INC
-                val HD = HEI or DEC
-                val SPL = 32 or CNT        // split
-                val SIW = SPL or INC or WID
-                val SDW = SPL or DEC or WID
-                val SIH = SPL or INC or HEI
-                val SDH = SPL or DEC or HEI
-                val BUR = 64 or CNT        // burst
-                val BURI = BUR or INC
-                val BURD = BUR or DEC
-                val NF = 128             // no fill
+            companion object
+            {
+                const val INC = 1               // increasing
+                const val DEC = 2               // decreasing
+                const val CNT = 4               // center
+                const val WID = 8               // width
+                const val WI = WID or INC
+                const val WD = WID or DEC
+                const val HEI = 16              // height
+                const val HI = HEI or INC
+                const val HD = HEI or DEC
+                const val SPL = 32 or CNT       // split
+                const val SIW = SPL or INC or WID
+                const val SDW = SPL or DEC or WID
+                const val SIH = SPL or INC or HEI
+                const val SDH = SPL or DEC or HEI
+                const val BUR = 64 or CNT        // burst
+                const val BURI = BUR or INC
+                const val BURD = BUR or DEC
+                const val NF = 128               // no fill
             }
         } // End GpE class
 
@@ -924,11 +883,16 @@ class Intro : JPanel()
          * TexturePaint Effect.  Expand and collapse a texture.
          */
         internal class TpE(
-            private val type: Int, private val p1: Paint, private val p2: Paint, size: Int,
-            override val begin: Int, override val end: Int
-                          ) : Part {
-            private var incr: Float = 0.toFloat()
-            private var index: Float = 0.toFloat()
+            private val type: Int,
+            private val p1: Paint,
+            private val p2: Paint,
+            size: Int,
+            override val begin: Int,
+            override val end: Int
+        ) : Part
+        {
+            private var incr: Float = 0.0f
+            private var index: Float = 0.0f
             private var texture: TexturePaint? = null
             private var size: Int = 0
             private var bimg: BufferedImage? = null
@@ -944,7 +908,7 @@ class Intro : JPanel()
                 rect = Rectangle(0, 0, size, size)
             }
 
-            override fun reset(w: Int, h: Int) {
+            override fun reset(newWidth: Int, newHeight: Int) {
                 incr = size.toFloat() / (end - begin).toFloat()
                 if (type and HAF != 0) {
                     incr /= 2f
@@ -983,26 +947,30 @@ class Intro : JPanel()
                 }
             }
 
-            companion object {
-
-                val INC = 1             // increasing
-                val DEC = 2             // decreasing
-                val OVAL = 4             // oval
-                val RECT = 8             // rectangle
-                val HAF = 16             // half oval or rect size
-                val NF = 32             // no fill
-                val OI = OVAL or INC
-                val OD = OVAL or DEC
-                val RI = RECT or INC
-                val RD = RECT or DEC
+            companion object
+            {
+                const val INC  =  1 // increasing
+                const val DEC  =  2 // decreasing
+                const val OVAL =  4 // oval
+                const val RECT =  8 // rectangle
+                const val HAF  = 16 // half oval or rect size
+                const val NF   = 32 // no fill
+                const val OI = OVAL or INC
+                const val OD = OVAL or DEC
+                const val RI = RECT or INC
+                const val RD = RECT or DEC
             }
         } // End TpE class
 
         /**
-         * Close out effect.  Close out the buffered image with different
-         * geometry shapes.
+         * Close out effect.  Close out the buffered image with different geometry shapes.
          */
-        internal class CoE(private var type: Int, override val begin: Int, override val end: Int) : Part {
+        internal class CoE(
+            private var type: Int,
+            override val begin: Int,
+            override val end: Int
+        ) : Part
+        {
             private var bimg: BufferedImage? = null
             private var shape: Shape? = null
             private var zoom: Double = 0.toDouble()
@@ -1017,7 +985,7 @@ class Intro : JPanel()
                 doRandom = type and RAND != 0
             }
 
-            override fun reset(w: Int, h: Int) {
+            override fun reset(newWidth: Int, newHeight: Int) {
                 if (doRandom) {
                     val num = (Math.random() * 5.0).toInt()
                     when (num) {
@@ -1039,10 +1007,7 @@ class Intro : JPanel()
                 if (bimg == null) {
                     val biw = Surface.bimg!!.width
                     val bih = Surface.bimg!!.height
-                    bimg = BufferedImage(
-                        biw, bih,
-                        BufferedImage.TYPE_INT_RGB
-                                        )
+                    bimg = BufferedImage(biw, bih, BufferedImage.TYPE_INT_RGB)
                     val big = bimg!!.createGraphics()
                     big.drawImage(Surface.bimg, 0, 0, null)
                 }
@@ -1059,12 +1024,10 @@ class Intro : JPanel()
                                         )
                     extent -= eIncr
                 } else if (type and RECT != 0) {
-                    if (type and WID != 0) {
-                        shape = Rectangle2D.Double(w / 2 - z / 2, 0.0, z, h.toDouble())
-                    } else if (type and HEI != 0) {
-                        shape = Rectangle2D.Double(0.0, h / 2 - z / 2, w.toDouble(), z)
-                    } else {
-                        shape = Rectangle2D.Double(w / 2 - z / 2, h / 2 - z / 2, z, z)
+                    when {
+                        type and WID != 0 -> shape = Rectangle2D.Double(w / 2 - z / 2, 0.0, z, h.toDouble())
+                        type and HEI != 0 -> shape = Rectangle2D.Double(0.0, h / 2 - z / 2, w.toDouble(), z)
+                        else -> shape = Rectangle2D.Double(w / 2 - z / 2, h / 2 - z / 2, z, z)
                     }
                 }
                 zoom += zIncr
@@ -1075,14 +1038,14 @@ class Intro : JPanel()
                 g2.drawImage(bimg, 0, 0, null)
             }
 
-            companion object {
-
-                val WID = 1
-                val HEI = 2
-                val OVAL = 4
-                val RECT = 8
-                val RAND = 16
-                val ARC = 32
+            companion object
+            {
+                const val WID = 1
+                const val HEI = 2
+                const val OVAL = 4
+                const val RECT = 8
+                const val RAND = 16
+                const val ARC = 32
             }
         } // End CoE class
 
@@ -1096,7 +1059,12 @@ class Intro : JPanel()
          * animation, causing an equal number of pseudo-randomly picked
          * "blocks" to be blacked out during each step of the animation.
          */
-        internal class DdE(override val begin: Int, override val end: Int, private val blocksize: Int) : Part {
+        internal class DdE(
+            override val begin: Int,
+            override val end: Int,
+            private val blocksize: Int
+        ) : Part
+        {
             private var bimg: BufferedImage? = null
             private var big: Graphics2D? = null
             private var list: MutableList<Int>? = null
@@ -1128,7 +1096,7 @@ class Intro : JPanel()
                 java.util.Collections.shuffle(list!!)
             }
 
-            override fun reset(w: Int, h: Int) {
+            override fun reset(newWidth: Int, newHeight: Int) {
                 bimg = null
             }
 
@@ -1190,13 +1158,18 @@ class Intro : JPanel()
          * Subimage effect.  Subimage the scene's buffered
          * image then rotate and scale down the subimages.
          */
-        internal class SiE(private val siw: Int, private val sih: Int, override val begin: Int, override val end: Int) :
-            Part {
+        internal class SiE(
+            private val siw: Int,
+            private val sih: Int,
+            override val begin: Int,
+            override val end: Int
+        ) : Part
+        {
             private var bimg: BufferedImage? = null
             private val rIncr: Double
             private val sIncr: Double
-            private var scale: Double = 0.toDouble()
-            private var rotate: Double = 0.toDouble()
+            private var scale: Double = 0.0
+            private var rotate: Double = 0.0
             private val subs = ArrayList<BufferedImage>(20)
             private val pts = ArrayList<Point>(20)
 
@@ -1205,7 +1178,7 @@ class Intro : JPanel()
                 sIncr = 1.0 / (this.end - begin)
             }
 
-            override fun reset(w: Int, h: Int) {
+            override fun reset(newWidth: Int, newHeight: Int) {
                 scale = 1.0
                 rotate = 0.0
                 bimg = null
@@ -1217,10 +1190,7 @@ class Intro : JPanel()
                 if (bimg == null) {
                     val biw = Surface.bimg!!.width
                     val bih = Surface.bimg!!.height
-                    bimg = BufferedImage(
-                        biw, bih,
-                        BufferedImage.TYPE_INT_RGB
-                                        )
+                    bimg = BufferedImage(biw, bih, BufferedImage.TYPE_INT_RGB)
                     val big = bimg!!.createGraphics()
                     big.drawImage(Surface.bimg, 0, 0, null)
                     run {
@@ -1282,14 +1252,15 @@ class Intro : JPanel()
          * to the edge.  Expand or collapse the ellipse.  Fade in or out
          * the lines.
          */
-        internal class LnE(private val type: Int, override val begin: Int, override val end: Int) : Part {
-            private var rIncr: Double = 0.toDouble()
-            private var rotate: Double = 0.toDouble()
-            private var zIncr: Double = 0.toDouble()
-            private var zoom: Double = 0.toDouble()
+        internal class LnE(private val type: Int, override val begin: Int, override val end: Int) : Part
+        {
+            private var rIncr: Double = 0.0
+            private var rotate: Double = 0.0
+            private var zIncr: Double = 0.0
+            private var zoom: Double = 0.0
             private val pts = ArrayList<Point2D.Double>()
-            private var alpha: Float = 0.toFloat()
-            private var aIncr: Float = 0.toFloat()
+            private var alpha: Float = 0.0f
+            private var aIncr: Float = 0.0f
 
             init {
                 val range = (this.end - begin).toFloat()
@@ -1311,18 +1282,14 @@ class Intro : JPanel()
                 while (!pi.isDone) {
                     val pt = DoubleArray(6)
                     when (pi.currentSegment(pt)) {
-                        FlatteningPathIterator.SEG_MOVETO, FlatteningPathIterator.SEG_LINETO -> pts.add(
-                            Point2D.Double(
-                                pt[0],
-                                pt[1]
-                                          )
-                                                                                                       )
+                        FlatteningPathIterator.SEG_MOVETO, FlatteningPathIterator.SEG_LINETO ->
+                            pts.add(Point2D.Double(pt[0], pt[1]))
                     }
                     pi.next()
                 }
             }
 
-            override fun reset(w: Int, h: Int) {
+            override fun reset(newWidth: Int, newHeight: Int) {
                 if (type and DEC != 0) {
                     rotate = 360.0
                     alpha = 1.0f
@@ -1333,7 +1300,7 @@ class Intro : JPanel()
                     zoom = 0.0
                 }
                 if (type and ZOOM == 0) {
-                    generatePts(w, h, 0.5)
+                    generatePts(newWidth, newHeight, 0.5)
                 }
             }
 
@@ -1378,19 +1345,19 @@ class Intro : JPanel()
                 }
             }
 
-            companion object {
-
-                val INC = 1
-                val DEC = 2
-                val R = 4             // rotate
-                val ZOOM = 8             // zoom
-                val AC = 32             // AlphaComposite
-                val RI = R or INC
-                val RD = R or DEC
-                val ZOOMI = ZOOM or INC
-                val ZOOMD = ZOOM or DEC
-                val ACI = AC or INC
-                val ACD = AC or DEC
+            companion object
+            {
+                const val INC = 1
+                const val DEC = 2
+                const val R = 4             // rotate
+                const val ZOOM = 8             // zoom
+                const val AC = 32             // AlphaComposite
+                const val RI = R or INC
+                const val RD = R or DEC
+                const val ZOOMI = ZOOM or INC
+                const val ZOOMD = ZOOM or DEC
+                const val ACI = AC or INC
+                const val ACD = AC or DEC
             }
         } // End LnE class
 
@@ -1421,15 +1388,15 @@ class Intro : JPanel()
                 }
             }
 
-            override fun reset(w: Int, h: Int) {
-                rect1 = Rectangle(8, 20, w - 20, 30)
-                rect2 = Rectangle(20, 8, 30, h - 20)
+            override fun reset(newWidth: Int, newHeight: Int) {
+                rect1 = Rectangle(8, 20, newWidth - 20, 30)
+                rect2 = Rectangle(20, 8, 30, newHeight - 20)
                 if (type and NOANIM == 0) {
                     alpha = 0.0f
-                    xIncr = w / (end - begin)
-                    yIncr = h / (end - begin)
-                    x = w + (xIncr * 1.4).toInt()
-                    y = h + (yIncr * 1.4).toInt()
+                    xIncr = newWidth / (end - begin)
+                    yIncr = newHeight / (end - begin)
+                    x = newWidth + (xIncr * 1.4).toInt()
+                    y = newHeight + (yIncr * 1.4).toInt()
                 }
             }
 
@@ -1467,20 +1434,21 @@ class Intro : JPanel()
                 }
             }
 
-            companion object {
-
-                val NOANIM = 1
-                val RECT = 2
-                val IMG = 4
-                val RNA = RECT or NOANIM
-                val INA = IMG or NOANIM
+            companion object
+            {
+                const val NOANIM = 1
+                const val RECT = 2
+                const val IMG = 4
+                const val RNA = RECT or NOANIM
+                const val INA = IMG or NOANIM
             }
         } // End Temp class
 
         /**
          * Features of Java2D.  Single character advancement effect.
          */
-        internal class Features(type: Int, override val begin: Int, override val end: Int) : Part {
+        internal class Features(type: Int, override val begin: Int, override val end: Int) : Part
+        {
             private val list: Array<String>
             private var strH: Int = 0
             private var endIndex: Int = 0
@@ -1491,7 +1459,7 @@ class Intro : JPanel()
                 list = table[type]
             }
 
-            override fun reset(w: Int, h: Int) {
+            override fun reset(newWidth: Int, newHeight: Int) {
                 strH = fm2.ascent + fm2.descent
                 endIndex = 1
                 listIndex = 0
@@ -1528,16 +1496,19 @@ class Intro : JPanel()
                 }
             }
 
-            companion object {
-
+            companion object
+            {
                 val GRAPHICS = 0
                 val TEXT = 1
                 val IMAGES = 2
                 val COLOR = 3
+
                 val font1 = Font("serif", Font.BOLD, 38)
                 val font2 = Font("serif", Font.PLAIN, 24)
+
                 var fm1 = Surface.getMetrics(font1)
                 var fm2 = Surface.getMetrics(font2)
+
                 var table = arrayOf(
                     arrayOf(
                         "Graphics",
@@ -1545,24 +1516,24 @@ class Intro : JPanel()
                         "Bezier paths",
                         "Transforms",
                         "Compositing",
-                        "Stroking parameters"
-                           ),
+                        "Stroking parameters"),
                     arrayOf(
                         "Text",
                         "Extended font support",
                         "Advanced text layout",
                         "Dynamic font loading",
-                        "AttributeSets for font customization"
-                           ),
+                        "AttributeSets for font customization"),
                     arrayOf(
                         "Images",
                         "Flexible image layouts",
                         "Extended imaging operations",
                         "   Convolutions, Lookup Tables",
-                        "RenderableImage interface"
-                           ),
-                    arrayOf("Color", "ICC profile support", "Color conversion", "Arbitrary color spaces")
-                                   )
+                        "RenderableImage interface"),
+                    arrayOf(
+                        "Color",
+                        "ICC profile support",
+                        "Color conversion",
+                        "Arbitrary color spaces"))
             }
         } // End Features class
 
@@ -1582,22 +1553,22 @@ class Intro : JPanel()
             private var gp: GradientPaint? = null
 
             init {
-                java.util.Arrays.sort(members)
+                members.sort()
                 cast.add("CONTRIBUTORS")
                 cast.add(" ")
-                cast.addAll(Arrays.asList(*members))
+                cast.addAll(members)
                 cast.add(" ")
                 cast.add(" ")
                 cntMod = (this.end - begin) / cast.size - 1
             }
 
-            override fun reset(w: Int, h: Int) {
+            override fun reset(newWidth: Int, newHeight: Int) {
                 v.clear()
                 strH = fm.ascent + fm.descent
-                nStrs = (h - 40) / strH + 1
+                nStrs = (newHeight - 40) / strH + 1
                 height = strH * (nStrs - 1) + 48
                 index = 0
-                gp = GradientPaint(0f, (h / 2).toFloat(), WHITE, 0f, (h + 20).toFloat(), BLACK)
+                gp = GradientPaint(0f, (newHeight / 2).toFloat(), WHITE, 0f, (newHeight + 20).toFloat(), BLACK)
                 counter = 0
             }
 
@@ -1633,8 +1604,8 @@ class Intro : JPanel()
                 }
             }
 
-            companion object {
-
+            companion object
+            {
                 var members = arrayOf(
                     "Brian Lichtenwalter",
                     "Jeannette Hung",
@@ -1691,44 +1662,36 @@ class Intro : JPanel()
         }
     } // End Surface class
 
-    companion object {
-
+    companion object
+    {
         private val myBlack = Color(20, 20, 20)
         private val myWhite = Color(240, 240, 255)
         private val myRed = Color(149, 43, 42)
         private val myBlue = Color(94, 105, 176)
         private val myYellow = Color(255, 255, 140)
-        internal lateinit var surface: Surface
 
         @JvmStatic
         fun main(argv: Array<String>) {
             val intro = Intro()
-            val l = object : WindowAdapter() {
-
-                override fun windowClosing(e: WindowEvent?) {
-                    System.exit(0)
-                }
-
-                override fun windowDeiconified(e: WindowEvent?) {
-                    intro.start()
-                }
-
-                override fun windowIconified(e: WindowEvent?) {
-                    intro.stop()
-                }
+            JFrame("Java2D Demo - Intro").apply {
+                addWindowListener(object : WindowAdapter() {
+                    override fun windowClosing(e: WindowEvent?) {
+                        System.exit(0)
+                    }
+                    override fun windowDeiconified(e: WindowEvent?) {
+                        intro.start()
+                    }
+                    override fun windowIconified(e: WindowEvent?) {
+                        intro.stop()
+                    }
+                })
+                contentPane.add("Center", intro)
+                pack()
+                setSize(720, 510)
+                setLocationRelativeTo(null)
+                isVisible = true
             }
-            val f = JFrame("Java2D Demo - Intro")
-            f.addWindowListener(l)
-            f.contentPane.add("Center", intro)
-            f.pack()
-            val screenSize = Toolkit.getDefaultToolkit().screenSize
-            val w = 720
-            val h = 510
-            f.setLocation(screenSize.width / 2 - w / 2, screenSize.height / 2 - h / 2)
-            f.setSize(w, h)
-            f.isVisible = true
             intro.start()
         }
     }
-} // End Intro class
-
+}
