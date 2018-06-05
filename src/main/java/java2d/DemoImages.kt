@@ -29,79 +29,87 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package java2d;
+package java2d
 
-
-import java.awt.Component;
-import java.awt.Image;
-import java.awt.MediaTracker;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import java.awt.Component
+import java.awt.Image
+import java.awt.MediaTracker
+import java.net.URLClassLoader
+import java.util.concurrent.ConcurrentHashMap
+import java.util.logging.Level
 
 /**
  * A collection of all the demo images found in the images directory.
  * Certain classes are preloaded; the rest are loaded lazily.
  */
-@SuppressWarnings("serial")
-public class DemoImages extends Component {
+object DemoImages
+{
+    private val names = arrayOf(
+        "java-logo.gif",
+        "bld.jpg",
+        "boat.png",
+        "box.gif",
+        "boxwave.gif",
+        "clouds.jpg",
+        "duke.gif",
+        "duke.running.gif",
+        "dukeplug.gif",
+        "fight.gif",
+        "globe.gif",
+        "java_logo.png",
+        "jumptojavastrip.png",
+        "magnify.gif",
+        "painting.gif",
+        "remove.gif",
+        "snooze.gif",
+        "star7.gif",
+        "surfing.gif",
+        "thumbsup.gif",
+        "tip.gif",
+        "duke.png",
+        "print.gif",
+        "loop.gif",
+        "looping.gif",
+        "start.gif",
+        "start2.gif",
+        "stop.gif",
+        "stop2.gif",
+        "clone.gif")
 
-    private static final String[] names = {
-        "java-logo.gif", "bld.jpg", "boat.png", "box.gif",
-        "boxwave.gif", "clouds.jpg", "duke.gif", "duke.running.gif",
-        "dukeplug.gif", "fight.gif", "globe.gif", "java_logo.png",
-        "jumptojavastrip.png", "magnify.gif", "painting.gif",
-        "remove.gif", "snooze.gif", "star7.gif", "surfing.gif",
-        "thumbsup.gif", "tip.gif", "duke.png", "print.gif",
-        "loop.gif", "looping.gif", "start.gif", "start2.gif",
-        "stop.gif", "stop2.gif", "clone.gif"
-    };
-    private static Map<String, Image> cache =
-            new ConcurrentHashMap<String, Image>(names.length);
+    private val cache = ConcurrentHashMap<String, Image>(names.size)
 
-    private DemoImages() {
-    }
-
-    public static void newDemoImages() {
-        DemoImages demoImages = new DemoImages();
-        for (String name : names) {
-            cache.put(name, getImage(name, demoImages));
+    fun preloadImages(component: Component) {
+        for (name in names) {
+            cache[name] = getImage(name, component)
         }
     }
-
 
     /*
      * Gets the named image using the toolkit of the specified component.
      * Note that this has to work even before we have had a chance to
      * instantiate DemoImages and preload the cache.
      */
-    public static Image getImage(String name, Component cmp) {
-        Image img = null;
-        if (cache != null) {
-            if ((img = cache.get(name)) != null) {
-                return img;
-            }
+    fun getImage(name: String, component: Component): Image {
+        var img: Image? = cache[name]
+        if (img != null) {
+            return img
         }
 
-        URLClassLoader urlLoader =
-                (URLClassLoader) cmp.getClass().getClassLoader();
-        URL fileLoc = urlLoader.findResource("images/" + name);
-        img = cmp.getToolkit().createImage(fileLoc);
+        val urlLoader = component.javaClass.classLoader as URLClassLoader
+        val fileLoc = urlLoader.findResource("images/$name")
+        img = component.toolkit.createImage(fileLoc)
 
-        MediaTracker tracker = new MediaTracker(cmp);
-        tracker.addImage(img, 0);
+        val tracker = MediaTracker(component)
+        tracker.addImage(img, 0)
         try {
-            tracker.waitForID(0);
-            if (tracker.isErrorAny()) {
-                System.out.println("Error loading image " + name);
+            tracker.waitForID(0)
+            if (tracker.isErrorAny) {
+                println("Error loading image $name")
             }
-        } catch (Exception ex) {
-            Logger.getLogger(DemoImages.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ex: Exception) {
+            getLogger<DemoImages>().log(Level.SEVERE, null, ex)
         }
-        return img;
+
+        return img
     }
 }
