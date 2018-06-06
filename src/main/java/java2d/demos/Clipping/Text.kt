@@ -33,10 +33,10 @@ package java2d.demos.Clipping
 
 import java2d.ControlsSurface
 import java2d.CustomControls
-import java2d.Surface
 import java2d.createToolButton
 import java.awt.BasicStroke
 import java.awt.Color
+import java.awt.Component
 import java.awt.Dimension
 import java.awt.Font
 import java.awt.GradientPaint
@@ -63,8 +63,9 @@ class Text : ControlsSurface()
     init {
         background = Color.WHITE
         img = getImage("clouds.jpg")
-        controls = arrayOf(DemoControls(this))
     }
+
+    override var controls: Array<out Component> = arrayOf(DemoControls(this))
 
     override fun render(w: Int, h: Int, g2: Graphics2D) {
         val frc = g2.fontRenderContext

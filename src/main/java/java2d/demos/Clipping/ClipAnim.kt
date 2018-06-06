@@ -35,6 +35,7 @@ import java2d.AnimatingControlsSurface
 import java2d.CustomControls
 import java2d.createToolButton
 import java.awt.Color
+import java.awt.Component
 import java.awt.Dimension
 import java.awt.Font
 import java.awt.GradientPaint
@@ -74,8 +75,9 @@ class ClipAnim : AnimatingControlsSurface()
         cimg = getImage("clouds.jpg")
         dimg = getImage("duke.gif")
         background = Color.WHITE
-        controls = arrayOf(DemoControls(this))
     }
+
+    override var controls: Array<out Component> = arrayOf(DemoControls(this))
 
     override fun reset(newWidth: Int, newHeight: Int) {
         for (a in animval) {

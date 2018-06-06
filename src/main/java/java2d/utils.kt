@@ -29,6 +29,7 @@ fun createToolButton(text: String,
         isFocusPainted = false
         if (toolTipText != null) this.toolTipText = toolTipText
         isSelected = state
+        margin = Insets(2, 2, 2, 2)
         restrictHeight(21)
         addActionListener { action(isSelected) }
     }

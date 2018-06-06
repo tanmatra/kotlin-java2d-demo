@@ -34,11 +34,8 @@ package java2d.demos.Clipping
 import java2d.ControlsSurface
 import java2d.CustomControls
 import java2d.createToolButton
-import java.awt.Color.BLACK
-import java.awt.Color.GREEN
-import java.awt.Color.RED
-import java.awt.Color.WHITE
-import java.awt.Color.YELLOW
+import java.awt.Color
+import java.awt.Component
 import java.awt.Dimension
 import java.awt.Graphics2D
 import java.awt.geom.Area
@@ -57,9 +54,10 @@ class Areas : ControlsSurface()
     private var areaType = "nop"
 
     init {
-        background = WHITE
-        controls = arrayOf(DemoControls(this))
+        background = Color.WHITE
     }
+
+    override var controls: Array<out Component> = arrayOf(DemoControls(this))
 
     override fun render(w: Int, h: Int, g2: Graphics2D) {
         val p1 = GeneralPath().apply {
@@ -78,12 +76,12 @@ class Areas : ControlsSurface()
         }
 
         val area = Area(p1)
-        g2.color = YELLOW
+        g2.color = Color.YELLOW
         when (areaType) {
             "nop" -> {
                 g2.fill(p1)
                 g2.fill(p2)
-                g2.color = RED
+                g2.color = Color.RED
                 g2.draw(p1)
                 g2.draw(p2)
                 return
@@ -106,7 +104,7 @@ class Areas : ControlsSurface()
                 leaf.setFrame(x - 14, y - 47, 30.0, 30.0)
                 val leaf2 = Area(leaf)
                 leaf1.intersect(leaf2)
-                g2.color = GREEN
+                g2.color = Color.GREEN
                 g2.fill(leaf1)
 
                 // Creates the second leaf.
@@ -121,7 +119,7 @@ class Areas : ControlsSurface()
                 val st1 = Area(stem)
                 stem.setFrame(x + 3, y - 47, 50.0, 50.0)
                 st1.subtract(Area(stem))
-                g2.color = BLACK
+                g2.color = Color.BLACK
                 g2.fill(st1)
 
                 // Creates the pear itself by filling the Area resulting from the
@@ -131,14 +129,14 @@ class Areas : ControlsSurface()
                 val circ = Area(circle)
                 circ.add(Area(oval))
 
-                g2.color = YELLOW
+                g2.color = Color.YELLOW
                 g2.fill(circ)
                 return
             }
         }
 
         g2.fill(area)
-        g2.color = RED
+        g2.color = Color.RED
         g2.draw(area)
     }
 
