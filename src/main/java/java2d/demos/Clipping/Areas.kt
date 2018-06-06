@@ -31,11 +31,12 @@
  */
 package java2d.demos.Clipping
 
+import java2d.CControl
 import java2d.ControlsSurface
 import java2d.CustomControls
 import java2d.createToolButton
+import java.awt.BorderLayout
 import java.awt.Color
-import java.awt.Component
 import java.awt.Dimension
 import java.awt.Graphics2D
 import java.awt.geom.Area
@@ -57,7 +58,7 @@ class Areas : ControlsSurface()
         background = Color.WHITE
     }
 
-    override var controls: Array<out Component> = arrayOf(DemoControls(this))
+    override val customControls = listOf<CControl>(DemoControls(this) to BorderLayout.NORTH)
 
     override fun render(w: Int, h: Int, g2: Graphics2D) {
         val p1 = GeneralPath().apply {

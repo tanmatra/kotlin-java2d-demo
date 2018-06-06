@@ -32,10 +32,11 @@
 package java2d.demos.Fonts
 
 import java2d.AnimatingControlsSurface
+import java2d.CControl
 import java2d.CustomControls
 import java2d.Surface
+import java.awt.BorderLayout
 import java.awt.Color
-import java.awt.Component
 import java.awt.Dimension
 import java.awt.Font
 import java.awt.Graphics2D
@@ -63,7 +64,7 @@ class AllFonts : AnimatingControlsSurface()
         sleepAmount = 500
     }
 
-    override var controls: Array<out Component> = arrayOf(DemoControls(this))
+    override val customControls = listOf<CControl>(DemoControls(this) to BorderLayout.NORTH)
 
     override fun reset(newWidth: Int, newHeight: Int) {
         visibleFonts.clear()

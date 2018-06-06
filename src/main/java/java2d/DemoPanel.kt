@@ -72,10 +72,8 @@ class DemoPanel private constructor(
         }
         if (component is CustomControlsContext) {
             customControlsContext = component
-            val controls = component.controls
-            val constrainst = component.constraints
-            for (i in controls.indices) {
-                add(controls[i], constrainst[i])
+            for ((control, constraint) in component.customControls) {
+                add(control, constraint)
             }
         } else {
             customControlsContext = null

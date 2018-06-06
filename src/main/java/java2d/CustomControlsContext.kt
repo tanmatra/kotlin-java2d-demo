@@ -39,8 +39,11 @@ import java.awt.Component
  */
 interface CustomControlsContext
 {
-    var controls: Array<out Component>
+    var controls: Array<Component>
     var constraints: Array<String>
+
+    val customControls: Iterable<CControl>
+        get() = controls.zip(constraints)
 
     enum class State {
         START,
@@ -48,7 +51,7 @@ interface CustomControlsContext
     }
 
     fun handleThread(state: CustomControlsContext.State) {
-        for (control in controls) {
+        for ((control, _) in customControls) {
             if (control is CustomControls) {
                 if (state === State.START) {
                     control.start()
@@ -59,3 +62,5 @@ interface CustomControlsContext
         }
     }
 }
+
+typealias CControl = Pair<Component, String>

@@ -41,6 +41,6 @@ import java.awt.Component
  */
 abstract class ControlsSurface : Surface(), CustomControlsContext
 {
-    override var controls: Array<out Component> = emptyArray()
-    override var constraints = arrayOf(BorderLayout.NORTH)
+    override var controls: Array<Component> = emptyArray()
+    override var constraints: Array<String> = arrayOf(BorderLayout.NORTH)
 }
