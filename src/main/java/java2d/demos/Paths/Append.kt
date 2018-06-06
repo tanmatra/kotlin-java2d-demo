@@ -29,55 +29,53 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package java2d.demos.Paths;
+package java2d.demos.Paths
 
-
-import static java.awt.Color.BLACK;
-import static java.awt.Color.GRAY;
-import static java.awt.Color.WHITE;
-import java.awt.Graphics2D;
-import java.awt.geom.GeneralPath;
-import java.awt.geom.Path2D;
-import java.awt.geom.Rectangle2D;
-import java2d.Surface;
-
+import java2d.Surface
+import java.awt.Color
+import java.awt.Graphics2D
+import java.awt.geom.GeneralPath
+import java.awt.geom.Path2D
+import java.awt.geom.Rectangle2D
 
 /**
  * Simple append of rectangle to path with & without the connect.
  */
-@SuppressWarnings("serial")
-public class Append extends Surface {
-
-    public Append() {
-        setBackground(WHITE);
+class Append : Surface()
+{
+    init {
+        background = Color.WHITE
     }
 
-    @Override
-    public void render(int w, int h, Graphics2D g2) {
-        GeneralPath p = new GeneralPath(Path2D.WIND_NON_ZERO);
-        p.moveTo(w * 0.25f, h * 0.2f);
-        p.lineTo(w * 0.75f, h * 0.2f);
-        p.closePath();
-        p.append(new Rectangle2D.Double(w * .4, h * .3, w * .2, h * .1), false);
-        g2.setColor(GRAY);
-        g2.fill(p);
-        g2.setColor(BLACK);
-        g2.draw(p);
-        g2.drawString("Append rect to path", (int) (w * .25), (int) (h * .2) - 5);
+    override fun render(w: Int, h: Int, g2: Graphics2D) {
+        val p = GeneralPath(Path2D.WIND_NON_ZERO)
+        p.moveTo(w * 0.25f, h * 0.2f)
+        p.lineTo(w * 0.75f, h * 0.2f)
+        p.closePath()
+        p.append(Rectangle2D.Double(w * 0.4, h * 0.3, w * 0.2, h * 0.1), false)
+        g2.color = Color.GRAY
+        g2.fill(p)
+        g2.color = Color.BLACK
+        g2.draw(p)
+        g2.drawString("Append rect to path", (w * 0.25).toInt(), (h * 0.2).toInt() - 5)
 
-        p.reset();
-        p.moveTo(w * 0.25f, h * 0.6f);
-        p.lineTo(w * 0.75f, h * 0.6f);
-        p.closePath();
-        p.append(new Rectangle2D.Double(w * .4, h * .7, w * .2, h * .1), true);
-        g2.setColor(GRAY);
-        g2.fill(p);
-        g2.setColor(BLACK);
-        g2.draw(p);
-        g2.drawString("Append, connect", (int) (w * .25), (int) (h * .6) - 5);
+        p.reset()
+        p.moveTo(w * 0.25f, h * 0.6f)
+        p.lineTo(w * 0.75f, h * 0.6f)
+        p.closePath()
+        p.append(Rectangle2D.Double(w * 0.4, h * 0.7, w * 0.2, h * 0.1), true)
+        g2.color = Color.GRAY
+        g2.fill(p)
+        g2.color = Color.BLACK
+        g2.draw(p)
+        g2.drawString("Append, connect", (w * 0.25).toInt(), (h * 0.6).toInt() - 5)
     }
 
-    public static void main(String s[]) {
-        createDemoFrame(new Append());
+    companion object
+    {
+        @JvmStatic
+        fun main(s: Array<String>) {
+            Surface.createDemoFrame(Append())
+        }
     }
 }
