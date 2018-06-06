@@ -33,13 +33,13 @@ package java2d
 
 import java.awt.BorderLayout
 import java.awt.Color
-import java.awt.Color.BLACK
 import java.awt.Color.GREEN
 import java.awt.Color.YELLOW
 import java.awt.Dimension
 import java.awt.Font
 import java.awt.Graphics
 import java.awt.Graphics2D
+import java.awt.GridBagLayout
 import java.awt.Rectangle
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -60,36 +60,29 @@ import javax.swing.border.TitledBorder
 /**
  * Tracks Memory allocated & used, displayed in graph form.
  */
-class MemoryMonitor : JPanel()
+class MemoryMonitor : JPanel(BorderLayout())
 {
-    var surface: Surface
-    internal var controls: JPanel
-    internal var doControls: Boolean = false
-    internal var tf: JTextField
+    val surface = Surface()
+    private val controls: JPanel
+    private var doControls: Boolean = false
+    private val textField: JTextField
+    private val dateStampCheckBox = JCheckBox("Output Date Stamp")
 
     init {
-        layout = BorderLayout()
         border = TitledBorder(EtchedBorder(), "Memory Monitor")
-        surface = Surface()
         add(surface)
-        controls = JPanel()
-        controls.preferredSize = Dimension(135, 80)
-        val font = Font("serif", Font.PLAIN, 10)
-        var label = JLabel("Sample Rate")
-        label.font = font
-        label.foreground = BLACK
-        controls.add(label)
-        tf = JTextField("1000")
-        tf.preferredSize = Dimension(45, 20)
-        controls.add(tf)
-        label = JLabel("ms")
-        controls.add(label)
-        label.font = font
-        label.foreground = BLACK
-        controls.add(dateStampCB)
-        dateStampCB.font = font
-        addMouseListener(object : MouseAdapter() {
+        controls = JPanel(GridBagLayout()).apply {
+            preferredSize = PREFERRED_SIZE
+        }
+        controls.add(JLabel("Sample Rate"), gbc(0, 0))
+        textField = JTextField("1000").apply {
+            preferredSize = Dimension(45, preferredSize.height)
+        }
+        controls.add(textField, gbc(1, 0).insets(0, 2, 0, 2))
+        controls.add(JLabel("ms"), gbc(2, 0))
+        controls.add(dateStampCheckBox, gbc(0, 1).span(3, 1))
 
+        addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
                 removeAll()
                 doControls = !doControls
@@ -98,10 +91,10 @@ class MemoryMonitor : JPanel()
                     add(controls)
                 } else {
                     try {
-                        surface.sleepAmount = java.lang.Long.parseLong(tf.text.trim { it <= ' ' })
+                        surface.sleepAmount = textField.text.trim().toLong()
                     } catch (ex: Exception) {
+                        // ignore
                     }
-
                     surface.start()
                     add(surface)
                 }
@@ -118,8 +111,8 @@ class MemoryMonitor : JPanel()
         private var w: Int = 0
         private var h: Int = 0
         private var bimg: BufferedImage? = null
-        private var big: Graphics2D? = null
-        private val r = Runtime.getRuntime()
+        private var imgGr: Graphics2D? = null
+        private val runtime = Runtime.getRuntime()
         private var columnInc: Int = 0
         private var pts: IntArray? = null
         private var ptNum: Int = 0
@@ -129,14 +122,11 @@ class MemoryMonitor : JPanel()
         private val mfRect = Rectangle2D.Float()
         private val muRect = Rectangle2D.Float()
         private val graphLine = Line2D.Float()
-        private val graphColor = Color(46, 139, 87)
-        private val mfColor = Color(0, 100, 0)
         private var usedStr: String? = null
 
         init {
-            background = BLACK
+            background = Color.BLACK
             addMouseListener(object : MouseAdapter() {
-
                 override fun mouseClicked(e: MouseEvent?) {
                     if (thread == null) {
                         start()
@@ -147,35 +137,27 @@ class MemoryMonitor : JPanel()
             })
         }
 
-        override fun getMinimumSize(): Dimension {
-            return preferredSize
-        }
+        override fun getMinimumSize(): Dimension = PREFERRED_SIZE
 
-        override fun getMaximumSize(): Dimension {
-            return preferredSize
-        }
+        override fun getMaximumSize(): Dimension = PREFERRED_SIZE
 
-        override fun getPreferredSize(): Dimension {
-            return Dimension(135, 80)
-        }
+        override fun getPreferredSize(): Dimension = PREFERRED_SIZE
 
-        override fun paint(g: Graphics?) {
+        override fun paint(g: Graphics) {
+            val imgGr = imgGr ?: return
 
-            if (big == null) {
-                return
-            }
+            imgGr.textAntialiasing = systemTextAntialiasing
+            imgGr.background = background
+            imgGr.clearRect(0, 0, w, h)
 
-            big!!.background = background
-            big!!.clearRect(0, 0, w, h)
-
-            val freeMemory = r.freeMemory().toFloat()
-            val totalMemory = r.totalMemory().toFloat()
+            val freeMemory = runtime.freeMemory().toFloat()
+            val totalMemory = runtime.totalMemory().toFloat()
 
             // .. Draw allocated and used strings ..
-            big!!.color = GREEN
-            big!!.drawString((totalMemory.toInt() / 1024).toString() + "K allocated", 4.0f, ascent + 0.5f)
-            usedStr = ((totalMemory - freeMemory).toInt() / 1024).toString() + "K used"
-            big!!.drawString(usedStr, 4, h - descent)
+            imgGr.color = GREEN
+            imgGr.drawString("%,d K allocated".format(totalMemory.toInt() / 1024), 4.0f, ascent + 0.5f)
+            usedStr = "%,d K used".format((totalMemory - freeMemory).toInt() / 1024)
+            imgGr.drawString(usedStr, 4, h - descent)
 
             // Calculate remaining size
             val ssH = (ascent + descent).toFloat()
@@ -184,46 +166,39 @@ class MemoryMonitor : JPanel()
             val blockWidth = 20.0f
 
             // .. Memory Free ..
-            big!!.color = mfColor
+            imgGr.color = FREE_MEMORY_COLOR
             val memUsage = (freeMemory / totalMemory * 10).toInt()
-            var i = 0
-            while (i < memUsage) {
+            for (i in 0 until memUsage) {
                 mfRect.setRect(
                     5.0, (ssH + i * blockHeight).toDouble(),
                     blockWidth.toDouble(), (blockHeight - 1).toDouble())
-                big!!.fill(mfRect)
-                i++
+                imgGr.fill(mfRect)
             }
 
             // .. Memory Used ..
-            big!!.color = GREEN
-            while (i < 10) {
+            imgGr.color = GREEN
+            for (i in memUsage until 10) {
                 muRect.setRect(
                     5.0, (ssH + i * blockHeight).toDouble(),
                     blockWidth.toDouble(), (blockHeight - 1).toDouble())
-                big!!.fill(muRect)
-                i++
+                imgGr.fill(muRect)
             }
 
             // .. Draw History Graph ..
-            big!!.color = graphColor
+            imgGr.color = GRAPH_COLOR
             val graphX = 30
             val graphY = ssH.toInt()
             val graphW = w - graphX - 5
             val graphH = remainingHeight.toInt()
             graphOutlineRect.setRect(graphX.toDouble(), graphY.toDouble(), graphW.toDouble(), graphH.toDouble())
-            big!!.draw(graphOutlineRect)
+            imgGr.draw(graphOutlineRect)
 
             val graphRow = graphH / 10
 
             // .. Draw row ..
-            run {
-                var j = graphY
-                while (j <= graphH + graphY) {
-                    graphLine.setLine(graphX.toDouble(), j.toDouble(), (graphX + graphW).toDouble(), j.toDouble())
-                    big!!.draw(graphLine)
-                    j += graphRow
-                }
+            for (j in graphY .. graphH + graphY step graphRow) {
+                graphLine.setLine(graphX.toDouble(), j.toDouble(), (graphX + graphW).toDouble(), j.toDouble())
+                imgGr.draw(graphLine)
             }
 
             // .. Draw animated column movement ..
@@ -233,13 +208,9 @@ class MemoryMonitor : JPanel()
                 columnInc = graphColumn
             }
 
-            run {
-                var j = graphX + columnInc
-                while (j < graphW + graphX) {
-                    graphLine.setLine(j.toDouble(), graphY.toDouble(), j.toDouble(), (graphY + graphH).toDouble())
-                    big!!.draw(graphLine)
-                    j += graphColumn
-                }
+            for (j in graphX + columnInc until graphW + graphX step graphColumn) {
+                graphLine.setLine(j.toDouble(), graphY.toDouble(), j.toDouble(), (graphY + graphH).toDouble())
+                imgGr.draw(graphLine)
             }
 
             --columnInc
@@ -260,7 +231,7 @@ class MemoryMonitor : JPanel()
                 pts = IntArray(graphW)
                 System.arraycopy(tmp, 0, pts!!, 0, tmp.size)
             } else {
-                big!!.color = YELLOW
+                imgGr.color = YELLOW
                 pts!![ptNum] = (graphY + graphH * (freeMemory / totalMemory)).toInt()
                 run {
                     var j = graphX + graphW - ptNum
@@ -268,9 +239,9 @@ class MemoryMonitor : JPanel()
                     while (k < ptNum) {
                         if (k != 0) {
                             if (pts!![k] != pts!![k - 1]) {
-                                big!!.drawLine(j - 1, pts!![k - 1], j, pts!![k])
+                                imgGr.drawLine(j - 1, pts!![k - 1], j, pts!![k])
                             } else {
-                                big!!.fillRect(j, pts!![k], 1, 1)
+                                imgGr.fillRect(j, pts!![k], 1, 1)
                             }
                         }
                         k++
@@ -287,14 +258,14 @@ class MemoryMonitor : JPanel()
                     ptNum++
                 }
             }
-            g!!.drawImage(bimg, 0, 0, this)
+            g.drawImage(bimg, 0, 0, this)
         }
 
         fun start() {
-            thread = Thread(this)
-            thread!!.priority = Thread.MIN_PRIORITY
-            thread!!.name = "MemoryMonitor"
-            thread!!.start()
+            thread = Thread(this, "MemoryMonitor").apply {
+                priority = Thread.MIN_PRIORITY
+                start()
+            }
         }
 
         @Synchronized
@@ -305,7 +276,6 @@ class MemoryMonitor : JPanel()
         }
 
         override fun run() {
-
             val me = Thread.currentThread()
 
             while (thread === me && !isShowing || size.width == 0) {
@@ -322,9 +292,10 @@ class MemoryMonitor : JPanel()
                     w = d.width
                     h = d.height
                     bimg = createImage(w, h) as BufferedImage
-                    big = bimg!!.createGraphics()
-                    big!!.font = FONT
-                    val fm = big!!.getFontMetrics(FONT)
+                    imgGr = bimg!!.createGraphics().apply {
+                        font = FONT
+                    }
+                    val fm = imgGr!!.getFontMetrics(FONT)
                     ascent = fm.ascent
                     descent = fm.descent
                 }
@@ -335,8 +306,8 @@ class MemoryMonitor : JPanel()
                     break
                 }
 
-                if (MemoryMonitor.dateStampCB.isSelected) {
-                    println(Date().toString() + " " + usedStr)
+                if (dateStampCheckBox.isSelected) {
+                    println("${Date()}: $usedStr")
                 }
             }
             thread = null
@@ -345,33 +316,31 @@ class MemoryMonitor : JPanel()
 
     companion object
     {
-        internal var dateStampCB = JCheckBox("Output Date Stamp")
-
-        private val FONT = Font("Times New Roman", Font.PLAIN, 11)
+        private val FONT = Font(Font.DIALOG, Font.PLAIN, 11)
+        private val PREFERRED_SIZE = Dimension(150, 80)
+        private val GRAPH_COLOR = Color(46, 139, 87)
+        private val FREE_MEMORY_COLOR = Color(0, 100, 0)
 
         @JvmStatic
         fun main(s: Array<String>) {
             val demo = MemoryMonitor()
-            val l = object : WindowAdapter() {
-
-                override fun windowClosing(e: WindowEvent?) {
-                    System.exit(0)
-                }
-
-                override fun windowDeiconified(e: WindowEvent?) {
-                    demo.surface.start()
-                }
-
-                override fun windowIconified(e: WindowEvent?) {
-                    demo.surface.stop()
-                }
+            JFrame("Java2D Demo - MemoryMonitor").apply {
+                addWindowListener(object : WindowAdapter() {
+                    override fun windowClosing(e: WindowEvent?) {
+                        System.exit(0)
+                    }
+                    override fun windowDeiconified(e: WindowEvent?) {
+                        demo.surface.start()
+                    }
+                    override fun windowIconified(e: WindowEvent?) {
+                        demo.surface.stop()
+                    }
+                })
+                contentPane.add(demo, BorderLayout.CENTER)
+                pack()
+                size = Dimension(200, 200)
+                isVisible = true
             }
-            val f = JFrame("Java2D Demo - MemoryMonitor")
-            f.addWindowListener(l)
-            f.contentPane.add("Center", demo)
-            f.pack()
-            f.size = Dimension(200, 200)
-            f.isVisible = true
             demo.surface.start()
         }
     }
