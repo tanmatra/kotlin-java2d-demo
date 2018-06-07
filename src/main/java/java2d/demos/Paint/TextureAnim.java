@@ -67,10 +67,10 @@ import static java.awt.Color.WHITE;
 @SuppressWarnings("serial")
 public final class TextureAnim extends AnimatingControlsSurface {
 
-    public static final Color colorblend = new Color(0f, 0f, 1f, .5f);
-    protected static BufferedImage textureImg;
-    protected int bNum;
-    protected int tilesize;
+    private static final Color colorblend = new Color(0f, 0f, 1f, .5f);
+    private static BufferedImage textureImg;
+    private int bNum;
+    private int tilesize;
     private boolean newtexture;
     private TexturePaint texturePaint;
     private Rectangle tilerect;
@@ -83,6 +83,7 @@ public final class TextureAnim extends AnimatingControlsSurface {
     private AnimVal w, h, x, y, rot, shx, shy;
     private static Image img[] = new Image[2];
 
+    @SuppressWarnings("WeakerAccess")
     public TextureAnim() {
         img[0] = getImage("duke.gif");   // 8 bit gif
         img[1] = getImage("duke.png");   // 24 bit png
@@ -102,7 +103,7 @@ public final class TextureAnim extends AnimatingControlsSurface {
         setControls(new Component[] { new DemoControls(this) });
     }
 
-    protected BufferedImage makeImage(int size, int num) {
+    private BufferedImage makeImage(int size, int num) {
         newtexture = true;
         switch (bNum = num) {
             case 0:
@@ -223,84 +224,11 @@ public final class TextureAnim extends AnimatingControlsSurface {
         createDemoFrame(new TextureAnim());
     }
 
-
-    static final class AnimVal {
-
-        float curval;
-        float lowval;
-        float highval;
-        float currate;
-        float lowrate;
-        float highrate;
-
-        public AnimVal(int lowval, int highval,
-                int lowrate, int highrate) {
-            this.lowval = lowval;
-            this.highval = highval;
-            this.lowrate = lowrate;
-            this.highrate = highrate;
-            this.curval = randval(lowval, highval);
-            this.currate = randval(lowrate, highrate);
-        }
-
-        public AnimVal(int lowval, int highval,
-                int lowrate, int highrate,
-                int pos) {
-            this(lowval, highval, lowrate, highrate);
-            set(pos);
-        }
-
-        public float randval(float low, float high) {
-            return (float) (low + Math.random() * (high - low));
-        }
-
-        public float getFlt() {
-            return curval;
-        }
-
-        public int getInt() {
-            return (int) curval;
-        }
-
-        public void anim() {
-            curval += currate;
-            clip();
-        }
-
-        public void set(float val) {
-            curval = val;
-            clip();
-        }
-
-        public void clip() {
-            if (curval > highval) {
-                curval = highval - (curval - highval);
-                if (curval < lowval) {
-                    curval = highval;
-                }
-                currate = -randval(lowrate, highrate);
-            } else if (curval < lowval) {
-                curval = lowval + (lowval - curval);
-                if (curval > highval) {
-                    curval = lowval;
-                }
-                currate = randval(lowrate, highrate);
-            }
-        }
-
-        public void newlimits(int lowval, int highval) {
-            this.lowval = lowval;
-            this.highval = highval;
-            clip();
-        }
-    }  // End AnimVal class
-
-
     final class DemoControls extends CustomControls implements ActionListener {
 
         TextureAnim demo;
         JToolBar toolbar;
-        JComboBox combo;
+        JComboBox<String> combo;
         JMenu menu;
         JMenuItem menuitems[];
         int iconSize = 20;
@@ -319,7 +247,8 @@ public final class TextureAnim extends AnimatingControlsSurface {
             addTool("RO", "rotate", false);
             addTool("SX", "shear x", false);
             addTool("SY", "shear y", false);
-            add(combo = new JComboBox());
+            combo = new JComboBox<>();
+            add(combo);
             combo.addActionListener(this);
             combo.addItem("8");
             combo.addItem("16");
@@ -341,7 +270,7 @@ public final class TextureAnim extends AnimatingControlsSurface {
             demo.bNum = 0;
         }
 
-        public void addTool(String str, String toolTip, boolean state) {
+        void addTool(String str, String toolTip, boolean state) {
             JToggleButton b =
                     (JToggleButton) toolbar.add(new JToggleButton(str));
             b.setBorder(buttonBorder);
@@ -376,21 +305,28 @@ public final class TextureAnim extends AnimatingControlsSurface {
                 }
             } else {
                 JToggleButton b = (JToggleButton) obj;
-                if (b.getText().equals("BO")) {
-                    demo.bouncerect = b.isSelected();
-                } else if (b.getText().equals("SA")) {
-                    demo.showanchor = b.isSelected();
-                } else if (b.getText().equals("RS")) {
-                    demo.bouncesize = b.isSelected();
-                } else if (b.getText().equals("RO")) {
-                    demo.rotate = b.isSelected();
-                } else if (b.getText().equals("SX")) {
-                    demo.shearx = b.isSelected();
-                } else if (b.getText().equals("SY")) {
-                    demo.sheary = b.isSelected();
+                switch (b.getText()) {
+                    case "BO":
+                        demo.bouncerect = b.isSelected();
+                        break;
+                    case "SA":
+                        demo.showanchor = b.isSelected();
+                        break;
+                    case "RS":
+                        demo.bouncesize = b.isSelected();
+                        break;
+                    case "RO":
+                        demo.rotate = b.isSelected();
+                        break;
+                    case "SX":
+                        demo.shearx = b.isSelected();
+                        break;
+                    case "SY":
+                        demo.sheary = b.isSelected();
+                        break;
                 }
             }
-            if (!demo.getAnimating().isRunning()) {
+            if (!demo/*.getAnimating()*/.isRunning()) {
                 demo.repaint();
             }
         }
@@ -422,7 +358,7 @@ public final class TextureAnim extends AnimatingControlsSurface {
 
             BufferedImage bi;
 
-            public TexturedIcon(BufferedImage bi) {
+            TexturedIcon(BufferedImage bi) {
                 this.bi = bi;
             }
 

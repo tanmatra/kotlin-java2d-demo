@@ -47,7 +47,7 @@ import java.awt.geom.Point2D;
 import java2d.AnimatingControlsSurface;
 import java2d.CustomControls;
 import javax.swing.JComboBox;
-
+import org.jetbrains.annotations.NotNull;
 
 /**
  * GradientPaint animation.
@@ -60,17 +60,18 @@ public class GradAnim extends AnimatingControlsSurface {
     private static final int RADIAL_GRADIENT = 2;
     private static final int FOCUS_GRADIENT = 3;
     private static final int MAX_HUE = 256 * 6;
-    private animval x1, y1, x2, y2;
+    private AnimVal x1, y1, x2, y2;
     private int hue = (int) (Math.random() * MAX_HUE);
     private int gradientType;
 
+    @SuppressWarnings("WeakerAccess")
     public GradAnim() {
         setBackground(Color.white);
         setControls(new Component[] { new DemoControls(this) });
-        x1 = new animval(0, 300, 2, 10);
-        y1 = new animval(0, 300, 2, 10);
-        x2 = new animval(0, 300, 2, 10);
-        y2 = new animval(0, 300, 2, 10);
+        x1 = new AnimVal(0, 300, 2, 10);
+        y1 = new AnimVal(0, 300, 2, 10);
+        x2 = new AnimVal(0, 300, 2, 10);
+        y2 = new AnimVal(0, 300, 2, 10);
         gradientType = BASIC_GRADIENT;
     }
 
@@ -91,7 +92,7 @@ public class GradAnim extends AnimatingControlsSurface {
         hue = (hue + (int) (Math.random() * 10)) % MAX_HUE;
     }
 
-    public static Color getColor(int hue) {
+    private static Color getColor(int hue) {
         int leg = (hue / 256) % 6;
         int step = (hue % 256) * 2;
         int falling = (step < 256) ? 255 : 511 - step;
@@ -125,7 +126,7 @@ public class GradAnim extends AnimatingControlsSurface {
     }
 
     @Override
-    public void render(int w, int h, Graphics2D g2) {
+    public void render(int w, int h, @NotNull Graphics2D g2) {
         float fx1 = x1.getFlt();
         float fy1 = y1.getFlt();
         float fx2 = x2.getFlt();
@@ -199,65 +200,6 @@ public class GradAnim extends AnimatingControlsSurface {
     }
 
 
-    public final class animval {
-
-        float curval;
-        float lowval;
-        float highval;
-        float currate;
-        float lowrate;
-        float highrate;
-
-        public animval(int lowval, int highval,
-                int lowrate, int highrate) {
-            this.lowval = lowval;
-            this.highval = highval;
-            this.lowrate = lowrate;
-            this.highrate = highrate;
-            this.curval = randval(lowval, highval);
-            this.currate = randval(lowrate, highrate);
-        }
-
-        public float randval(float low, float high) {
-            return (float) (low + Math.random() * (high - low));
-        }
-
-        public float getFlt() {
-            return curval;
-        }
-
-        public int getInt() {
-            return (int) curval;
-        }
-
-        public void anim() {
-            curval += currate;
-            clip();
-        }
-
-        public void clip() {
-            if (curval > highval) {
-                curval = highval - (curval - highval);
-                if (curval < lowval) {
-                    curval = highval;
-                }
-                currate = -randval(lowrate, highrate);
-            } else if (curval < lowval) {
-                curval = lowval + (lowval - curval);
-                if (curval > highval) {
-                    curval = lowval;
-                }
-                currate = randval(lowrate, highrate);
-            }
-        }
-
-        public void newlimits(int lowval, int highval) {
-            this.lowval = lowval;
-            this.highval = highval;
-            clip();
-        }
-    }
-
     public static void main(String argv[]) {
         createDemoFrame(new GradAnim());
     }
@@ -266,13 +208,13 @@ public class GradAnim extends AnimatingControlsSurface {
     class DemoControls extends CustomControls implements ActionListener {
 
         GradAnim demo;
-        JComboBox combo;
+        JComboBox<String> combo;
 
         @SuppressWarnings("LeakingThisInConstructor")
         public DemoControls(GradAnim demo) {
             super(demo.getName());
             this.demo = demo;
-            combo = new JComboBox();
+            combo = new JComboBox<>();
             combo.addActionListener(this);
             combo.addItem("2-color GradientPaint");
             combo.addItem("3-color LinearGradientPaint");
@@ -288,7 +230,7 @@ public class GradAnim extends AnimatingControlsSurface {
             if (index >= 0) {
                 demo.gradientType = index;
             }
-            if (!demo.getAnimating().isRunning()) {
+            if (!demo/*.getAnimating()*/.isRunning()) {
                 demo.repaint();
             }
         }
