@@ -32,22 +32,19 @@
 package java2d.demos.Paint
 
 import java2d.AnimatingControlsSurface
+import java2d.CControl
 import java2d.CustomControls
 import java2d.Surface
+import java2d.createToolButton
+import java2d.use
+import java.awt.BorderLayout
 import java.awt.Color
-import java.awt.Color.BLACK
-import java.awt.Color.GRAY
-import java.awt.Color.LIGHT_GRAY
-import java.awt.Color.WHITE
 import java.awt.Component
 import java.awt.Dimension
 import java.awt.Graphics
 import java.awt.Graphics2D
-import java.awt.Image
 import java.awt.Rectangle
 import java.awt.TexturePaint
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
 import java.awt.image.BufferedImage
 import javax.swing.AbstractButton
 import javax.swing.Icon
@@ -55,90 +52,87 @@ import javax.swing.JComboBox
 import javax.swing.JMenu
 import javax.swing.JMenuBar
 import javax.swing.JMenuItem
-import javax.swing.JToggleButton
 import javax.swing.JToolBar
-import javax.swing.plaf.metal.MetalBorders.ButtonBorder
+import kotlin.reflect.KMutableProperty0
 
 /**
  * TexturePaint animation with controls for transformations.
  */
-class TextureAnim : AnimatingControlsSurface() {
-    private var bNum: Int = 0
-    private var tilesize: Int = 0
-    private var newtexture: Boolean = false
-    private var texturePaint: TexturePaint? = null
-    private var tilerect: Rectangle? = null
-    private var bouncesize = false
-    private var bouncerect = true
+class TextureAnim : AnimatingControlsSurface()
+{
+    private var textureType: Int = 0
+    private var newTexture: Boolean = false
+    private var bounceSize = false
+    private var bounceRect = true
     private var rotate = false
-    private var shearx = false
-    private var sheary = false
-    private var showanchor = true
-    private val w: AnimVal
-    private val h: AnimVal
-    private val x: AnimVal
-    private val y: AnimVal
-    private val rot: AnimVal
-    private val shx: AnimVal
-    private val shy: AnimVal
+    private var shearX = false
+    private var shearY = false
+    private var showAnchor = true
+    private val images = arrayOf(
+        getImage("duke.gif"), // 8 bit GIF
+        getImage("duke.png")) // 24 bit PNG
+    private var textureImg: BufferedImage = makeImage(32, textureType)
+        set(value) {
+            field = value
+            newTexture = true
+        }
+    private var tileSize: Int = textureImg.width
+    private val w: AnimVal = AnimVal(0f, 200f, 3f, 10f, tileSize.toFloat())
+    private val h: AnimVal = AnimVal(0f, 200f, 3f, 10f, tileSize.toFloat())
+    private val x: AnimVal = AnimVal(0f, 200f, 3f, 10f, 0f)
+    private val y: AnimVal = AnimVal(0f, 200f, 3f, 10f, 0f)
+    private val rot: AnimVal = AnimVal(-360f, 360f, 5f, 15f, 0f)
+    private val shx: AnimVal = AnimVal(-50f, 50f, 3f, 10f, 0f)
+    private val shy: AnimVal = AnimVal(-50f, 50f, 3f, 10f, 0f)
+    private var tileRect: Rectangle = Rectangle(x.intValue, y.intValue, w.intValue, h.intValue)
+    private var texturePaint: TexturePaint = TexturePaint(textureImg, tileRect)
 
-    init {
-        img[0] = getImage("duke.gif")   // 8 bit gif
-        img[1] = getImage("duke.png")   // 24 bit png
+//    enum class TextureType {
+//        RGB, GIF, PNG
+//    }
 
-        textureImg = makeImage(32, 0)
-        tilesize = textureImg!!.width
-        w = AnimVal(0f, 200f, 3f, 10f, tilesize.toFloat())
-        h = AnimVal(0f, 200f, 3f, 10f, tilesize.toFloat())
-        x = AnimVal(0f, 200f, 3f, 10f, 0f)
-        y = AnimVal(0f, 200f, 3f, 10f, 0f)
-        rot = AnimVal(-360f, 360f, 5f, 15f, 0f)
-        shx = AnimVal(-50f, 50f, 3f, 10f, 0f)
-        shy = AnimVal(-50f, 50f, 3f, 10f, 0f)
-        tilerect = Rectangle(x.intValue, y.intValue, w.intValue, h.intValue)
-        texturePaint = TexturePaint(textureImg, tilerect!!)
-        controls = arrayOf(DemoControls(this))
-    }
+    override val customControls = listOf<CControl>(DemoControls() to BorderLayout.NORTH)
 
-    private fun makeImage(size: Int, num: Int): BufferedImage {
-        newtexture = true
-        bNum = num
-        return when (num) {
+    private fun makeImage(size: Int, type: Int): BufferedImage {
+        return when (type) {
             0 -> makeRGBImage(size)
             1 -> makeGIFImage(size)
             2 -> makePNGImage(size)
-            else -> error("Wrong image type $num")
+            else -> error("Wrong texture type: $type")
         }
     }
 
     private fun makeRGBImage(size: Int): BufferedImage {
-        val bi = BufferedImage(size, size, BufferedImage.TYPE_INT_RGB)
-        val big = bi.createGraphics()
-        big.color = WHITE
-        big.fillRect(0, 0, size, size)
-        for (j in 0 until size) {
-            val red = j / size.toFloat()
-            for (i in 0 until size) {
-                val green = i / size.toFloat()
-                big.color = Color(1.0f - red, 1.0f - green, 0.0f, 1.0f)
-                big.drawLine(i, j, i, j)
+        return BufferedImage(size, size, BufferedImage.TYPE_INT_RGB).apply {
+            createGraphics().use { gfx ->
+                gfx.color = Color.WHITE
+                gfx.fillRect(0, 0, size, size)
+                for (j in 0 until size) {
+                    val red = j / size.toFloat()
+                    for (i in 0 until size) {
+                        val green = i / size.toFloat()
+                        gfx.color = Color(1.0f - red, 1.0f - green, 0.0f, 1.0f)
+                        gfx.drawLine(i, j, i, j)
+                    }
+                }
             }
         }
-        return bi
     }
 
-    private fun makeGIFImage(d: Int): BufferedImage {
-        val bi = BufferedImage(d, d, BufferedImage.TYPE_INT_RGB)
-        val big = bi.createGraphics()
-        big.drawImage(img[0], 0, 0, d, d, Color(204, 204, 255), null)
-        return bi
+    private fun makeGIFImage(size: Int): BufferedImage {
+        return BufferedImage(size, size, BufferedImage.TYPE_INT_RGB).apply {
+            createGraphics().use { g2 ->
+                g2.drawImage(images[0], 0, 0, size, size, GIF_BACKGROUND, null)
+            }
+        }
     }
 
-    private fun makePNGImage(d: Int): BufferedImage {
-        val bi = BufferedImage(d, d, BufferedImage.TYPE_INT_RGB)
-        val big = bi.createGraphics()
-        big.drawImage(img[1], 0, 0, d, d, LIGHT_GRAY, null)
-        return bi
+    private fun makePNGImage(size: Int): BufferedImage {
+        return BufferedImage(size, size, BufferedImage.TYPE_INT_RGB).apply {
+            createGraphics().use { g2 ->
+                g2.drawImage(images[1], 0, 0, size, size, PNG_BACKGROUND, null)
+            }
+        }
     }
 
     override fun reset(newWidth: Int, newHeight: Int) {
@@ -147,36 +141,41 @@ class TextureAnim : AnimatingControlsSurface() {
     }
 
     override fun step(width: Int, height: Int) {
-        if (tilesize != textureImg!!.width) {
-            tilesize = textureImg!!.width
+        if (tileSize != textureImg.width) {
+            tileSize = textureImg.width
         }
-        if (bouncesize) {
+        if (bounceSize) {
             w.anim()
             h.anim()
             x.newLimits((-width / 4).toFloat(), (width / 4 - w.intValue).toFloat())
             y.newLimits((-height / 4).toFloat(), (height / 4 - h.intValue).toFloat())
         } else {
-            if (w.intValue != tilesize) {
-                w.set(tilesize.toFloat())
+            if (w.intValue != tileSize) {
+                w.set(tileSize.toFloat())
                 x.newLimits((-width / 4).toFloat(), (width / 4 - w.intValue).toFloat())
             }
-            if (h.intValue != tilesize) {
-                h.set(tilesize.toFloat())
+            if (h.intValue != tileSize) {
+                h.set(tileSize.toFloat())
                 y.newLimits((-height / 4).toFloat(), (height / 4 - h.intValue).toFloat())
             }
         }
-        if (bouncerect) {
+        if (bounceRect) {
             x.anim()
             y.anim()
         }
-        if (newtexture || x.intValue != tilerect!!.x || y.intValue != tilerect!!.y || w.intValue != tilerect!!.width || h.intValue != tilerect!!.height) {
-            newtexture = false
+        if (newTexture ||
+            x.intValue != tileRect.x ||
+            y.intValue != tileRect.y ||
+            w.intValue != tileRect.width ||
+            h.intValue != tileRect.height)
+        {
+            newTexture = false
             val x = x.intValue
             val y = y.intValue
             val w = w.intValue
             val h = h.intValue
-            tilerect = Rectangle(x, y, w, h)
-            texturePaint = TexturePaint(textureImg, tilerect!!)
+            tileRect = Rectangle(x, y, w, h)
+            texturePaint = TexturePaint(textureImg, tileRect)
         }
     }
 
@@ -188,13 +187,13 @@ class TextureAnim : AnimatingControlsSurface() {
         } else {
             rot.set(0f)
         }
-        if (shearx) {
+        if (shearX) {
             shx.anim()
             g2.shear((shx.value / 100).toDouble(), 0.0)
         } else {
             shx.set(0f)
         }
-        if (sheary) {
+        if (shearY) {
             shy.anim()
             g2.shear(0.0, (shy.value / 100).toDouble())
         } else {
@@ -202,103 +201,69 @@ class TextureAnim : AnimatingControlsSurface() {
         }
         g2.paint = texturePaint
         g2.fillRect(-1000, -1000, 2000, 2000)
-        if (showanchor) {
-            g2.color = BLACK
-            g2.color = colorblend
-            g2.fill(tilerect)
+        if (showAnchor) {
+            g2.color = COLOR_BLEND
+            g2.fill(tileRect)
         }
     }
 
-    internal inner class DemoControls(var demo: TextureAnim) : CustomControls(demo.name), ActionListener
+    internal inner class DemoControls : CustomControls(name)
     {
-        val toolbar = JToolBar().apply { isFloatable = false }
-        private val combo: JComboBox<String>
-        private val menu: JMenu
-        private val menuitems: Array<JMenuItem>
-        val iconSize = 20
-        private val buttonBorder = ButtonBorder()
+        private val toolbar = JToolBar().apply { isFloatable = false }
 
         init {
             add(toolbar)
-            addTool("BO", "bounce", true)
-            addTool("SA", "show anchor", true)
-            addTool("RS", "resize", false)
-            addTool("RO", "rotate", false)
-            addTool("SX", "shear x", false)
-            addTool("SY", "shear y", false)
-            combo = JComboBox()
-            add(combo)
-            combo.addActionListener(this)
-            combo.addItem("8")
-            combo.addItem("16")
-            combo.addItem("32")
-            combo.addItem("64")
-            combo.addItem("80")
-            combo.selectedIndex = 2
+            addTool("BO", "Bounce", ::bounceRect)
+            addTool("SA", "Show anchor", ::showAnchor)
+            addTool("RS", "Resize", ::bounceSize)
+            addTool("RO", "Rotate", ::rotate)
+            addTool("SX", "Shear X", ::shearX)
+            addTool("SY", "Shear Y", ::shearY)
 
-            val menuBar = JMenuBar()
-            menu = menuBar.add(JMenu())
-            menuitems = Array(3) { i ->
-                val bimg = demo.makeImage(iconSize, i)
-                val icon = TexturedIcon(bimg)
-                val item = menu.add(JMenuItem(icon))
-                item.addActionListener(this@DemoControls)
-                item
-            }
-            menu.icon = menuitems[0].icon
-            add(menuBar)
-            demo.bNum = 0
-        }
-
-        private fun addTool(str: String, toolTip: String, state: Boolean) {
-            val b = toolbar.add(JToggleButton(str)) as JToggleButton
-            b.border = buttonBorder
-            b.isFocusPainted = false
-            b.isSelected = state
-            b.toolTipText = toolTip
-            b.addActionListener(this)
-            val width = b.preferredSize.width
-            val prefSize = Dimension(width, 21)
-            b.preferredSize = prefSize
-            b.maximumSize = prefSize
-            b.minimumSize = prefSize
-        }
-
-        override fun actionPerformed(e: ActionEvent) {
-            val obj = e.source
-            if (obj is JComboBox<*>) {
-                val selItem = combo.selectedItem as? String
-                if (selItem != null) {
-                    val size = Integer.parseInt(selItem)
-                    TextureAnim.textureImg = demo.makeImage(size, demo.bNum)
+            add(JComboBox<String>().apply {
+                for (i in TEXTURE_SIZES) {
+                    addItem(i.toString())
                 }
-            } else if (obj is JMenuItem) {
-                for (i in menuitems.indices) {
-                    if (obj == menuitems[i]) {
-                        TextureAnim.textureImg = demo.makeImage(demo.tilesize, i)
-                        menu.icon = menuitems[i].icon
-                        break
+                addActionListener {
+                    (selectedItem as? String)?.let { selectedItem ->
+                        textureImg = makeImage(selectedItem.toInt(), textureType)
+                        checkRepaint()
                     }
                 }
-            } else {
-                val b = obj as JToggleButton
-                when (b.text) {
-                    "BO" -> demo.bouncerect = b.isSelected
-                    "SA" -> demo.showanchor = b.isSelected
-                    "RS" -> demo.bouncesize = b.isSelected
-                    "RO" -> demo.rotate = b.isSelected
-                    "SX" -> demo.shearx = b.isSelected
-                    "SY" -> demo.sheary = b.isSelected
-                }
+                selectedIndex = 2
+            })
+
+            val menuBar = JMenuBar()
+            val menu = menuBar.add(JMenu())
+            for (type in 0 .. 2) {
+                menu.add(JMenuItem(TexturedIcon(makeImage(ICON_SIZE, type))).apply {
+                    addActionListener {
+                        textureType = type
+                        textureImg = makeImage(tileSize, type)
+                        menu.icon = icon
+                        checkRepaint()
+                    }
+                })
             }
-            if (!demo.isRunning) {
-                demo.repaint()
+            menu.icon = menu.getItem(0).icon
+            add(menuBar)
+        }
+
+        private fun addTool(text: String, toolTip: String, property: KMutableProperty0<Boolean>) {
+            val state = property.get()
+            toolbar.add(createToolButton(text, state, toolTip) { selected ->
+                property.set(selected)
+                checkRepaint()
+            })
+        }
+
+        private fun checkRepaint() {
+            if (!isRunning) {
+                this@TextureAnim.repaint()
             }
         }
 
-        override fun getPreferredSize(): Dimension {
-            return Dimension(200, 41)
-        }
+        override fun getPreferredSize(): Dimension = Dimension(200, 41)
 
         override fun run() {
             val me = Thread.currentThread()
@@ -319,24 +284,26 @@ class TextureAnim : AnimatingControlsSurface() {
         {
             override fun paintIcon(c: Component, g: Graphics, x: Int, y: Int) {
                 val g2 = g as Graphics2D
-                val r = Rectangle(x, y, iconSize, iconSize)
+                val r = Rectangle(x, y, ICON_SIZE, ICON_SIZE)
                 g2.paint = TexturePaint(bi, r)
-                g2.fillRect(x, y, iconSize, iconSize)
-                g2.color = GRAY
-                g2.draw3DRect(x, y, iconSize - 1, iconSize - 1, true)
+                g2.fillRect(x, y, ICON_SIZE, ICON_SIZE)
+                g2.color = Color.GRAY
+                g2.draw3DRect(x, y, ICON_SIZE - 1, ICON_SIZE - 1, true)
             }
 
-            override fun getIconWidth(): Int = iconSize
+            override fun getIconWidth(): Int = ICON_SIZE
 
-            override fun getIconHeight(): Int = iconSize
+            override fun getIconHeight(): Int = ICON_SIZE
         }
     }
 
     companion object
     {
-        private val colorblend = Color(0f, 0f, 1f, .5f)
-        private var textureImg: BufferedImage? = null
-        private val img = arrayOfNulls<Image>(2)
+        private val COLOR_BLEND = Color(0f, 0f, 1f, 0.5f)
+        private val TEXTURE_SIZES = arrayOf(8, 16, 32, 64, 80)
+        private val GIF_BACKGROUND = Color(204, 204, 255)
+        private val PNG_BACKGROUND = Color.LIGHT_GRAY
+        private const val ICON_SIZE = 20
 
         @JvmStatic
         fun main(argv: Array<String>) {
