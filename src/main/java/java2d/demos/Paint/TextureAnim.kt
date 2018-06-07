@@ -95,7 +95,7 @@ class TextureAnim : AnimatingControlsSurface() {
         rot = AnimVal(-360f, 360f, 5f, 15f, 0f)
         shx = AnimVal(-50f, 50f, 3f, 10f, 0f)
         shy = AnimVal(-50f, 50f, 3f, 10f, 0f)
-        tilerect = Rectangle(x.int, y.int, w.int, h.int)
+        tilerect = Rectangle(x.intValue, y.intValue, w.intValue, h.intValue)
         texturePaint = TexturePaint(textureImg, tilerect!!)
         controls = arrayOf(DemoControls(this))
     }
@@ -142,8 +142,8 @@ class TextureAnim : AnimatingControlsSurface() {
     }
 
     override fun reset(newWidth: Int, newHeight: Int) {
-        x.newlimits((-newWidth / 4).toFloat(), (newWidth / 4 - w.int).toFloat())
-        y.newlimits((-newHeight / 4).toFloat(), (newHeight / 4 - h.int).toFloat())
+        x.newLimits((-newWidth / 4).toFloat(), (newWidth / 4 - w.intValue).toFloat())
+        y.newLimits((-newHeight / 4).toFloat(), (newHeight / 4 - h.intValue).toFloat())
     }
 
     override fun step(width: Int, height: Int) {
@@ -153,28 +153,28 @@ class TextureAnim : AnimatingControlsSurface() {
         if (bouncesize) {
             w.anim()
             h.anim()
-            x.newlimits((-width / 4).toFloat(), (width / 4 - w.int).toFloat())
-            y.newlimits((-height / 4).toFloat(), (height / 4 - h.int).toFloat())
+            x.newLimits((-width / 4).toFloat(), (width / 4 - w.intValue).toFloat())
+            y.newLimits((-height / 4).toFloat(), (height / 4 - h.intValue).toFloat())
         } else {
-            if (w.int != tilesize) {
+            if (w.intValue != tilesize) {
                 w.set(tilesize.toFloat())
-                x.newlimits((-width / 4).toFloat(), (width / 4 - w.int).toFloat())
+                x.newLimits((-width / 4).toFloat(), (width / 4 - w.intValue).toFloat())
             }
-            if (h.int != tilesize) {
+            if (h.intValue != tilesize) {
                 h.set(tilesize.toFloat())
-                y.newlimits((-height / 4).toFloat(), (height / 4 - h.int).toFloat())
+                y.newLimits((-height / 4).toFloat(), (height / 4 - h.intValue).toFloat())
             }
         }
         if (bouncerect) {
             x.anim()
             y.anim()
         }
-        if (newtexture || x.int != tilerect!!.x || y.int != tilerect!!.y || w.int != tilerect!!.width || h.int != tilerect!!.height) {
+        if (newtexture || x.intValue != tilerect!!.x || y.intValue != tilerect!!.y || w.intValue != tilerect!!.width || h.intValue != tilerect!!.height) {
             newtexture = false
-            val x = x.int
-            val y = y.int
-            val w = w.int
-            val h = h.int
+            val x = x.intValue
+            val y = y.intValue
+            val w = w.intValue
+            val h = h.intValue
             tilerect = Rectangle(x, y, w, h)
             texturePaint = TexturePaint(textureImg, tilerect!!)
         }
@@ -184,19 +184,19 @@ class TextureAnim : AnimatingControlsSurface() {
         g2.translate(w / 2, h / 2)
         if (rotate) {
             rot.anim()
-            g2.rotate(Math.toRadians(rot.flt.toDouble()))
+            g2.rotate(Math.toRadians(rot.value.toDouble()))
         } else {
             rot.set(0f)
         }
         if (shearx) {
             shx.anim()
-            g2.shear((shx.flt / 100).toDouble(), 0.0)
+            g2.shear((shx.value / 100).toDouble(), 0.0)
         } else {
             shx.set(0f)
         }
         if (sheary) {
             shy.anim()
-            g2.shear(0.0, (shy.flt / 100).toDouble())
+            g2.shear(0.0, (shy.value / 100).toDouble())
         } else {
             shy.set(0f)
         }

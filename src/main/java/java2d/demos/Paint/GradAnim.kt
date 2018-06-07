@@ -70,10 +70,10 @@ class GradAnim : AnimatingControlsSurface()
     }
 
     override fun reset(newWidth: Int, newHeight: Int) {
-        x1.newlimits(0f, newWidth.toFloat())
-        y1.newlimits(0f, newHeight.toFloat())
-        x2.newlimits(0f, newWidth.toFloat())
-        y2.newlimits(0f, newHeight.toFloat())
+        x1.newLimits(0f, newWidth.toFloat())
+        y1.newLimits(0f, newHeight.toFloat())
+        x2.newLimits(0f, newWidth.toFloat())
+        y2.newLimits(0f, newHeight.toFloat())
     }
 
     override fun step(width: Int, height: Int) {
@@ -85,10 +85,10 @@ class GradAnim : AnimatingControlsSurface()
     }
 
     override fun render(w: Int, h: Int, g2: Graphics2D) {
-        val fx1 = x1.flt
-        val fy1 = y1.flt
-        var fx2 = x2.flt
-        var fy2 = y2.flt
+        val fx1 = x1.value
+        val fy1 = y1.value
+        var fx2 = x2.value
+        var fy2 = y2.value
 
         if (fx1 == fx2 && fy1 == fy2) {
             // just to prevent the points from being coincident
@@ -149,7 +149,7 @@ class GradAnim : AnimatingControlsSurface()
         g2.paint = gp
         g2.fillRect(0, 0, w, h)
         g2.color = Color.yellow
-        g2.drawLine(x1.int, y1.int, x2.int, y2.int)
+        g2.drawLine(x1.intValue, y1.intValue, x2.intValue, y2.intValue)
     }
 
     internal inner class DemoControls(var demo: GradAnim) : CustomControls(demo.name), ActionListener
