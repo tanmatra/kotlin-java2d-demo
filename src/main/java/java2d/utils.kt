@@ -2,12 +2,14 @@ package java2d
 
 import java.awt.Component
 import java.awt.Dimension
+import java.awt.EventQueue
 import java.awt.Graphics2D
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.Insets
 import java.awt.RenderingHints
 import java.awt.Toolkit
+import java.lang.reflect.InvocationTargetException
 import java.util.logging.Logger
 import javax.swing.AbstractButton
 import javax.swing.JComponent
@@ -128,4 +130,22 @@ fun GridBagConstraints.weight(x: Double, y: Double): GridBagConstraints {
 fun GridBagConstraints.insets(top: Int, left: Int, bottom: Int, right: Int): GridBagConstraints {
     insets = Insets(top, left, bottom, right)
     return this
+}
+
+fun <R> executeAndReturn(function: () -> R): R {
+    if (EventQueue.isDispatchThread()) {
+        return function()
+    }
+    var result: R? = null
+    try {
+        EventQueue.invokeAndWait {
+            result = function()
+        }
+    } catch (e: InvocationTargetException) {
+        throw e.targetException
+    } catch (e: InterruptedException) {
+        Thread.currentThread().interrupt()
+    }
+    @Suppress("UNCHECKED_CAST")
+    return result as R
 }

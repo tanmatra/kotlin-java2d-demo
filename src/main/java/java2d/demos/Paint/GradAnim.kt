@@ -32,18 +32,20 @@
 package java2d.demos.Paint
 
 import java2d.AnimatingControlsSurface
+import java2d.CControl
 import java2d.CustomControls
 import java2d.Surface
+import java2d.executeAndReturn
+import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Dimension
+import java.awt.EventQueue
 import java.awt.GradientPaint
 import java.awt.Graphics2D
 import java.awt.LinearGradientPaint
 import java.awt.MultipleGradientPaint.CycleMethod
 import java.awt.Paint
 import java.awt.RadialGradientPaint
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
 import java.awt.geom.Point2D
 import javax.swing.JComboBox
 
@@ -52,22 +54,18 @@ import javax.swing.JComboBox
  */
 class GradAnim : AnimatingControlsSurface()
 {
-    private val x1: AnimVal
-    private val y1: AnimVal
-    private val x2: AnimVal
-    private val y2: AnimVal
+    private val x1 = AnimVal(0f, 300f, 2f, 10f)
+    private val y1 = AnimVal(0f, 300f, 2f, 10f)
+    private val x2 = AnimVal(0f, 300f, 2f, 10f)
+    private val y2 = AnimVal(0f, 300f, 2f, 10f)
     private var hue = (Math.random() * MAX_HUE).toInt()
-    private var gradientType: Int = 0
+    private var gradientType: Int = BASIC_GRADIENT
 
     init {
         background = Color.WHITE
-        controls = arrayOf(DemoControls(this))
-        x1 = AnimVal(0f, 300f, 2f, 10f)
-        y1 = AnimVal(0f, 300f, 2f, 10f)
-        x2 = AnimVal(0f, 300f, 2f, 10f)
-        y2 = AnimVal(0f, 300f, 2f, 10f)
-        gradientType = BASIC_GRADIENT
     }
+
+    override val customControls = listOf<CControl>(DemoControls(this) to BorderLayout.NORTH)
 
     override fun reset(newWidth: Int, newHeight: Int) {
         x1.newLimits(0f, newWidth.toFloat())
@@ -113,7 +111,6 @@ class GradAnim : AnimatingControlsSurface()
                                          fractions, colors,
                                          CycleMethod.REFLECT)
             }
-
             RADIAL_GRADIENT -> {
                 val fractions = floatArrayOf(0.0f, 0.2f, 0.8f, 1.0f)
                 val c3 = getColor(hue + 256 * 2)
@@ -124,7 +121,6 @@ class GradAnim : AnimatingControlsSurface()
                                          fractions, colors,
                                          CycleMethod.REFLECT)
             }
-
             FOCUS_GRADIENT -> {
                 val fractions = floatArrayOf(0.0f, 0.2f, 0.8f, 1.0f)
                 val c3 = getColor(hue + 256 * 4)
@@ -148,43 +144,41 @@ class GradAnim : AnimatingControlsSurface()
         }
         g2.paint = gp
         g2.fillRect(0, 0, w, h)
-        g2.color = Color.yellow
+        g2.color = Color.YELLOW
         g2.drawLine(x1.intValue, y1.intValue, x2.intValue, y2.intValue)
     }
 
-    internal inner class DemoControls(var demo: GradAnim) : CustomControls(demo.name), ActionListener
+    internal inner class DemoControls(demo: GradAnim) : CustomControls(demo.name)
     {
-        private var combo: JComboBox<String> = JComboBox()
+        private var combo = JComboBox<String>().apply {
+            addItem("2-color GradientPaint")
+            addItem("3-color LinearGradientPaint")
+            addItem("4-color RadialGradientPaint")
+            addItem("4-color RadialGradientPaint with focus")
+            selectedIndex = 0
+            addActionListener {
+                val index = selectedIndex
+                if (index >= 0) {
+                    demo.gradientType = index
+                }
+                if (!demo.isRunning) {
+                    demo.repaint()
+                }
+            }
+        }
 
         init {
-            combo.addActionListener(this)
-            combo.addItem("2-color GradientPaint")
-            combo.addItem("3-color LinearGradientPaint")
-            combo.addItem("4-color RadialGradientPaint")
-            combo.addItem("4-color RadialGradientPaint with focus")
-            combo.selectedIndex = 0
             add(combo)
         }
 
-        override fun actionPerformed(e: ActionEvent) {
-            val index = combo.selectedIndex
-            if (index >= 0) {
-                demo.gradientType = index
-            }
-            if (!demo.isRunning) {
-                demo.repaint()
-            }
-        }
-
-        override fun getPreferredSize(): Dimension {
-            return Dimension(200, 41)
-        }
+        override fun getPreferredSize(): Dimension = Dimension(200, 41)
 
         override fun run() {
             val me = Thread.currentThread()
             while (thread === me) {
-                for (i in 0 until combo.itemCount) {
-                    combo.selectedIndex = i
+                val count = executeAndReturn { combo.itemCount }
+                for (i in 0 until count) {
+                    EventQueue.invokeLater { combo.selectedIndex = i }
                     try {
                         Thread.sleep(4444)
                     } catch (e: InterruptedException) {
