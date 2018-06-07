@@ -61,7 +61,7 @@ final class AnimVal
         }
     }
 
-    public void newlimits(int lowval, int highval) {
+    public void newlimits(float lowval, float highval) {
         this.lowval = lowval;
         this.highval = highval;
         clip();
