@@ -72,7 +72,7 @@ class TextureAnim : AnimatingControlsSurface()
     private val images = arrayOf(
         getImage("duke.gif"), // 8 bit GIF
         getImage("duke.png")) // 24 bit PNG
-    private var textureImg: BufferedImage = makeImage(32, textureType)
+    private var textureImg: BufferedImage = makeImage(TEXTURE_SIZES[DEFAULT_TEXTURE_SIZE_INDEX], textureType)
         set(value) {
             field = value
             newTexture = true
@@ -220,7 +220,7 @@ class TextureAnim : AnimatingControlsSurface()
                         checkRepaint()
                     }
                 }
-                selectedIndex = 2
+                selectedIndex = DEFAULT_TEXTURE_SIZE_INDEX
             })
 
             val menuBar = JMenuBar()
@@ -291,6 +291,7 @@ class TextureAnim : AnimatingControlsSurface()
     {
         private val COLOR_BLEND = Color(0f, 0f, 1f, 0.5f)
         private val TEXTURE_SIZES = arrayOf(8, 16, 32, 64, 80)
+        private const val DEFAULT_TEXTURE_SIZE_INDEX = 2
         private val GIF_BACKGROUND = Color(204, 204, 255)
         private val PNG_BACKGROUND = Color.LIGHT_GRAY
         private const val ICON_SIZE = 20
