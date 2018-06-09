@@ -43,6 +43,7 @@ import java.awt.Component
 import java.awt.Dimension
 import java.awt.Graphics
 import java.awt.Graphics2D
+import java.awt.Image
 import java.awt.Rectangle
 import java.awt.TexturePaint
 import java.awt.image.BufferedImage
@@ -60,7 +61,7 @@ import kotlin.reflect.KMutableProperty0
  */
 class TextureAnim : AnimatingControlsSurface()
 {
-    private var textureType: Int = 0
+    private var textureType: TextureType = TextureType.RGB
     private var newTexture: Boolean = false
     private var bounceSize = false
     private var bounceRect = true
@@ -87,19 +88,16 @@ class TextureAnim : AnimatingControlsSurface()
     private var tileRect: Rectangle = Rectangle(x.intValue, y.intValue, w.intValue, h.intValue)
     private var texturePaint: TexturePaint = TexturePaint(textureImg, tileRect)
 
-//    enum class TextureType {
-//        RGB, GIF, PNG
-//    }
+    enum class TextureType {
+        RGB, GIF, PNG
+    }
 
     override val customControls = listOf<CControl>(DemoControls() to BorderLayout.NORTH)
 
-    private fun makeImage(size: Int, type: Int): BufferedImage {
-        return when (type) {
-            0 -> makeRGBImage(size)
-            1 -> makeGIFImage(size)
-            2 -> makePNGImage(size)
-            else -> error("Wrong texture type: $type")
-        }
+    private fun makeImage(size: Int, type: TextureType): BufferedImage = when (type) {
+        TextureType.RGB -> makeRGBImage(size)
+        TextureType.GIF -> makeImage(size, images[0], GIF_BACKGROUND)
+        TextureType.PNG -> makeImage(size, images[1], PNG_BACKGROUND)
     }
 
     private fun makeRGBImage(size: Int): BufferedImage {
@@ -119,18 +117,10 @@ class TextureAnim : AnimatingControlsSurface()
         }
     }
 
-    private fun makeGIFImage(size: Int): BufferedImage {
+    private fun makeImage(size: Int, sourceImage: Image, background: Color): BufferedImage {
         return BufferedImage(size, size, BufferedImage.TYPE_INT_RGB).apply {
             createGraphics().use { g2 ->
-                g2.drawImage(images[0], 0, 0, size, size, GIF_BACKGROUND, null)
-            }
-        }
-    }
-
-    private fun makePNGImage(size: Int): BufferedImage {
-        return BufferedImage(size, size, BufferedImage.TYPE_INT_RGB).apply {
-            createGraphics().use { g2 ->
-                g2.drawImage(images[1], 0, 0, size, size, PNG_BACKGROUND, null)
+                g2.drawImage(sourceImage, 0, 0, size, size, background, null)
             }
         }
     }
@@ -235,7 +225,7 @@ class TextureAnim : AnimatingControlsSurface()
 
             val menuBar = JMenuBar()
             val menu = menuBar.add(JMenu())
-            for (type in 0 .. 2) {
+            for (type in enumValues<TextureType>()) {
                 menu.add(JMenuItem(TexturedIcon(makeImage(ICON_SIZE, type))).apply {
                     addActionListener {
                         textureType = type
