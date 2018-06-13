@@ -149,3 +149,10 @@ fun <R> executeAndReturn(function: () -> R): R {
     @Suppress("UNCHECKED_CAST")
     return result as R
 }
+
+fun String.rangeIndexOf(substring: String): IntRange {
+    val i = indexOf(substring)
+    return if (i < 0) IntRange.EMPTY else i .. (i + substring.length - 1)
+}
+
+infix fun IntRange.shift(offset: Int) = start + offset .. endInclusive + offset

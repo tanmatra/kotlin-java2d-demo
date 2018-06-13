@@ -33,11 +33,14 @@ package java2d.demos.Fonts
 
 import java2d.DemoFonts
 import java2d.Surface
+import java2d.rangeIndexOf
+import java2d.shift
 import java2d.use
 import java.awt.Color
 import java.awt.Font
 import java.awt.GradientPaint
 import java.awt.Graphics2D
+import java.awt.Paint
 import java.awt.Rectangle
 import java.awt.TexturePaint
 import java.awt.font.GraphicAttribute
@@ -50,6 +53,7 @@ import java.awt.geom.AffineTransform
 import java.awt.geom.Ellipse2D
 import java.awt.image.BufferedImage
 import java.text.AttributedCharacterIterator
+import java.text.AttributedCharacterIterator.Attribute
 import java.text.AttributedString
 
 /**
@@ -127,44 +131,50 @@ class AttributedStr : Surface()
             val sga = ShapeGraphicAttribute(shape, GraphicAttribute.TOP_ALIGNMENT, false)
             attrStr.addAttribute(TextAttribute.CHAR_REPLACEMENT, sga, 0, 1)
 
-            var font = Font(Font.SANS_SERIF, Font.BOLD or Font.ITALIC, 20)
-            var index = TEXT.indexOf("quick")
-            attrStr.addAttribute(TextAttribute.FONT, font, index, index + 5)
+            TEXT.rangeIndexOf("quick").let { range ->
+                attrStr.setFont(range, Font(Font.SANS_SERIF, Font.BOLD or Font.ITALIC, 20))
+            }
 
-            index = TEXT.indexOf("brown")
-            font = Font(Font.SERIF, Font.BOLD, 20)
-            attrStr.addAttribute(TextAttribute.FONT, font, index, index + 5)
-            attrStr.addAttribute(TextAttribute.FOREGROUND, red, index, index + 5)
+            TEXT.rangeIndexOf("brown").let { range ->
+                attrStr.setForeground(range, red)
+                attrStr.setFont(range, Font(Font.SERIF, Font.BOLD, 20))
+            }
 
-            index = TEXT.indexOf("fox")
-            val fontAT = AffineTransform()
-            fontAT.rotate(Math.toRadians(10.0))
-            var fx = Font(Font.SERIF, Font.BOLD, 30).deriveFont(fontAT)
-            attrStr.addAttribute(TextAttribute.FONT, fx, index, index + 1)
-            attrStr.addAttribute(TextAttribute.FONT, fx, index + 1, index + 2)
-            attrStr.addAttribute(TextAttribute.FONT, fx, index + 2, index + 3)
+            TEXT.indexOf("fox").let { index ->
+                val fontTransform = AffineTransform().apply { rotate(Math.toRadians(10.0)) }
+                val fx = Font(Font.SERIF, Font.BOLD, 30).deriveFont(fontTransform)
+                val range = index .. index
+                attrStr.setFont(range, fx)
+                attrStr.setFont(range shift 1, fx)
+                attrStr.setFont(range shift 2, fx)
+            }
 
-            fontAT.setToRotation(Math.toRadians(-4.0))
-            fx = font.deriveFont(fontAT)
-            index = TEXT.indexOf("jumped")
-            attrStr.addAttribute(TextAttribute.FONT, fx, index, index + 6)
+            TEXT.rangeIndexOf("jumped").let { range ->
+                val fontTransform = AffineTransform().apply { setToRotation(Math.toRadians(-4.0)) }
+                val fx = Font(Font.SERIF, Font.BOLD, 20).deriveFont(fontTransform)
+                attrStr.setFont(range, fx)
+            }
 
-            font = Font(Font.SERIF, Font.BOLD or Font.ITALIC, 30)
-            index = TEXT.indexOf("over")
-            attrStr.addAttribute(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON, index, index + 4)
-            attrStr.addAttribute(TextAttribute.FOREGROUND, white, index, index + 4)
-            attrStr.addAttribute(TextAttribute.FONT, font, index, TEXT.length)
+            TEXT.rangeIndexOf("over").let { range ->
+                attrStr.addAttribute(range, TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON)
+                attrStr.setForeground(range, white)
+                attrStr.setFont(range, Font(Font.SERIF, Font.BOLD or Font.ITALIC, 30))
+            }
 
-            font = Font(Font.DIALOG, Font.PLAIN, 20)
-            val i = TEXT.indexOf("duke")
-            attrStr.addAttribute(TextAttribute.FONT, font, index, i - 1)
+            TEXT.indexOf("over").let { index ->
+                val end = TEXT.indexOf("duke")
+                val range = index .. end
+                attrStr.setFont(range, Font(Font.DIALOG, Font.PLAIN, 20))
+            }
 
-            val bi = BufferedImage(4, 4, BufferedImage.TYPE_INT_ARGB)
-            bi.setRGB(0, 0, 0xFFFFFFFF.toInt())
-            val tp = TexturePaint(bi, Rectangle(0, 0, 4, 4))
-            attrStr.addAttribute(TextAttribute.BACKGROUND, tp, i, i + 4)
-            font = Font(Font.SERIF, Font.BOLD, 40)
-            attrStr.addAttribute(TextAttribute.FONT, font, i, i + 4)
+            TEXT.rangeIndexOf("duke").let { range ->
+                val bufImg = BufferedImage(4, 4, BufferedImage.TYPE_INT_ARGB).apply {
+                    setRGB(0, 0, 0xFFFFFFFF.toInt())
+                }
+                val texturePaint = TexturePaint(bufImg, Rectangle(0, 0, 4, 4))
+                attrStr.setBackground(range, texturePaint)
+                attrStr.setFont(range, Font(Font.SERIF, Font.BOLD, 40))
+            }
         }
 
         @JvmStatic
@@ -172,4 +182,17 @@ class AttributedStr : Surface()
             Surface.createDemoFrame(AttributedStr())
         }
     }
+}
+
+fun AttributedString.addAttribute(range: IntRange, attribute: Attribute, value: Any?) {
+    addAttribute(attribute, value, range.start, range.endInclusive + 1)
+}
+fun AttributedString.setFont(range: IntRange, font: Font) {
+    addAttribute(range, TextAttribute.FONT, font)
+}
+fun AttributedString.setForeground(range: IntRange, paint: Paint) {
+    addAttribute(range, TextAttribute.FOREGROUND, paint)
+}
+fun AttributedString.setBackground(range: IntRange, paint: Paint) {
+    addAttribute(range, TextAttribute.BACKGROUND, paint)
 }
