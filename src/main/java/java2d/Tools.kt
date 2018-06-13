@@ -37,7 +37,6 @@ import java.awt.Color.BLACK
 import java.awt.Component
 import java.awt.Dimension
 import java.awt.FlowLayout
-import java.awt.Font
 import java.awt.Graphics
 import java.awt.Image
 import java.awt.Insets
@@ -151,7 +150,6 @@ class Tools(private val surface: Surface) : JPanel(BorderLayout()), ActionListen
 
         screenCombo = JComboBox<String>().apply {
             preferredSize = Dimension(100, 18)
-            font = FONT
             for (name in GlobalControls.SCREEN_NAMES) {
                 addItem(name)
             }
@@ -437,7 +435,6 @@ class Tools(private val surface: Surface) : JPanel(BorderLayout()), ActionListen
 
     companion object
     {
-        private val FONT = Font(Font.SERIF, Font.PLAIN, 10)
         private val TOOL_BUTTON_SIZE = Dimension(21, 22)
     }
 }
