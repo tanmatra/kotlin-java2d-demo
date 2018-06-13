@@ -47,9 +47,9 @@ import java.awt.geom.Rectangle2D
  */
 class Highlighting : AnimatingSurface()
 {
-    private val curPos = IntArray(2)
-    private val layouts: Array<TextLayout?> = arrayOfNulls(2)
     private lateinit var fonts: Array<Font>
+    private val layouts: Array<TextLayout?> = arrayOfNulls(2)
+    private val curPos = IntArray(2)
 
     init {
         background = Color.WHITE
@@ -57,17 +57,15 @@ class Highlighting : AnimatingSurface()
 
     override fun reset(newWidth: Int, newHeight: Int) {
         fonts = arrayOf(
-            Font("Monospaced", Font.PLAIN, newWidth / texts[0].length + 8),
-            Font("Serif", Font.BOLD, newWidth / texts[1].length))
-        for (i in layouts.indices) {
-            curPos[i] = 0
-        }
+            Font(Font.MONOSPACED, Font.PLAIN, newWidth / texts[0].length + 8),
+            Font(Font.SERIF, Font.BOLD, newWidth / texts[1].length))
+        curPos.fill(0)
     }
 
     override fun step(width: Int, height: Int) {
         sleepAmount = 900
-        for (i in 0 .. 1) {
-            layouts[i]?.let { textLayout ->
+        for ((i, textLayout) in layouts.withIndex()) {
+            if (textLayout != null) {
                 if (curPos[i]++ == textLayout.characterCount) {
                     curPos[i] = 0
                 }
