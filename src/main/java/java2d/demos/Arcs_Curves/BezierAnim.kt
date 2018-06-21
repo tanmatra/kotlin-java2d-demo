@@ -32,16 +32,12 @@
 package java2d.demos.Arcs_Curves
 
 import java2d.AnimatingControlsSurface
+import java2d.CControl
 import java2d.CustomControls
 import java2d.Surface
 import java.awt.BasicStroke
+import java.awt.BorderLayout
 import java.awt.Color
-import java.awt.Color.BLUE
-import java.awt.Color.GRAY
-import java.awt.Color.GREEN
-import java.awt.Color.RED
-import java.awt.Color.WHITE
-import java.awt.Color.YELLOW
 import java.awt.Component
 import java.awt.Dimension
 import java.awt.Font
@@ -64,35 +60,24 @@ import javax.swing.JMenuItem
 /**
  * Animated Bezier Curve with controls for different draw & fill paints.
  */
-class BezierAnim : AnimatingControlsSurface() {
-    protected var solid = BasicStroke(
-        10.0f,
-        BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND
-                                     )
-    protected var dashed = BasicStroke(
-        10.0f,
-        BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10f, floatArrayOf(5f),
-        0f
-                                      )
-    private val animpts = FloatArray(NUMPTS * 2)
-    private val deltas = FloatArray(NUMPTS * 2)
-    protected var fillPaint: Paint
-    protected var drawPaint: Paint
-    protected var doFill = true
-    protected var doDraw = true
-    protected var gradient: GradientPaint
-    protected var stroke: BasicStroke
+class BezierAnim : AnimatingControlsSurface()
+{
+    private val animpts = FloatArray(POINTS_NUMBER * 2)
+    private val deltas = FloatArray(POINTS_NUMBER * 2)
+    private var doFill = true
+    private var doDraw = true
+    private var gradient: GradientPaint = GradientPaint(0f, 0f, Color.RED, 200f, 200f, Color.YELLOW)
+    private var fillPaint: Paint = gradient
+    private var drawPaint: Paint = Color.BLUE
+    private var stroke: BasicStroke = SOLID_STROKE
 
     init {
-        background = WHITE
-        gradient = GradientPaint(0f, 0f, RED, 200f, 200f, YELLOW)
-        fillPaint = gradient
-        drawPaint = BLUE
-        stroke = solid
-        controls = arrayOf(DemoControls(this))
+        background = Color.WHITE
     }
 
-    fun animate(pts: FloatArray, deltas: FloatArray, index: Int, limit: Int) {
+    override val customControls = listOf<CControl>(DemoControls(this) to BorderLayout.NORTH)
+
+    private fun animate(pts: FloatArray, deltas: FloatArray, index: Int, limit: Int) {
         var newpt = pts[index] + deltas[index]
         if (newpt <= 0) {
             newpt = -newpt
@@ -104,29 +89,29 @@ class BezierAnim : AnimatingControlsSurface() {
         pts[index] = newpt
     }
 
-    override fun reset(w: Int, h: Int) {
+    override fun reset(newWidth: Int, newHeight: Int) {
         var i = 0
         while (i < animpts.size) {
-            animpts[i + 0] = (Math.random() * w).toFloat()
-            animpts[i + 1] = (Math.random() * h).toFloat()
+            animpts[i + 0] = (Math.random() * newWidth).toFloat()
+            animpts[i + 1] = (Math.random() * newHeight).toFloat()
             deltas[i + 0] = (Math.random() * 6.0 + 4.0).toFloat()
             deltas[i + 1] = (Math.random() * 6.0 + 4.0).toFloat()
-            if (animpts[i + 0] > w / 2.0f) {
+            if (animpts[i + 0] > newWidth / 2.0f) {
                 deltas[i + 0] = -deltas[i + 0]
             }
-            if (animpts[i + 1] > h / 2.0f) {
+            if (animpts[i + 1] > newHeight / 2.0f) {
                 deltas[i + 1] = -deltas[i + 1]
             }
             i += 2
         }
-        gradient = GradientPaint(0f, 0f, RED, w * .7f, h * .7f, YELLOW)
+        gradient = GradientPaint(0f, 0f, Color.RED, newWidth * 0.7f, newHeight * 0.7f, Color.YELLOW)
     }
 
-    override fun step(w: Int, h: Int) {
+    override fun step(width: Int, height: Int) {
         var i = 0
         while (i < animpts.size) {
-            animate(animpts, deltas, i + 0, w)
-            animate(animpts, deltas, i + 1, h)
+            animate(animpts, deltas, i + 0, width)
+            animate(animpts, deltas, i + 1, height)
             i += 2
         }
     }
@@ -177,17 +162,17 @@ class BezierAnim : AnimatingControlsSurface() {
         }
     }
 
-    internal class DemoControls(var demo: BezierAnim) : CustomControls(demo.name), ActionListener {
-        var fillName = arrayOf("No Fill", "Green", "Green w/ Alpha", "Texture", "Gradient")
-        var fillMenu: JMenu
-        var drawMenu: JMenu
-        var fillMI = arrayOfNulls<JMenuItem>(fillPaints.size)
-        var drawMI = arrayOfNulls<JMenuItem>(drawPaints.size)
-        var fillIcons = arrayOfNulls<PaintedIcon>(fillPaints.size)
-        var drawIcons = arrayOfNulls<PaintedIcon>(drawPaints.size)
+    internal class DemoControls(var demo: BezierAnim) : CustomControls(demo.name), ActionListener
+    {
+        private var fillName = arrayOf("No Fill", "Green", "Green w/ Alpha", "Texture", "Gradient")
+        private var fillMenu: JMenu
+        private var drawMenu: JMenu
+        private var fillMenuItems = arrayOfNulls<JMenuItem>(fillPaints.size)
+        private var drawMenuItems = arrayOfNulls<JMenuItem>(drawPaints.size)
+        private var fillIcons = arrayOfNulls<PaintedIcon>(fillPaints.size)
+        private var drawIcons = arrayOfNulls<PaintedIcon>(drawPaints.size)
 
         init {
-
             val drawMenuBar = JMenuBar()
             add(drawMenuBar)
 
@@ -199,10 +184,12 @@ class BezierAnim : AnimatingControlsSurface() {
 
             for (i in drawPaints.indices) {
                 drawIcons[i] = PaintedIcon(drawPaints[i])
-                drawMI[i] = drawMenu.add(JMenuItem(drawName[i]))
-                drawMI[i]!!.setFont(FONT)
-                drawMI[i]!!.setIcon(drawIcons[i])
-                drawMI[i]!!.addActionListener(this)
+                val menuItem = JMenuItem(drawName[i]).apply {
+                    font = FONT
+                    icon = drawIcons[i]
+                    addActionListener(this@DemoControls)
+                }
+                drawMenuItems[i] = drawMenu.add(menuItem)
             }
             drawMenu.icon = drawIcons[1]
 
@@ -210,10 +197,12 @@ class BezierAnim : AnimatingControlsSurface() {
             fillMenu.font = FONT
             for (i in fillPaints.indices) {
                 fillIcons[i] = PaintedIcon(fillPaints[i])
-                fillMI[i] = fillMenu.add(JMenuItem(fillName[i]))
-                fillMI[i]!!.setFont(FONT)
-                fillMI[i]!!.setIcon(fillIcons[i])
-                fillMI[i]!!.addActionListener(this)
+                val menuItem = JMenuItem(fillName[i]).apply {
+                    font = FONT
+                    icon = fillIcons[i]
+                    addActionListener(this@DemoControls)
+                }
+                fillMenuItems[i] = fillMenu.add(menuItem)
             }
             fillMenu.icon = fillIcons[fillPaints.size - 1]
         }
@@ -221,7 +210,7 @@ class BezierAnim : AnimatingControlsSurface() {
         override fun actionPerformed(e: ActionEvent) {
             val obj = e.source
             for (i in fillPaints.indices) {
-                if (obj == fillMI[i]) {
+                if (obj == fillMenuItems[i]) {
                     demo.doFill = true
                     demo.fillPaint = fillPaints[i]
                     fillMenu.icon = fillIcons[i]
@@ -229,21 +218,21 @@ class BezierAnim : AnimatingControlsSurface() {
                 }
             }
             for (i in drawPaints.indices) {
-                if (obj == drawMI[i]) {
+                if (obj == drawMenuItems[i]) {
                     demo.doDraw = true
                     demo.drawPaint = drawPaints[i]
                     if ((obj as JMenuItem).text.endsWith("Dash")) {
-                        demo.stroke = demo.dashed
+                        demo.stroke = DASHED_STROKE
                     } else {
-                        demo.stroke = demo.solid
+                        demo.stroke = SOLID_STROKE
                     }
                     drawMenu.icon = drawIcons[i]
                     break
                 }
             }
-            if (obj == fillMI[0]) {
+            if (obj == fillMenuItems[0]) {
                 demo.doFill = false
-            } else if (obj == drawMI[0]) {
+            } else if (obj == drawMenuItems[0]) {
                 demo.doDraw = false
             }
             if (!demo.animating!!.isRunning) {
@@ -251,16 +240,14 @@ class BezierAnim : AnimatingControlsSurface() {
             }
         }
 
-        override fun getPreferredSize(): Dimension {
-            return Dimension(200, 36)
-        }
+        override fun getPreferredSize() = Dimension(200, 36)
 
         override fun run() {
             val me = Thread.currentThread()
             while (thread === me) {
-                for (dmi in drawMI) {
+                for (dmi in drawMenuItems) {
                     dmi!!.doClick()
-                    for (fmi in fillMI) {
+                    for (fmi in fillMenuItems) {
                         fmi!!.doClick()
                         try {
                             Thread.sleep(3000 + (Math.random() * 3000).toLong())
@@ -273,72 +260,69 @@ class BezierAnim : AnimatingControlsSurface() {
             thread = null
         }
 
-        internal class PaintedIcon(var paint: Paint) : Icon {
-
+        internal class PaintedIcon(var paint: Paint) : Icon
+        {
             override fun paintIcon(c: Component, g: Graphics, x: Int, y: Int) {
                 val g2 = g as Graphics2D
                 g2.paint = paint
                 g2.fillRect(x, y, iconWidth, iconHeight)
-                g2.color = GRAY
-                g2.draw3DRect(
-                    x, y, iconWidth - 1, iconHeight - 1,
-                    true
-                             )
+                g2.color = Color.GRAY
+                g2.draw3DRect(x, y, iconWidth - 1, iconHeight - 1, true)
             }
 
-            override fun getIconWidth(): Int {
-                return 12
-            }
+            override fun getIconWidth() = 12
 
-            override fun getIconHeight(): Int {
-                return 12
-            }
-        } // End PaintedIcon class
-
-        companion object {
-
-            val tp1: TexturePaint
-            val tp2: TexturePaint
-
-            init {
-                var bi = BufferedImage(
-                    2, 1,
-                    BufferedImage.TYPE_INT_RGB
-                                      )
-                bi.setRGB(0, 0, -0xff0100)
-                bi.setRGB(1, 0, -0x10000)
-                tp1 = TexturePaint(bi, Rectangle(0, 0, 2, 1))
-                bi = BufferedImage(2, 1, BufferedImage.TYPE_INT_RGB)
-                bi.setRGB(0, 0, -0xffff01)
-                bi.setRGB(1, 0, -0x10000)
-                tp2 = TexturePaint(bi, Rectangle(0, 0, 2, 1))
-            }
-
-            var drawPaints = arrayOf(
-                Color(0, 0, 0, 0), BLUE, Color(
-                    0,
-                    0, 255, 126
-                                              ), BLUE, tp2
-                                    )
-            var drawName = arrayOf("No Draw", "Blue", "Blue w/ Alpha", "Blue Dash", "Texture")
-            var fillPaints = arrayOf(
-                Color(0, 0, 0, 0), GREEN, Color(
-                    0,
-                    255, 0, 126
-                                               ), tp1, GradientPaint(0f, 0f, RED, 30f, 30f, YELLOW)
-                                    )
-            val FONT = Font("serif", Font.PLAIN, 10)
+            override fun getIconHeight() = 12
         }
-    } // End DemoControls class
 
-    companion object {
+        companion object
+        {
+            private val texturePaint1: TexturePaint = run {
+                val bufferedImage = BufferedImage(2, 1, BufferedImage.TYPE_INT_RGB).apply {
+                    setRGB(0, 0, -0xFF0100)
+                    setRGB(1, 0, -0x10000)
+                }
+                TexturePaint(bufferedImage, Rectangle(0, 0, 2, 1))
+            }
 
-        private val NUMPTS = 6
+            private val texturePaint2: TexturePaint = run {
+                val bi = BufferedImage(2, 1, BufferedImage.TYPE_INT_RGB).apply {
+                    setRGB(0, 0, -0xFFFF01)
+                    setRGB(1, 0, -0x10000)
+                }
+                TexturePaint(bi, Rectangle(0, 0, 2, 1))
+            }
+
+            val drawPaints = arrayOf(
+                Color(0, 0, 0, 0),
+                Color.BLUE,
+                Color(0, 0, 255, 126),
+                Color.BLUE,
+                texturePaint2)
+
+            val drawName = arrayOf("No Draw", "Blue", "Blue w/ Alpha", "Blue Dash", "Texture")
+
+            val fillPaints = arrayOf(
+                Color(0, 0, 0, 0),
+                Color.GREEN,
+                Color(0, 255, 0, 126),
+                texturePaint1,
+                GradientPaint(0f, 0f, Color.RED, 30f, 30f, Color.YELLOW))
+
+            val FONT = Font(Font.SERIF, Font.PLAIN, 10)
+        }
+    }
+
+    companion object
+    {
+        private const val POINTS_NUMBER = 6
+        private val DASHED_STROKE =
+            BasicStroke(10.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10f, floatArrayOf(5f), 0f)
+        private val SOLID_STROKE = BasicStroke(10.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND)
 
         @JvmStatic
         fun main(argv: Array<String>) {
             Surface.createDemoFrame(BezierAnim())
         }
     }
-} // End BezierAnim class
-
+}
