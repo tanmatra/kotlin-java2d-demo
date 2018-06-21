@@ -62,11 +62,9 @@ class BezierAnim : AnimatingControlsSurface()
 {
     private val animpts = FloatArray(POINTS_NUMBER * 2)
     private val deltas = FloatArray(POINTS_NUMBER * 2)
-    private var doFill = true
-    private var doDraw = true
     private var gradient: GradientPaint = GradientPaint(0f, 0f, Color.RED, 200f, 200f, Color.YELLOW)
-    private var fillPaint: Paint = gradient
-    private var drawPaint: Paint = Color.BLUE
+    private var fillPaint: Paint? = gradient
+    private var drawPaint: Paint? = Color.BLUE
     private var stroke: BasicStroke = SOLID_STROKE
 
     init {
@@ -146,23 +144,19 @@ class BezierAnim : AnimatingControlsSurface()
             i += 2
         }
         gp.closePath()
-        if (doDraw) {
+        drawPaint?.let { drawPaint ->
             g2.paint = drawPaint
             g2.stroke = stroke
             g2.draw(gp)
         }
-        if (doFill) {
-            if (fillPaint is GradientPaint) {
-                fillPaint = gradient
-            }
-            g2.paint = fillPaint
+        fillPaint?.let { fillPaint ->
+            g2.paint = if (fillPaint is GradientPaint) gradient else fillPaint
             g2.fill(gp)
         }
     }
 
     internal class DemoControls(private val demo: BezierAnim) : CustomControls(demo.name)
     {
-        private val fillName = arrayOf("No Fill", "Green", "Green w/ Alpha", "Texture", "Gradient")
         private var fillMenu: JMenu
         private var drawMenu: JMenu
         private val fillMenuItems = arrayOfNulls<JMenuItem>(fillPaints.size)
@@ -186,7 +180,6 @@ class BezierAnim : AnimatingControlsSurface()
                     font = FONT
                     icon = drawIcons[i]
                     addActionListener {
-                        demo.doDraw = true
                         demo.drawPaint = drawPaints[i]
                         if (text.endsWith("Dash")) {
                             demo.stroke = DASHED_STROKE
@@ -209,7 +202,6 @@ class BezierAnim : AnimatingControlsSurface()
                     font = FONT
                     icon = fillIcons[i]
                     addActionListener {
-                        demo.doFill = (i != 0)
                         demo.fillPaint = fillPaints[i]
                         fillMenu.icon = fillIcons[i]
                         checkRepaint()
@@ -246,11 +238,11 @@ class BezierAnim : AnimatingControlsSurface()
             thread = null
         }
 
-        internal class PaintedIcon(var paint: Paint) : Icon
+        private class PaintedIcon(var paint: Paint?) : Icon
         {
             override fun paintIcon(c: Component, g: Graphics, x: Int, y: Int) {
                 val g2 = g as Graphics2D
-                g2.paint = paint
+                g2.paint = paint ?: EMPTY_COLOR
                 g2.fillRect(x, y, iconWidth, iconHeight)
                 g2.color = Color.GRAY
                 g2.draw3DRect(x, y, iconWidth - 1, iconHeight - 1, true)
@@ -259,6 +251,10 @@ class BezierAnim : AnimatingControlsSurface()
             override fun getIconWidth() = 12
 
             override fun getIconHeight() = 12
+
+            companion object {
+                private val EMPTY_COLOR = Color(0, 0, 0, 0)
+            }
         }
 
         companion object
@@ -279,17 +275,19 @@ class BezierAnim : AnimatingControlsSurface()
                 TexturePaint(bufferedImage, Rectangle(0, 0, 2, 1))
             }
 
-            val drawPaints = arrayOf(
-                Color(0, 0, 0, 0),
+            private val drawName = arrayOf("No Draw", "Blue", "Blue w/ Alpha", "Blue Dash", "Texture")
+
+            private val drawPaints = arrayOf(
+                null,
                 Color.BLUE,
                 Color(0, 0, 255, 126),
                 Color.BLUE,
                 TEXTURE_PAINT_2)
 
-            val drawName = arrayOf("No Draw", "Blue", "Blue w/ Alpha", "Blue Dash", "Texture")
+            private val fillName = arrayOf("No Fill", "Green", "Green w/ Alpha", "Texture", "Gradient")
 
-            val fillPaints = arrayOf(
-                Color(0, 0, 0, 0),
+            private val fillPaints = arrayOf(
+                null,
                 Color.GREEN,
                 Color(0, 255, 0, 126),
                 TEXTURE_PAINT_1,
