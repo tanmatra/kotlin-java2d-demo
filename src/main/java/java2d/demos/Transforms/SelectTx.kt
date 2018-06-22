@@ -35,10 +35,9 @@ import java2d.AnimatingControlsSurface
 import java2d.CControl
 import java2d.CustomControls
 import java2d.createToolButton
+import java2d.use
 import java.awt.BorderLayout
-import java.awt.Color.BLACK
-import java.awt.Color.ORANGE
-import java.awt.Color.WHITE
+import java.awt.Color
 import java.awt.Dimension
 import java.awt.Graphics2D
 import java.awt.Image
@@ -52,10 +51,10 @@ import javax.swing.JToolBar
  */
 class SelectTx : AnimatingControlsSurface()
 {
-    private var img: Image? = null
-    private val original: Image = getImage("painting.gif")
-    private var iw: Int = 0
-    private var ih: Int = 0
+    private val originalImage: Image = getImage("painting.gif")
+    private var image: Image? = null
+    private var imageWidth: Int = 0
+    private var imageHeight: Int = 0
     private var transformType: TransformType = TransformType.SHEAR
     private var sx: Double = 0.0
     private var sy: Double = 0.0
@@ -64,20 +63,22 @@ class SelectTx : AnimatingControlsSurface()
     private var transformToggle: TransformType = TransformType.SCALE
 
     init {
-        background = WHITE
-        iw = original.getWidth(this)
-        ih = original.getHeight(this)
+        background = Color.WHITE
+        imageWidth = originalImage.getWidth(this)
+        imageHeight = originalImage.getHeight(this)
     }
 
     override val customControls = listOf<CControl>(DemoControls(this) to BorderLayout.NORTH)
 
     override fun reset(newWidth: Int, newHeight: Int) {
-        iw = if (newWidth > 3) newWidth / 3 else 1
-        ih = if (newHeight > 3) newHeight / 3 else 1
+        imageWidth = if (newWidth > 3) newWidth / 3 else 1
+        imageHeight = if (newHeight > 3) newHeight / 3 else 1
 
-        img = createImage(iw, ih)
-        val big = img!!.graphics
-        big.drawImage(original, 0, 0, iw, ih, ORANGE, null)
+        image = createImage(imageWidth, imageHeight).apply {
+            graphics.use { gfx ->
+                gfx.drawImage(originalImage, 0, 0, imageWidth, imageHeight, Color.ORANGE, null)
+            }
+        }
         when (transformType) {
             TransformType.SCALE -> {
                 direction = Direction.RIGHT
@@ -94,31 +95,31 @@ class SelectTx : AnimatingControlsSurface()
     }
 
     override fun step(width: Int, height: Int) {
-        val rw = iw + 10
-        val rh = ih + 10
+        val rw = imageWidth + 10
+        val rh = imageHeight + 10
 
         when {
             transformType == TransformType.SCALE && direction == Direction.RIGHT -> {
                 sx += 0.05
-                if (width * 0.5 - iw * 0.5 + rw * sx + 10.0 > width) {
+                if (width * 0.5 - imageWidth * 0.5 + rw * sx + 10.0 > width) {
                     direction = Direction.DOWN
                 }
             }
             transformType == TransformType.SCALE && direction == Direction.DOWN -> {
                 sy += 0.05
-                if (height * 0.5 - ih * 0.5 + rh * sy + 20.0 > height) {
+                if (height * 0.5 - imageHeight * 0.5 + rh * sy + 20.0 > height) {
                     direction = Direction.LEFT
                 }
             }
             transformType == TransformType.SCALE && direction == Direction.LEFT -> {
                 sx -= 0.05
-                if (rw * sx - 10 <= -(width * 0.5 - iw * 0.5)) {
+                if (rw * sx - 10 <= -(width * 0.5 - imageWidth * 0.5)) {
                     direction = Direction.UP
                 }
             }
             transformType == TransformType.SCALE && direction == Direction.UP -> {
                 sy -= 0.05
-                if (rh * sy - 20 <= -(height * 0.5 - ih * 0.5)) {
+                if (rh * sy - 20 <= -(height * 0.5 - imageHeight * 0.5)) {
                     direction = Direction.RIGHT
                     transformToggle = TransformType.SHEAR
                 }
@@ -159,33 +160,33 @@ class SelectTx : AnimatingControlsSurface()
             transformType == TransformType.SHEAR && direction == Direction.YMIDDLE -> {
                 sy -= 0.05
                 if (sy < 0) {
-                    direction = Direction.XupYup
+                    direction = Direction.XUPYUP
                     sy = 0.0
                 }
             }
-            transformType == TransformType.SHEAR && direction == Direction.XupYup -> {
+            transformType == TransformType.SHEAR && direction == Direction.XUPYUP -> {
                 sx += 0.05
                 sy += 0.05
                 if (rw.toDouble() + 2.0 * rh.toDouble() * sx + 30.0 > width ||
                     rh.toDouble() + 2.0 * rw.toDouble() * sy + 30.0 > height)
                 {
-                    direction = Direction.XdownYdown
+                    direction = Direction.XDOWNYDOWN
                 }
             }
-            transformType == TransformType.SHEAR && direction == Direction.XdownYdown -> {
+            transformType == TransformType.SHEAR && direction == Direction.XDOWNYDOWN -> {
                 sy -= 0.05
                 sx -= 0.05
                 if (sy < 0) {
                     direction = Direction.RIGHT
+                    sx = 0.0
                     sy = 0.0
-                    sx = sy
                     transformToggle = TransformType.ROTATE
                 }
             }
             transformType == TransformType.ROTATE -> {
                 angdeg += 5.0
-                if (angdeg == 360.0) {
-                    angdeg = 0.0
+                if (angdeg >= 360.0) {
+                    angdeg -= 360.0
                     transformToggle = TransformType.SCALE
                 }
             }
@@ -196,7 +197,7 @@ class SelectTx : AnimatingControlsSurface()
         val font = g2.font
         val frc = g2.fontRenderContext
         val tl = TextLayout(title[transformType.ordinal], font, frc)
-        g2.color = BLACK
+        g2.color = Color.BLACK
         tl.draw(g2, (w / 2 - tl.bounds.width / 2).toFloat(), tl.ascent + tl.descent)
 
         when (transformType) {
@@ -218,27 +219,27 @@ class SelectTx : AnimatingControlsSurface()
 
         when (transformType) {
             TransformType.SCALE -> {
-                g2.translate(w / 2 - iw / 2, h / 2 - ih / 2)
+                g2.translate(w / 2 - imageWidth / 2, h / 2 - imageHeight / 2)
                 g2.scale(sx, sy)
             }
             TransformType.SHEAR -> {
-                g2.translate(w / 2 - iw / 2, h / 2 - ih / 2)
+                g2.translate(w / 2 - imageWidth / 2, h / 2 - imageHeight / 2)
                 g2.shear(sx, sy)
             }
             else -> {
                 g2.rotate(Math.toRadians(angdeg), (w / 2).toDouble(), (h / 2).toDouble())
-                g2.translate(w / 2 - iw / 2, h / 2 - ih / 2)
+                g2.translate(w / 2 - imageWidth / 2, h / 2 - imageHeight / 2)
             }
         }
 
-        g2.color = ORANGE
-        g2.fillRect(0, 0, iw + 10, ih + 10)
-        g2.drawImage(img, 5, 5, this)
+        g2.color = Color.ORANGE
+        g2.fillRect(0, 0, imageWidth + 10, imageHeight + 10)
+        g2.drawImage(image, 5, 5, this)
     }
 
     internal class DemoControls(private val demo: SelectTx) : CustomControls(demo.name)
     {
-        val toolbar = JToolBar().apply { isFloatable = false }
+        private val toolbar = JToolBar().apply { isFloatable = false }
 
         init {
             add(toolbar)
@@ -299,8 +300,8 @@ class SelectTx : AnimatingControlsSurface()
         DOWN,
         UP,
         YMIDDLE,
-        XupYup,
-        XdownYdown
+        XUPYUP,
+        XDOWNYDOWN
     }
 
     companion object
