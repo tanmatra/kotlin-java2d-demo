@@ -196,7 +196,7 @@ class SelectTx : AnimatingControlsSurface()
     override fun render(w: Int, h: Int, g2: Graphics2D) {
         val font = g2.font
         val frc = g2.fontRenderContext
-        val tl = TextLayout(title[transformType.ordinal], font, frc)
+        val tl = TextLayout(transformType.title, font, frc)
         g2.color = Color.BLACK
         tl.draw(g2, (w / 2 - tl.bounds.width / 2).toFloat(), tl.ascent + tl.descent)
 
@@ -287,10 +287,10 @@ class SelectTx : AnimatingControlsSurface()
         }
     }
 
-    private enum class TransformType {
-        SCALE,
-        SHEAR,
-        ROTATE
+    private enum class TransformType(val title: String) {
+        SCALE("Scale"),
+        SHEAR("Shear"),
+        ROTATE("Rotate")
     }
 
     private enum class Direction {
@@ -306,8 +306,6 @@ class SelectTx : AnimatingControlsSurface()
 
     companion object
     {
-        private val title = arrayOf("Scale", "Shear", "Rotate")
-
         @JvmStatic
         fun main(argv: Array<String>) {
             createDemoFrame(SelectTx())
