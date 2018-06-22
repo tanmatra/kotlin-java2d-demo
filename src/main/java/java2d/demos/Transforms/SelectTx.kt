@@ -208,7 +208,7 @@ class SelectTx : AnimatingControlsSurface()
         textLayout.draw(g2, (w / 2 - textLayout.bounds.width / 2).toFloat(), textLayout.ascent + textLayout.descent)
 
         val parameters = when (transformType) {
-            TransformType.ROTATE -> "angdeg = %3.0f".format(angle)
+            TransformType.ROTATE -> "angle = %3.0f".format(angle)
             else -> "sx = %.2f; sy = %.2f".format(sx, sy)
         }
         g2.drawString(parameters, 2, (h - 4))

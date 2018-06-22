@@ -70,8 +70,11 @@ abstract class CustomControls(name: String? = null) : JPanel(), Runnable
 
     public override fun paintComponent(g: Graphics) {
         super.paintComponent(g)
-        g.color = if (doNotifier) BLUE else Color.GRAY
-        g.fillRect(size.width - 2, 0, 2, 2)
+        if (thread != null) {
+            g.color = if (doNotifier) Color.GREEN else Color.GRAY
+            val insets = insets
+            g.fillRect(width - insets.right - 4 - 2, insets.top + 2, 4, 4)
+        }
     }
 
     fun start() {
@@ -117,9 +120,5 @@ abstract class CustomControls(name: String? = null) : JPanel(), Runnable
             doNotifier = false
             repaint()
         }
-    }
-
-    companion object {
-        private val BLUE = Color(204, 204, 255)
     }
 }

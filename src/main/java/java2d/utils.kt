@@ -3,6 +3,7 @@ package java2d
 import java.awt.Component
 import java.awt.Dimension
 import java.awt.EventQueue
+import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
@@ -41,7 +42,7 @@ inline fun <reified T> getLogger() = Logger.getLogger(T::class.java.name)
 
 fun byteArrayFrom(vararg ints: Int) = ByteArray(ints.size) { i -> ints[i].toByte() }
 
-inline fun Graphics2D.use(block: (Graphics2D) -> Unit) {
+inline fun <T : Graphics> T.use(block: (T) -> Unit) {
     try {
         block(this)
     } finally {
@@ -156,3 +157,6 @@ fun String.rangeIndexOf(substring: String): IntRange {
 }
 
 infix fun IntRange.shift(offset: Int) = start + offset .. endInclusive + offset
+
+val Insets.horizontal get() = left + right
+val Insets.vertical get() = top + bottom
