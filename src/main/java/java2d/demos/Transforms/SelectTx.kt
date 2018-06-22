@@ -35,6 +35,8 @@ import java2d.AnimatingControlsSurface
 import java2d.CControl
 import java2d.CustomControls
 import java2d.createToolButton
+import java2d.systemTextAntialiasing
+import java2d.textAntialiasing
 import java2d.use
 import java.awt.BorderLayout
 import java.awt.Color
@@ -58,7 +60,7 @@ class SelectTx : AnimatingControlsSurface()
     private var transformType: TransformType = TransformType.SHEAR
     private var sx: Double = 0.0
     private var sy: Double = 0.0
-    private var angdeg: Double = 0.0
+    private var angle: Double = 0.0
     private var direction = Direction.RIGHT
     private var transformToggle: TransformType = TransformType.SCALE
 
@@ -79,6 +81,10 @@ class SelectTx : AnimatingControlsSurface()
                 gfx.drawImage(originalImage, 0, 0, imageWidth, imageHeight, Color.ORANGE, null)
             }
         }
+        resetTransformParameters()
+    }
+
+    private fun resetTransformParameters() {
         when (transformType) {
             TransformType.SCALE -> {
                 direction = Direction.RIGHT
@@ -90,7 +96,9 @@ class SelectTx : AnimatingControlsSurface()
                 sx = 0.0
                 sy = 0.0
             }
-            else -> angdeg = 0.0
+            TransformType.ROTATE -> {
+                angle = 0.0
+            }
         }
     }
 
@@ -184,9 +192,9 @@ class SelectTx : AnimatingControlsSurface()
                 }
             }
             transformType == TransformType.ROTATE -> {
-                angdeg += 5.0
-                if (angdeg >= 360.0) {
-                    angdeg -= 360.0
+                angle += 5.0
+                if (angle >= 360.0) {
+                    angle -= 360.0
                     transformToggle = TransformType.SCALE
                 }
             }
@@ -195,11 +203,12 @@ class SelectTx : AnimatingControlsSurface()
 
     override fun render(w: Int, h: Int, g2: Graphics2D) {
         g2.color = Color.BLACK
+        g2.textAntialiasing = systemTextAntialiasing
         val textLayout = TextLayout(transformType.title, g2.font, g2.fontRenderContext)
         textLayout.draw(g2, (w / 2 - textLayout.bounds.width / 2).toFloat(), textLayout.ascent + textLayout.descent)
 
         val parameters = when (transformType) {
-            TransformType.ROTATE -> "angdeg = %3.0f".format(angdeg)
+            TransformType.ROTATE -> "angdeg = %3.0f".format(angle)
             else -> "sx = %.2f; sy = %.2f".format(sx, sy)
         }
         g2.drawString(parameters, 2, (h - 4))
@@ -214,7 +223,7 @@ class SelectTx : AnimatingControlsSurface()
                 g2.shear(sx, sy)
             }
             else -> {
-                g2.rotate(Math.toRadians(angdeg), (w / 2).toDouble(), (h / 2).toDouble())
+                g2.rotate(Math.toRadians(angle), (w / 2).toDouble(), (h / 2).toDouble())
                 g2.translate(w / 2 - imageWidth / 2, h / 2 - imageHeight / 2)
             }
         }
@@ -226,33 +235,25 @@ class SelectTx : AnimatingControlsSurface()
 
     internal class DemoControls(private val demo: SelectTx) : CustomControls(demo.name)
     {
-        private val toolbar = JToolBar().apply { isFloatable = false }
+        private val transformsMap: Map<TransformType, AbstractButton>
 
         init {
+            val toolbar = JToolBar().apply { isFloatable = false }
             add(toolbar)
-
             val buttonGroup = ButtonGroup()
-            fun addTool(button: AbstractButton) {
+            val transformsMap = mutableMapOf<TransformType, AbstractButton>()
+            this.transformsMap = transformsMap
+            fun addTool(transformType: TransformType, state: Boolean) {
+                val button = createToolButton(transformType.title, state) {
+                    demo.transformType = transformType
+                    demo.resetTransformParameters()
+                }
                 toolbar.add(button)
                 buttonGroup.add(button)
             }
-
-            addTool(createToolButton("Scale", false) {
-                demo.transformType = TransformType.SCALE
-                demo.direction = Direction.RIGHT
-                demo.sy = 1.0
-                demo.sx = demo.sy
-            })
-            addTool(createToolButton("Shear", true) {
-                demo.transformType = TransformType.SHEAR
-                demo.direction = Direction.RIGHT
-                demo.sy = 0.0
-                demo.sx = demo.sy
-            })
-            addTool(createToolButton("Rotate", false) {
-                demo.transformType = TransformType.ROTATE
-                demo.angdeg = 0.0
-            })
+            addTool(TransformType.SCALE, false)
+            addTool(TransformType.SHEAR, true)
+            addTool(TransformType.ROTATE, false)
         }
 
         override fun getPreferredSize() = Dimension(200, 39)
@@ -267,7 +268,7 @@ class SelectTx : AnimatingControlsSurface()
                     return
                 }
                 if (demo.transformToggle != demo.transformType) {
-                    (toolbar.getComponent(demo.transformToggle.ordinal) as AbstractButton).doClick()
+                    transformsMap[demo.transformToggle]?.doClick()
                 }
             }
             thread = null
