@@ -56,12 +56,12 @@ class SelectTx : AnimatingControlsSurface()
     private val original: Image = getImage("painting.gif")
     private var iw: Int = 0
     private var ih: Int = 0
-    private var transformType = SHEAR
+    private var transformType: TransformType = TransformType.SHEAR
     private var sx: Double = 0.0
     private var sy: Double = 0.0
     private var angdeg: Double = 0.0
     private var direction = RIGHT
-    private var transformToggle: Int = 0
+    private var transformToggle: TransformType = TransformType.SCALE
 
     init {
         background = WHITE
@@ -79,12 +79,12 @@ class SelectTx : AnimatingControlsSurface()
         val big = img!!.graphics
         big.drawImage(original, 0, 0, iw, ih, ORANGE, null)
         when (transformType) {
-            SCALE -> {
+            TransformType.SCALE -> {
                 direction = RIGHT
                 sx = 1.0
                 sy = 1.0
             }
-            SHEAR -> {
+            TransformType.SHEAR -> {
                 direction = RIGHT
                 sx = 0.0
                 sy = 0.0
@@ -98,72 +98,72 @@ class SelectTx : AnimatingControlsSurface()
         val rh = ih + 10
 
         when {
-            transformType == SCALE && direction == RIGHT -> {
+            transformType == TransformType.SCALE && direction == RIGHT -> {
                 sx += 0.05
                 if (width * 0.5 - iw * 0.5 + rw * sx + 10.0 > width) {
                     direction = DOWN
                 }
             }
-            transformType == SCALE && direction == DOWN -> {
+            transformType == TransformType.SCALE && direction == DOWN -> {
                 sy += 0.05
                 if (height * 0.5 - ih * 0.5 + rh * sy + 20.0 > height) {
                     direction = LEFT
                 }
             }
-            transformType == SCALE && direction == LEFT -> {
+            transformType == TransformType.SCALE && direction == LEFT -> {
                 sx -= 0.05
                 if (rw * sx - 10 <= -(width * 0.5 - iw * 0.5)) {
                     direction = UP
                 }
             }
-            transformType == SCALE && direction == UP -> {
+            transformType == TransformType.SCALE && direction == UP -> {
                 sy -= 0.05
                 if (rh * sy - 20 <= -(height * 0.5 - ih * 0.5)) {
                     direction = RIGHT
-                    transformToggle = SHEAR
+                    transformToggle = TransformType.SHEAR
                 }
             }
-            transformType == SHEAR && direction == RIGHT -> {
+            transformType == TransformType.SHEAR && direction == RIGHT -> {
                 sx += 0.05
                 if (rw.toDouble() + 2.0 * rh.toDouble() * sx + 20.0 > width) {
                     direction = LEFT
                     sx -= 0.1
                 }
             }
-            transformType == SHEAR && direction == LEFT -> {
+            transformType == TransformType.SHEAR && direction == LEFT -> {
                 sx -= 0.05
                 if (rw - 2.0 * rh.toDouble() * sx + 20 > width) {
                     direction = XMIDDLE
                 }
             }
-            transformType == SHEAR && direction == XMIDDLE -> {
+            transformType == TransformType.SHEAR && direction == XMIDDLE -> {
                 sx += 0.05
                 if (sx > 0) {
                     direction = DOWN
                     sx = 0.0
                 }
             }
-            transformType == SHEAR && direction == DOWN -> {
+            transformType == TransformType.SHEAR && direction == DOWN -> {
                 sy -= 0.05
                 if (rh - 2.0 * rw.toDouble() * sy + 20 > height) {
                     direction = UP
                     sy += 0.1
                 }
             }
-            transformType == SHEAR && direction == UP -> {
+            transformType == TransformType.SHEAR && direction == UP -> {
                 sy += 0.05
                 if (rh.toDouble() + 2.0 * rw.toDouble() * sy + 20.0 > height) {
                     direction = YMIDDLE
                 }
             }
-            transformType == SHEAR && direction == YMIDDLE -> {
+            transformType == TransformType.SHEAR && direction == YMIDDLE -> {
                 sy -= 0.05
                 if (sy < 0) {
                     direction = XupYup
                     sy = 0.0
                 }
             }
-            transformType == SHEAR && direction == XupYup -> {
+            transformType == TransformType.SHEAR && direction == XupYup -> {
                 sx += 0.05
                 sy += 0.05
                 if (rw.toDouble() + 2.0 * rh.toDouble() * sx + 30.0 > width ||
@@ -172,21 +172,21 @@ class SelectTx : AnimatingControlsSurface()
                     direction = XdownYdown
                 }
             }
-            transformType == SHEAR && direction == XdownYdown -> {
+            transformType == TransformType.SHEAR && direction == XdownYdown -> {
                 sy -= 0.05
                 sx -= 0.05
                 if (sy < 0) {
                     direction = RIGHT
                     sy = 0.0
                     sx = sy
-                    transformToggle = ROTATE
+                    transformToggle = TransformType.ROTATE
                 }
             }
-            transformType == ROTATE -> {
+            transformType == TransformType.ROTATE -> {
                 angdeg += 5.0
                 if (angdeg == 360.0) {
                     angdeg = 0.0
-                    transformToggle = SCALE
+                    transformToggle = TransformType.SCALE
                 }
             }
         }
@@ -195,12 +195,12 @@ class SelectTx : AnimatingControlsSurface()
     override fun render(w: Int, h: Int, g2: Graphics2D) {
         val font = g2.font
         val frc = g2.fontRenderContext
-        val tl = TextLayout(title[transformType], font, frc)
+        val tl = TextLayout(title[transformType.ordinal], font, frc)
         g2.color = BLACK
         tl.draw(g2, (w / 2 - tl.bounds.width / 2).toFloat(), tl.ascent + tl.descent)
 
         when (transformType) {
-            ROTATE -> {
+            TransformType.ROTATE -> {
                 val s = java.lang.Double.toString(angdeg)
                 g2.drawString("angdeg=$s", 2, h - 4)
             }
@@ -217,11 +217,11 @@ class SelectTx : AnimatingControlsSurface()
         }
 
         when (transformType) {
-            SCALE -> {
+            TransformType.SCALE -> {
                 g2.translate(w / 2 - iw / 2, h / 2 - ih / 2)
                 g2.scale(sx, sy)
             }
-            SHEAR -> {
+            TransformType.SHEAR -> {
                 g2.translate(w / 2 - iw / 2, h / 2 - ih / 2)
                 g2.shear(sx, sy)
             }
@@ -250,19 +250,19 @@ class SelectTx : AnimatingControlsSurface()
             }
 
             addTool(createToolButton("Scale", false) {
-                demo.transformType = SCALE
+                demo.transformType = TransformType.SCALE
                 demo.direction = RIGHT
                 demo.sy = 1.0
                 demo.sx = demo.sy
             })
             addTool(createToolButton("Shear", true) {
-                demo.transformType = SHEAR
+                demo.transformType = TransformType.SHEAR
                 demo.direction = RIGHT
                 demo.sy = 0.0
                 demo.sx = demo.sy
             })
             addTool(createToolButton("Rotate", false) {
-                demo.transformType = ROTATE
+                demo.transformType = TransformType.ROTATE
                 demo.angdeg = 0.0
             })
         }
@@ -279,11 +279,17 @@ class SelectTx : AnimatingControlsSurface()
                     return
                 }
                 if (demo.transformToggle != demo.transformType) {
-                    (toolbar.getComponentAtIndex(demo.transformToggle) as AbstractButton).doClick()
+                    (toolbar.getComponent(demo.transformToggle.ordinal) as AbstractButton).doClick()
                 }
             }
             thread = null
         }
+    }
+
+    private enum class TransformType {
+        SCALE,
+        SHEAR,
+        ROTATE
     }
 
     companion object
@@ -298,10 +304,6 @@ class SelectTx : AnimatingControlsSurface()
         private const val XdownYdown = 7
 
         private val title = arrayOf("Scale", "Shear", "Rotate")
-
-        private const val SCALE = 0
-        private const val SHEAR = 1
-        private const val ROTATE = 2
 
         @JvmStatic
         fun main(argv: Array<String>) {
