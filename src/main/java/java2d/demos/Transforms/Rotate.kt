@@ -34,14 +34,11 @@ package java2d.demos.Transforms
 import java2d.CControl
 import java2d.ControlsSurface
 import java2d.CustomControls
-import java2d.Surface
 import java.awt.BasicStroke
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Dimension
 import java.awt.Graphics2D
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
 import java.awt.geom.AffineTransform
 import java.awt.geom.Ellipse2D
 import javax.swing.JLabel
@@ -67,9 +64,9 @@ class Rotate : ControlsSurface()
         val ew = (size / 4).toFloat()
         val eh = (size - 20).toFloat()
         val ellipse = Ellipse2D.Float(-ew / 2, -eh / 2, ew, eh)
-        var angdeg = 0.0
-        while (angdeg < 360) {
-            if (angdeg % emphasis == 0.0) {
+        var angle = 0.0
+        while (angle < 360) {
+            if (angle % emphasis == 0.0) {
                 g2.color = Color.GRAY
                 g2.stroke = BasicStroke(2.0f)
             } else {
@@ -77,77 +74,71 @@ class Rotate : ControlsSurface()
                 g2.stroke = BasicStroke(0.5f)
             }
             val at = AffineTransform.getTranslateInstance((w / 2).toDouble(), (h / 2).toDouble())
-            at.rotate(Math.toRadians(angdeg))
+            at.rotate(Math.toRadians(angle))
             g2.draw(at.createTransformedShape(ellipse))
-            angdeg += increment
+            angle += increment
         }
         g2.color = Color.BLUE
         ellipse.setFrame((w / 2 - 10).toDouble(), (h / 2 - 10).toDouble(), 20.0, 20.0)
         g2.fill(ellipse)
+
         g2.color = Color.GRAY
         g2.stroke = BasicStroke(6f)
         g2.draw(ellipse)
+
         g2.color = Color.YELLOW
         g2.stroke = BasicStroke(4f)
         g2.draw(ellipse)
+
         g2.color = Color.BLACK
         g2.drawString("Rotate", 5, 15)
     }
 
-    internal class DemoControls(var demo: Rotate) : CustomControls(demo.name), ActionListener
+    internal class DemoControls(private val demo: Rotate) : CustomControls(demo.name)
     {
-        var tf1: JTextField
-        var tf2: JTextField
-
-        init {
-            var l = JLabel("Increment:")
-            l.foreground = Color.BLACK
-            add(l)
-            tf1 = JTextField("5.0")
-            add(tf1)
-            tf1.preferredSize = Dimension(30, 24)
-            tf1.addActionListener(this)
-            l = JLabel("  Emphasis:")
-            add(l)
-            l.foreground = Color.BLACK
-            tf2 = JTextField("9")
-            add(tf2)
-            tf2.preferredSize = Dimension(30, 24)
-            tf2.addActionListener(this)
-        }
-
-        override fun actionPerformed(e: ActionEvent) {
-            try {
-                if (e.source == tf1) {
-                    demo.increment = java.lang.Double.parseDouble(tf1.text.trim())
-                    if (demo.increment < 1.0) {
-                        demo.increment = 1.0
-                    }
-                } else {
-                    demo.emphasis = Integer.parseInt(tf2.text.trim())
+        private val incrementTextField = JTextField("5.0").apply {
+            preferredSize = Dimension(30, 24)
+            addActionListener {
+                try {
+                    demo.increment = text.trim().toDouble().coerceAtLeast(1.0)
+                    demo.repaint()
+                } catch (e: NumberFormatException) {
                 }
-                demo.repaint()
-            } catch (ex: Exception) {
             }
         }
 
-        override fun getPreferredSize(): Dimension = Dimension(200, 39)
+        private val emphasisTextField = JTextField("9").apply {
+            preferredSize = Dimension(30, 24)
+            addActionListener {
+                try {
+                    demo.emphasis = text.trim().toInt()
+                    demo.repaint()
+                } catch (e: NumberFormatException) {
+                }
+            }
+        }
+
+        init {
+            add(JLabel("Increment:"))
+            add(incrementTextField)
+            add(JLabel("Emphasis:"))
+            add(emphasisTextField)
+        }
+
+        override fun getPreferredSize() = Dimension(200, 39)
 
         override fun run() {
             val me = Thread.currentThread()
             while (thread === me) {
-                var i = 3
-                while (i < 13) {
+                for (i in 3 until 13 step 3) {
                     try {
                         Thread.sleep(4444)
                     } catch (e: InterruptedException) {
                         return
                     }
-
-                    tf1.text = i.toString()
+                    incrementTextField.text = i.toString()
                     demo.increment = i.toDouble()
                     demo.repaint()
-                    i += 3
                 }
             }
             thread = null
@@ -158,7 +149,7 @@ class Rotate : ControlsSurface()
     {
         @JvmStatic
         fun main(s: Array<String>) {
-            Surface.createDemoFrame(Rotate())
+            createDemoFrame(Rotate())
         }
     }
 }
