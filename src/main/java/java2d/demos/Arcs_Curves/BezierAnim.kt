@@ -40,7 +40,6 @@ import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Component
 import java.awt.Dimension
-import java.awt.Font
 import java.awt.GradientPaint
 import java.awt.Graphics
 import java.awt.Graphics2D
@@ -63,8 +62,8 @@ class BezierAnim : AnimatingControlsSurface()
     private val animpts = FloatArray(POINTS_NUMBER * 2)
     private val deltas = FloatArray(POINTS_NUMBER * 2)
     private var gradient: GradientPaint = GradientPaint(0f, 0f, Color.RED, 200f, 200f, Color.YELLOW)
-    private var fillPaint: Paint? = gradient
-    private var drawPaint: Paint? = Color.BLUE
+    private var fillPaint: Paint? = FILL_STYLES[DEFAULT_FILL_STYLE].paint
+    private var drawPaint: Paint? = DRAW_STYLES[DEFAUL_DRAW_STYLE].paint
     private var stroke: BasicStroke = SOLID_STROKE
 
     init {
@@ -157,12 +156,8 @@ class BezierAnim : AnimatingControlsSurface()
 
     internal class DemoControls(private val demo: BezierAnim) : CustomControls(demo.name)
     {
-        private var fillMenu: JMenu
-        private var drawMenu: JMenu
-        private val fillMenuItems = arrayOfNulls<JMenuItem>(fillPaints.size)
-        private val drawMenuItems = arrayOfNulls<JMenuItem>(drawPaints.size)
-        private val fillIcons = arrayOfNulls<PaintedIcon>(fillPaints.size)
-        private val drawIcons = arrayOfNulls<PaintedIcon>(drawPaints.size)
+        private val fillMenu = JMenu("Fill Choice")
+        private val drawMenu = JMenu("Draw Choice")
 
         init {
             val drawMenuBar = JMenuBar()
@@ -171,49 +166,38 @@ class BezierAnim : AnimatingControlsSurface()
             val fillMenuBar = JMenuBar()
             add(fillMenuBar)
 
-            drawMenu = drawMenuBar.add(JMenu("Draw Choice"))
-            drawMenu.font = FONT
-
-            for (i in drawPaints.indices) {
-                drawIcons[i] = PaintedIcon(drawPaints[i])
-                val menuItem = JMenuItem(drawName[i]).apply {
-                    font = FONT
-                    icon = drawIcons[i]
+            drawMenuBar.add(drawMenu)
+            for (drawStyle in DRAW_STYLES) {
+                val menuItem = JMenuItem(drawStyle.name).apply {
+                    icon = PaintedIcon(drawStyle.paint)
                     addActionListener {
-                        demo.drawPaint = drawPaints[i]
-                        if (text.endsWith("Dash")) {
-                            demo.stroke = DASHED_STROKE
-                        } else {
-                            demo.stroke = SOLID_STROKE
-                        }
-                        drawMenu.icon = drawIcons[i]
+                        demo.drawPaint = drawStyle.paint
+                        demo.stroke = if (drawStyle.dashed) DASHED_STROKE else SOLID_STROKE
+                        drawMenu.icon = icon
                         checkRepaint()
                     }
                 }
-                drawMenuItems[i] = drawMenu.add(menuItem)
+                drawMenu.add(menuItem)
             }
-            drawMenu.icon = drawIcons[1]
+            drawMenu.icon = drawMenu.getItem(DEFAUL_DRAW_STYLE).icon
 
-            fillMenu = fillMenuBar.add(JMenu("Fill Choice"))
-            fillMenu.font = FONT
-            for (i in fillPaints.indices) {
-                fillIcons[i] = PaintedIcon(fillPaints[i])
-                val menuItem = JMenuItem(fillName[i]).apply {
-                    font = FONT
-                    icon = fillIcons[i]
+            fillMenuBar.add(fillMenu)
+            for (fillStyle in FILL_STYLES) {
+                val menuItem = JMenuItem(fillStyle.name).apply {
+                    icon = PaintedIcon(fillStyle.paint)
                     addActionListener {
-                        demo.fillPaint = fillPaints[i]
-                        fillMenu.icon = fillIcons[i]
+                        demo.fillPaint = fillStyle.paint
+                        fillMenu.icon = icon
                         checkRepaint()
                     }
                 }
-                fillMenuItems[i] = fillMenu.add(menuItem)
+                fillMenu.add(menuItem)
             }
-            fillMenu.icon = fillIcons[fillPaints.size - 1]
+            fillMenu.icon = fillMenu.getItem(DEFAULT_FILL_STYLE).icon
         }
 
         private fun checkRepaint() {
-            if (!demo.animating!!.isRunning) {
+            if (!demo.isRunning) {
                 demo.repaint()
             }
         }
@@ -223,10 +207,10 @@ class BezierAnim : AnimatingControlsSurface()
         override fun run() {
             val me = Thread.currentThread()
             while (thread === me) {
-                for (dmi in drawMenuItems) {
-                    dmi!!.doClick()
-                    for (fmi in fillMenuItems) {
-                        fmi!!.doClick()
+                for (drawMenuItem in drawMenu.menuComponents) {
+                    (drawMenuItem as? JMenuItem)?.doClick()
+                    for (fillMenuItem in fillMenu.menuComponents) {
+                        (fillMenuItem as? JMenuItem)?.doClick()
                         try {
                             Thread.sleep(3000 + (Math.random() * 3000).toLong())
                         } catch (e: InterruptedException) {
@@ -256,54 +240,60 @@ class BezierAnim : AnimatingControlsSurface()
                 private val EMPTY_COLOR = Color(0, 0, 0, 0)
             }
         }
-
-        companion object
-        {
-            private val TEXTURE_PAINT_1: TexturePaint = run {
-                val bufferedImage = BufferedImage(2, 1, BufferedImage.TYPE_INT_RGB).apply {
-                    setRGB(0, 0, 0xFF00FF00.toInt())
-                    setRGB(1, 0, 0xFFFF0000.toInt())
-                }
-                TexturePaint(bufferedImage, Rectangle(0, 0, 2, 1))
-            }
-
-            private val TEXTURE_PAINT_2: TexturePaint = run {
-                val bufferedImage = BufferedImage(2, 1, BufferedImage.TYPE_INT_RGB).apply {
-                    setRGB(0, 0, 0xFF0000FF.toInt())
-                    setRGB(1, 0, 0xFFFF0000.toInt())
-                }
-                TexturePaint(bufferedImage, Rectangle(0, 0, 2, 1))
-            }
-
-            private val drawName = arrayOf("No Draw", "Blue", "Blue w/ Alpha", "Blue Dash", "Texture")
-
-            private val drawPaints = arrayOf(
-                null,
-                Color.BLUE,
-                Color(0, 0, 255, 126),
-                Color.BLUE,
-                TEXTURE_PAINT_2)
-
-            private val fillName = arrayOf("No Fill", "Green", "Green w/ Alpha", "Texture", "Gradient")
-
-            private val fillPaints = arrayOf(
-                null,
-                Color.GREEN,
-                Color(0, 255, 0, 126),
-                TEXTURE_PAINT_1,
-                GradientPaint(0f, 0f, Color.RED, 30f, 30f, Color.YELLOW))
-
-            private val FONT = Font(Font.SERIF, Font.PLAIN, 10)
-        }
     }
+
+    private data class DrawStyle(
+        val name: String,
+        val paint: Paint?,
+        val dashed: Boolean = false)
+
+    private data class FillStyle(
+        val name: String,
+        val paint: Paint?)
 
     companion object
     {
         private const val POINTS_NUMBER = 6
+
         private val DASHED_STROKE =
             BasicStroke(10.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10f, floatArrayOf(5f), 0f)
+
         private val SOLID_STROKE =
             BasicStroke(10.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND)
+
+        private val TEXTURE_PAINT_1: TexturePaint = run {
+            val bufferedImage = BufferedImage(2, 1, BufferedImage.TYPE_INT_RGB).apply {
+                setRGB(0, 0, 0xFF00FF00.toInt())
+                setRGB(1, 0, 0xFFFF0000.toInt())
+            }
+            TexturePaint(bufferedImage, Rectangle(0, 0, 2, 1))
+        }
+
+        private val TEXTURE_PAINT_2: TexturePaint = run {
+            val bufferedImage = BufferedImage(2, 1, BufferedImage.TYPE_INT_RGB).apply {
+                setRGB(0, 0, 0xFF0000FF.toInt())
+                setRGB(1, 0, 0xFFFF0000.toInt())
+            }
+            TexturePaint(bufferedImage, Rectangle(0, 0, 2, 1))
+        }
+
+        private val DRAW_STYLES = arrayOf(
+            DrawStyle("No Draw", null),
+            DrawStyle("Blue", Color.BLUE),
+            DrawStyle("Blue w/ Alpha", Color(0, 0, 255, 126)),
+            DrawStyle("Blue Dash", Color.BLUE, dashed = true),
+            DrawStyle("Texture", TEXTURE_PAINT_2))
+
+        private const val DEFAUL_DRAW_STYLE = 1
+
+        private val FILL_STYLES = arrayOf(
+            FillStyle("No Fill", null),
+            FillStyle("Green", Color.GREEN),
+            FillStyle("Green w/ Alpha", Color(0, 255, 0, 126)),
+            FillStyle("Texture", TEXTURE_PAINT_1),
+            FillStyle("Gradient", GradientPaint(0f, 0f, Color.RED, 30f, 30f, Color.YELLOW)))
+
+        private val DEFAULT_FILL_STYLE = FILL_STYLES.lastIndex
 
         @JvmStatic
         fun main(argv: Array<String>) {
