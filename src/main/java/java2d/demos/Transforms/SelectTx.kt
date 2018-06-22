@@ -60,7 +60,7 @@ class SelectTx : AnimatingControlsSurface()
     private var sx: Double = 0.0
     private var sy: Double = 0.0
     private var angdeg: Double = 0.0
-    private var direction = RIGHT
+    private var direction = Direction.RIGHT
     private var transformToggle: TransformType = TransformType.SCALE
 
     init {
@@ -80,12 +80,12 @@ class SelectTx : AnimatingControlsSurface()
         big.drawImage(original, 0, 0, iw, ih, ORANGE, null)
         when (transformType) {
             TransformType.SCALE -> {
-                direction = RIGHT
+                direction = Direction.RIGHT
                 sx = 1.0
                 sy = 1.0
             }
             TransformType.SHEAR -> {
-                direction = RIGHT
+                direction = Direction.RIGHT
                 sx = 0.0
                 sy = 0.0
             }
@@ -98,85 +98,85 @@ class SelectTx : AnimatingControlsSurface()
         val rh = ih + 10
 
         when {
-            transformType == TransformType.SCALE && direction == RIGHT -> {
+            transformType == TransformType.SCALE && direction == Direction.RIGHT -> {
                 sx += 0.05
                 if (width * 0.5 - iw * 0.5 + rw * sx + 10.0 > width) {
-                    direction = DOWN
+                    direction = Direction.DOWN
                 }
             }
-            transformType == TransformType.SCALE && direction == DOWN -> {
+            transformType == TransformType.SCALE && direction == Direction.DOWN -> {
                 sy += 0.05
                 if (height * 0.5 - ih * 0.5 + rh * sy + 20.0 > height) {
-                    direction = LEFT
+                    direction = Direction.LEFT
                 }
             }
-            transformType == TransformType.SCALE && direction == LEFT -> {
+            transformType == TransformType.SCALE && direction == Direction.LEFT -> {
                 sx -= 0.05
                 if (rw * sx - 10 <= -(width * 0.5 - iw * 0.5)) {
-                    direction = UP
+                    direction = Direction.UP
                 }
             }
-            transformType == TransformType.SCALE && direction == UP -> {
+            transformType == TransformType.SCALE && direction == Direction.UP -> {
                 sy -= 0.05
                 if (rh * sy - 20 <= -(height * 0.5 - ih * 0.5)) {
-                    direction = RIGHT
+                    direction = Direction.RIGHT
                     transformToggle = TransformType.SHEAR
                 }
             }
-            transformType == TransformType.SHEAR && direction == RIGHT -> {
+            transformType == TransformType.SHEAR && direction == Direction.RIGHT -> {
                 sx += 0.05
                 if (rw.toDouble() + 2.0 * rh.toDouble() * sx + 20.0 > width) {
-                    direction = LEFT
+                    direction = Direction.LEFT
                     sx -= 0.1
                 }
             }
-            transformType == TransformType.SHEAR && direction == LEFT -> {
+            transformType == TransformType.SHEAR && direction == Direction.LEFT -> {
                 sx -= 0.05
                 if (rw - 2.0 * rh.toDouble() * sx + 20 > width) {
-                    direction = XMIDDLE
+                    direction = Direction.XMIDDLE
                 }
             }
-            transformType == TransformType.SHEAR && direction == XMIDDLE -> {
+            transformType == TransformType.SHEAR && direction == Direction.XMIDDLE -> {
                 sx += 0.05
                 if (sx > 0) {
-                    direction = DOWN
+                    direction = Direction.DOWN
                     sx = 0.0
                 }
             }
-            transformType == TransformType.SHEAR && direction == DOWN -> {
+            transformType == TransformType.SHEAR && direction == Direction.DOWN -> {
                 sy -= 0.05
                 if (rh - 2.0 * rw.toDouble() * sy + 20 > height) {
-                    direction = UP
+                    direction = Direction.UP
                     sy += 0.1
                 }
             }
-            transformType == TransformType.SHEAR && direction == UP -> {
+            transformType == TransformType.SHEAR && direction == Direction.UP -> {
                 sy += 0.05
                 if (rh.toDouble() + 2.0 * rw.toDouble() * sy + 20.0 > height) {
-                    direction = YMIDDLE
+                    direction = Direction.YMIDDLE
                 }
             }
-            transformType == TransformType.SHEAR && direction == YMIDDLE -> {
+            transformType == TransformType.SHEAR && direction == Direction.YMIDDLE -> {
                 sy -= 0.05
                 if (sy < 0) {
-                    direction = XupYup
+                    direction = Direction.XupYup
                     sy = 0.0
                 }
             }
-            transformType == TransformType.SHEAR && direction == XupYup -> {
+            transformType == TransformType.SHEAR && direction == Direction.XupYup -> {
                 sx += 0.05
                 sy += 0.05
                 if (rw.toDouble() + 2.0 * rh.toDouble() * sx + 30.0 > width ||
                     rh.toDouble() + 2.0 * rw.toDouble() * sy + 30.0 > height)
                 {
-                    direction = XdownYdown
+                    direction = Direction.XdownYdown
                 }
             }
-            transformType == TransformType.SHEAR && direction == XdownYdown -> {
+            transformType == TransformType.SHEAR && direction == Direction.XdownYdown -> {
                 sy -= 0.05
                 sx -= 0.05
                 if (sy < 0) {
-                    direction = RIGHT
+                    direction = Direction.RIGHT
                     sy = 0.0
                     sx = sy
                     transformToggle = TransformType.ROTATE
@@ -251,13 +251,13 @@ class SelectTx : AnimatingControlsSurface()
 
             addTool(createToolButton("Scale", false) {
                 demo.transformType = TransformType.SCALE
-                demo.direction = RIGHT
+                demo.direction = Direction.RIGHT
                 demo.sy = 1.0
                 demo.sx = demo.sy
             })
             addTool(createToolButton("Shear", true) {
                 demo.transformType = TransformType.SHEAR
-                demo.direction = RIGHT
+                demo.direction = Direction.RIGHT
                 demo.sy = 0.0
                 demo.sx = demo.sy
             })
@@ -292,17 +292,19 @@ class SelectTx : AnimatingControlsSurface()
         ROTATE
     }
 
+    private enum class Direction {
+        RIGHT,
+        LEFT,
+        XMIDDLE,
+        DOWN,
+        UP,
+        YMIDDLE,
+        XupYup,
+        XdownYdown
+    }
+
     companion object
     {
-        private const val RIGHT = 0
-        private const val LEFT = 1
-        private const val XMIDDLE = 2
-        private const val DOWN = 3
-        private const val UP = 4
-        private const val YMIDDLE = 5
-        private const val XupYup = 6
-        private const val XdownYdown = 7
-
         private val title = arrayOf("Scale", "Shear", "Rotate")
 
         @JvmStatic
