@@ -85,8 +85,7 @@ class BezierAnim : AnimatingControlsSurface()
     }
 
     override fun reset(newWidth: Int, newHeight: Int) {
-        var i = 0
-        while (i < animpts.size) {
+        for (i in 0 until animpts.size step 2) {
             animpts[i + 0] = (Math.random() * newWidth).toFloat()
             animpts[i + 1] = (Math.random() * newHeight).toFloat()
             deltas[i + 0] = (Math.random() * 6.0 + 4.0).toFloat()
@@ -97,17 +96,14 @@ class BezierAnim : AnimatingControlsSurface()
             if (animpts[i + 1] > newHeight / 2.0f) {
                 deltas[i + 1] = -deltas[i + 1]
             }
-            i += 2
         }
         gradient = GradientPaint(0f, 0f, Color.RED, newWidth * 0.7f, newHeight * 0.7f, Color.YELLOW)
     }
 
     override fun step(width: Int, height: Int) {
-        var i = 0
-        while (i < animpts.size) {
+        for (i in 0 until animpts.size step 2) {
             animate(animpts, deltas, i + 0, width)
             animate(animpts, deltas, i + 1, height)
-            i += 2
         }
     }
 
