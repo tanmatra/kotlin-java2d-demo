@@ -194,28 +194,15 @@ class SelectTx : AnimatingControlsSurface()
     }
 
     override fun render(w: Int, h: Int, g2: Graphics2D) {
-        val font = g2.font
-        val frc = g2.fontRenderContext
-        val tl = TextLayout(transformType.title, font, frc)
         g2.color = Color.BLACK
-        tl.draw(g2, (w / 2 - tl.bounds.width / 2).toFloat(), tl.ascent + tl.descent)
+        val textLayout = TextLayout(transformType.title, g2.font, g2.fontRenderContext)
+        textLayout.draw(g2, (w / 2 - textLayout.bounds.width / 2).toFloat(), textLayout.ascent + textLayout.descent)
 
-        when (transformType) {
-            TransformType.ROTATE -> {
-                val s = java.lang.Double.toString(angdeg)
-                g2.drawString("angdeg=$s", 2, h - 4)
-            }
-            else -> {
-                var s = java.lang.Double.toString(sx)
-                s = if (s.length < 5) s else s.substring(0, 5)
-                val tlsx = TextLayout("sx=$s", font, frc)
-                tlsx.draw(g2, 2f, (h - 4).toFloat())
-
-                s = java.lang.Double.toString(sy)
-                s = if (s.length < 5) s else s.substring(0, 5)
-                g2.drawString("sy=$s", (tlsx.bounds.width + 4).toInt(), h - 4)
-            }
+        val parameters = when (transformType) {
+            TransformType.ROTATE -> "angdeg = %3.0f".format(angdeg)
+            else -> "sx = %.2f; sy = %.2f".format(sx, sy)
         }
+        g2.drawString(parameters, 2, (h - 4))
 
         when (transformType) {
             TransformType.SCALE -> {
