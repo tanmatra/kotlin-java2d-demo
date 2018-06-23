@@ -33,7 +33,10 @@
 package java2d.demos.Transforms
 
 import java2d.AnimatingControlsSurface
+import java2d.CControl
 import java2d.CustomControls
+import java2d.antialiasing
+import java2d.use
 import java.awt.BasicStroke
 import java.awt.BorderLayout
 import java.awt.Color
@@ -57,7 +60,6 @@ import java.awt.Graphics2D
 import java.awt.Image
 import java.awt.Paint
 import java.awt.Rectangle
-import java.awt.RenderingHints
 import java.awt.Shape
 import java.awt.TexturePaint
 import java.awt.event.ActionEvent
@@ -95,25 +97,25 @@ class TransformAnim : AnimatingControlsSurface()
     private var numShapes: Int = 0
     private var numStrings: Int = 0
     private var numImages: Int = 0
-    protected var doRotate = true
-    protected var doTranslate = true
-    protected var doScale = true
-    protected var doShear: Boolean = false
+    private var doRotate = true
+    private var doTranslate = true
+    private var doScale = true
+    private var doShear: Boolean = false
 
     init {
         background = BLACK
         setStrings(1)
         setImages(2)
         setShapes(10)
-        controls = arrayOf(DemoControls(this))
-        constraints = arrayOf(BorderLayout.EAST)
     }
+
+    override val customControls = listOf<CControl>(DemoControls(this) to BorderLayout.EAST)
 
     fun setImages(num: Int) {
         if (num < numImages) {
             val v = ArrayList<ObjData>(objDatas.size)
             for (objData in objDatas) {
-                if (objData.`object` is Image) {
+                if (objData.shape is Image) {
                     v.add(objData)
                 }
             }
@@ -134,7 +136,7 @@ class TransformAnim : AnimatingControlsSurface()
         if (num < numStrings) {
             val v = ArrayList<ObjData>(objDatas.size)
             for (objData in objDatas) {
-                if (objData.`object` is TextData) {
+                if (objData.shape is TextData) {
                     v.add(objData)
                 }
             }
@@ -157,7 +159,7 @@ class TransformAnim : AnimatingControlsSurface()
         if (num < numShapes) {
             val v = ArrayList<ObjData>(objDatas.size)
             for (objData in objDatas) {
-                if (objData.`object` is Shape) {
+                if (objData.shape is Shape) {
                     v.add(objData)
                 }
             }
@@ -165,15 +167,14 @@ class TransformAnim : AnimatingControlsSurface()
         } else {
             val d = size
             for (i in numShapes until num) {
-                var obj: Any
-                when (i % 7) {
-                    0 -> obj = GeneralPath()
-                    1 -> obj = Rectangle2D.Double()
-                    2 -> obj = Ellipse2D.Double()
-                    3 -> obj = Arc2D.Double()
-                    4 -> obj = RoundRectangle2D.Double()
-                    5 -> obj = CubicCurve2D.Double()
-                    6 -> obj = QuadCurve2D.Double()
+                val obj: Shape = when (i % 7) {
+                    0 -> GeneralPath()
+                    1 -> Rectangle2D.Double()
+                    2 -> Ellipse2D.Double()
+                    3 -> Arc2D.Double()
+                    4 -> RoundRectangle2D.Double()
+                    5 -> CubicCurve2D.Double()
+                    6 -> QuadCurve2D.Double()
                     else -> error(7)
                 }
                 val objData = ObjData(obj, paints[i % paints.size])
@@ -184,15 +185,15 @@ class TransformAnim : AnimatingControlsSurface()
         numShapes = num
     }
 
-    override fun reset(w: Int, h: Int) {
+    override fun reset(newWidth: Int, newHeight: Int) {
         for (objData in objDatas) {
-            objData.reset(w, h)
+            objData.reset(newWidth, newHeight)
         }
     }
 
-    override fun step(w: Int, h: Int) {
+    override fun step(width: Int, height: Int) {
         for (objData in objDatas) {
-            objData.step(w, h, this)
+            objData.step(width, height, this)
         }
     }
 
@@ -200,33 +201,35 @@ class TransformAnim : AnimatingControlsSurface()
         for (objData in objDatas) {
             g2.transform = objData.at
             g2.paint = objData.paint
-            if (objData.`object` is Image) {
-                g2.drawImage(objData.`object` as Image, 0, 0, this)
-            } else if (objData.`object` is TextData) {
-                g2.font = (objData.`object` as TextData).font
-                g2.drawString((objData.`object` as TextData).string, 0, 0)
-            } else if (objData.`object` is QuadCurve2D || objData.`object` is CubicCurve2D) {
-                g2.stroke = bs
-                g2.draw(objData.`object` as Shape)
-            } else if (objData.`object` is Shape) {
-                g2.fill(objData.`object` as Shape)
+            val obj = objData.shape
+            when (obj) {
+                is Image -> g2.drawImage(obj, 0, 0, this)
+                is TextData -> {
+                    g2.font = obj.font
+                    g2.drawString(obj.string, 0, 0)
+                }
+                is QuadCurve2D, is CubicCurve2D -> {
+                    g2.stroke = BASIC_STROKE
+                    g2.draw(obj as Shape)
+                }
+                is Shape -> g2.fill(obj)
             }
         }
     }
 
     internal class TextData(var string: String, var font: Font)
 
-    internal class ObjData(var `object`: Any, var paint: Paint)
+    internal class ObjData(var shape: Any, var paint: Paint)
     {
-        var x: Double = 0.toDouble()
-        var y: Double = 0.toDouble()
-        var ix = 5.0
-        var iy = 3.0
+        var x: Double = 0.0
+        var y: Double = 0.0
+        private var ix = 5.0
+        private var iy = 3.0
         var rotate: Int = 0
-        var scale: Double = 0.toDouble()
-        var shear: Double = 0.toDouble()
-        var scaleDirection: Int = 0
-        var shearDirection: Int = 0
+        private var scale: Double = 0.0
+        private var shear: Double = 0.0
+        private var scaleDirection: Int = 0
+        private var shearDirection: Int = 0
         var at = AffineTransform()
 
         init {
@@ -242,28 +245,25 @@ class TransformAnim : AnimatingControlsSurface()
             y = Math.random() * h
             val ww = 20 + Math.random() * ((if (w == 0) 400 else w) / 4)
             val hh = 20 + Math.random() * ((if (h == 0) 300 else h) / 4)
-            if (`object` is Ellipse2D) {
-                (`object` as Ellipse2D).setFrame(0.0, 0.0, ww, hh)
-            } else if (`object` is Rectangle2D) {
-                (`object` as Rectangle2D).setRect(0.0, 0.0, ww, ww)
-            } else if (`object` is RoundRectangle2D) {
-                (`object` as RoundRectangle2D).setRoundRect(0.0, 0.0, hh, hh, 20.0, 20.0)
-            } else if (`object` is Arc2D) {
-                (`object` as Arc2D).setArc(0.0, 0.0, hh, hh, 45.0, 270.0, Arc2D.PIE)
-            } else if (`object` is QuadCurve2D) {
-                (`object` as QuadCurve2D).setCurve(0.0, 0.0, w * .2, h * .4, w * .4, 0.0)
-            } else if (`object` is CubicCurve2D) {
-                (`object` as CubicCurve2D).setCurve(0.0, 0.0, 30.0, -60.0, 60.0, 60.0, 90.0, 0.0)
-            } else if (`object` is GeneralPath) {
-                val p = GeneralPath()
-                val size = ww.toFloat()
-                p.moveTo(-size / 2.0f, -size / 8.0f)
-                p.lineTo(+size / 2.0f, -size / 8.0f)
-                p.lineTo(-size / 4.0f, +size / 2.0f)
-                p.lineTo(+0.0f, -size / 2.0f)
-                p.lineTo(+size / 4.0f, +size / 2.0f)
-                p.closePath()
-                `object` = p
+            val shape = shape
+            when (shape) {
+                is Ellipse2D -> shape.setFrame(0.0, 0.0, ww, hh)
+                is Rectangle2D -> shape.setRect(0.0, 0.0, ww, ww)
+                is RoundRectangle2D -> shape.setRoundRect(0.0, 0.0, hh, hh, 20.0, 20.0)
+                is Arc2D -> shape.setArc(0.0, 0.0, hh, hh, 45.0, 270.0, Arc2D.PIE)
+                is QuadCurve2D -> shape.setCurve(0.0, 0.0, w * 0.2, h * 0.4, w * 0.4, 0.0)
+                is CubicCurve2D -> shape.setCurve(0.0, 0.0, 30.0, -60.0, 60.0, 60.0, 90.0, 0.0)
+                is GeneralPath -> {
+                    this.shape = GeneralPath().apply {
+                        val size = ww.toFloat()
+                        moveTo(-size / 2.0f, -size / 8.0f)
+                        lineTo(+size / 2.0f, -size / 8.0f)
+                        lineTo(-size / 4.0f, +size / 2.0f)
+                        lineTo(+0.0f, -size / 2.0f)
+                        lineTo(+size / 4.0f, +size / 2.0f)
+                        closePath()
+                    }
+                }
             }
         }
 
@@ -327,19 +327,20 @@ class TransformAnim : AnimatingControlsSurface()
             }
         }
 
-        companion object {
-            val UP = 0
-            val DOWN = 1
+        companion object
+        {
+            const val UP = 0
+            const val DOWN = 1
         }
-    } // End ObjData class
+    }
 
-    internal class DemoControls(var demo: TransformAnim) : CustomControls(demo.name), ActionListener, ChangeListener {
-        var shapeSlider: JSlider
-        var stringSlider: JSlider
-        var imageSlider: JSlider
-        var FONT = Font("serif", Font.BOLD, 10)
+    internal class DemoControls(var demo: TransformAnim) : CustomControls(demo.name), ActionListener, ChangeListener
+    {
+        private var shapeSlider: JSlider
+        private var stringSlider: JSlider
+        private var imageSlider: JSlider
         var toolbar: JToolBar
-        var buttonBorder = ButtonBorder()
+        private var buttonBorder = ButtonBorder()
 
         init {
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
@@ -390,7 +391,7 @@ class TransformAnim : AnimatingControlsSurface()
             add(toolbar)
         }
 
-        fun addButton(s: String, tt: String, state: Boolean) {
+        private fun addButton(s: String, tt: String, state: Boolean) {
             val b = toolbar.add(JToggleButton(s)) as JToggleButton
             b.font = FONT
             b.isSelected = state
@@ -402,38 +403,41 @@ class TransformAnim : AnimatingControlsSurface()
 
         override fun actionPerformed(e: ActionEvent) {
             val b = e.source as JToggleButton
-            if (b.text == "T") {
-                demo.doTranslate = b.isSelected
-            } else if (b.text == "R") {
-                demo.doRotate = b.isSelected
-            } else if (b.text == "SC") {
-                demo.doScale = b.isSelected
-            } else if (b.text == "SH") {
-                demo.doShear = b.isSelected
+            when {
+                b.text == "T" -> demo.doTranslate = b.isSelected
+                b.text == "R" -> demo.doRotate = b.isSelected
+                b.text == "SC" -> demo.doScale = b.isSelected
+                b.text == "SH" -> demo.doShear = b.isSelected
             }
-            if (!demo.animating!!.isRunning) {
-                demo.repaint()
-            }
+            checkRepaint()
         }
 
         override fun stateChanged(e: ChangeEvent) {
             val slider = e.source as JSlider
             val value = slider.value
             val tb = slider.border as TitledBorder
-            if (slider == shapeSlider) {
-                tb.title = value.toString() + " Shapes"
-                demo.setShapes(value)
-            } else if (slider == stringSlider) {
-                tb.title = value.toString() + " Strings"
-                demo.setStrings(value)
-            } else if (slider == imageSlider) {
-                tb.title = value.toString() + " Images"
-                demo.setImages(value)
+            when (slider) {
+                shapeSlider -> {
+                    tb.title = value.toString() + " Shapes"
+                    demo.setShapes(value)
+                }
+                stringSlider -> {
+                    tb.title = value.toString() + " Strings"
+                    demo.setStrings(value)
+                }
+                imageSlider -> {
+                    tb.title = value.toString() + " Images"
+                    demo.setImages(value)
+                }
             }
-            if (!demo.animating!!.isRunning) {
+            checkRepaint()
+            slider.repaint()
+        }
+
+        private fun checkRepaint() {
+            if (!demo.isRunning) {
                 demo.repaint()
             }
-            slider.repaint()
         }
 
         override fun getPreferredSize(): Dimension {
@@ -454,22 +458,25 @@ class TransformAnim : AnimatingControlsSurface()
             }
             thread = null
         }
+
+        companion object {
+            private var FONT = Font("serif", Font.BOLD, 10)
+        }
     }
 
     companion object
     {
-        private val texturePaint: TexturePaint
-
-        init {
-            val bi = BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB)
-            val gi = bi.createGraphics()
-            gi.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-            gi.color = RED
-            gi.fillOval(0, 0, 9, 9)
-            texturePaint = TexturePaint(bi, Rectangle(0, 0, 10, 10))
+        private val texturePaint: TexturePaint = run {
+            val bufferedImage = BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB)
+            bufferedImage.createGraphics().use { gfx ->
+                gfx.antialiasing = true
+                gfx.color = Color.RED
+                gfx.fillOval(0, 0, 9, 9)
+            }
+            TexturePaint(bufferedImage, Rectangle(0, 0, 10, 10))
         }
 
-        private val bs = BasicStroke(6f)
+        private val BASIC_STROKE = BasicStroke(6f)
 
         private val fonts = arrayOf(
             Font("Times New Roman", PLAIN, 48),
