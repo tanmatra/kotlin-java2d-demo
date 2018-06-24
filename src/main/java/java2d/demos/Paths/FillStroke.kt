@@ -29,47 +29,43 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package java2d.demos.Paths;
+package java2d.demos.Paths
 
-
-import static java.awt.Color.BLACK;
-import static java.awt.Color.LIGHT_GRAY;
-import static java.awt.Color.WHITE;
-import java.awt.BasicStroke;
-import java.awt.Graphics2D;
-import java.awt.font.TextLayout;
-import java.awt.geom.GeneralPath;
-import java.awt.geom.Path2D;
-import java2d.Surface;
-
+import java2d.Surface
+import java.awt.BasicStroke
+import java.awt.Color
+import java.awt.Graphics2D
+import java.awt.font.TextLayout
+import java.awt.geom.GeneralPath
+import java.awt.geom.Path2D
 
 /**
  * Basic implementation of GeneralPath, filling & drawing a path w/o closing it.
  */
-@SuppressWarnings("serial")
-public class FillStroke extends Surface {
-
-    public FillStroke() {
-        setBackground(WHITE);
+class FillStroke : Surface()
+{
+    init {
+        background = Color.WHITE
     }
 
-    @Override
-    public void render(int w, int h, Graphics2D g2) {
-        GeneralPath p = new GeneralPath(Path2D.WIND_EVEN_ODD);
-        p.moveTo(w * .5f, h * .15f);
-        p.lineTo(w * .8f, h * .75f);
-        p.lineTo(w * .2f, h * .75f);
-        g2.setColor(LIGHT_GRAY);
-        g2.fill(p);
-        g2.setColor(BLACK);
-        g2.setStroke(new BasicStroke(10));
-        g2.draw(p);
-        TextLayout tl = new TextLayout("Fill, Stroke w/o closePath",
-                g2.getFont(), g2.getFontRenderContext());
-        tl.draw(g2, (float) (w / 2 - tl.getBounds().getWidth() / 2), h * .85f);
+    override fun render(w: Int, h: Int, g2: Graphics2D) {
+        val p = GeneralPath(Path2D.WIND_EVEN_ODD)
+        p.moveTo(w * 0.5f, h * 0.15f)
+        p.lineTo(w * 0.8f, h * 0.75f)
+        p.lineTo(w * 0.2f, h * 0.75f)
+        g2.color = Color.LIGHT_GRAY
+        g2.fill(p)
+        g2.color = Color.BLACK
+        g2.stroke = BasicStroke(10f)
+        g2.draw(p)
+        val tl = TextLayout("Fill, Stroke w/o closePath", g2.font, g2.fontRenderContext)
+        tl.draw(g2, (w / 2 - tl.bounds.width / 2).toFloat(), h * 0.85f)
     }
 
-    public static void main(String s[]) {
-        createDemoFrame(new FillStroke());
+    companion object {
+        @JvmStatic
+        fun main(s: Array<String>) {
+            Surface.createDemoFrame(FillStroke())
+        }
     }
 }
