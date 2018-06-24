@@ -36,6 +36,7 @@ import java2d.AnimatingControlsSurface
 import java2d.CControl
 import java2d.CustomControls
 import java2d.antialiasing
+import java2d.createToolButton
 import java2d.use
 import java.awt.BasicStroke
 import java.awt.BorderLayout
@@ -62,8 +63,6 @@ import java.awt.Paint
 import java.awt.Rectangle
 import java.awt.Shape
 import java.awt.TexturePaint
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
 import java.awt.geom.AffineTransform
 import java.awt.geom.Arc2D
 import java.awt.geom.CubicCurve2D
@@ -78,14 +77,11 @@ import javax.swing.AbstractButton
 import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.JSlider
-import javax.swing.JToggleButton
 import javax.swing.JToolBar
 import javax.swing.SwingConstants
 import javax.swing.border.EtchedBorder
 import javax.swing.border.TitledBorder
-import javax.swing.event.ChangeEvent
-import javax.swing.event.ChangeListener
-import javax.swing.plaf.metal.MetalBorders.ButtonBorder
+import kotlin.reflect.KMutableProperty0
 
 /**
  * Animation of shapes, text and images rotating, scaling and translating
@@ -94,96 +90,96 @@ import javax.swing.plaf.metal.MetalBorders.ButtonBorder
 class TransformAnim : AnimatingControlsSurface()
 {
     private val objDatas = ArrayList<ObjData>(13)
-    private var numShapes: Int = 0
-    private var numStrings: Int = 0
-    private var numImages: Int = 0
     private var doRotate = true
     private var doTranslate = true
     private var doScale = true
     private var doShear: Boolean = false
 
+    private var shapes: Int = 0
+        set(num) {
+            if (num < field) {
+                val v = ArrayList<ObjData>(objDatas.size)
+                for (objData in objDatas) {
+                    if (objData.shape is Shape) {
+                        v.add(objData)
+                    }
+                }
+                objDatas.removeAll(v.subList(num, v.size))
+            } else {
+                val d = size
+                for (i in field until num) {
+                    val obj: Shape = when (i % 7) {
+                        0 -> GeneralPath()
+                        1 -> Rectangle2D.Double()
+                        2 -> Ellipse2D.Double()
+                        3 -> Arc2D.Double()
+                        4 -> RoundRectangle2D.Double()
+                        5 -> CubicCurve2D.Double()
+                        6 -> QuadCurve2D.Double()
+                        else -> error(7)
+                    }
+                    val objData = ObjData(obj, paints[i % paints.size])
+                    objData.reset(d.width, d.height)
+                    objDatas.add(objData)
+                }
+            }
+            field = num
+        }
+
+    private var images: Int = 0
+        set(num) {
+            if (num < field) {
+                val v = ArrayList<ObjData>(objDatas.size)
+                for (objData in objDatas) {
+                    if (objData.shape is Image) {
+                        v.add(objData)
+                    }
+                }
+                objDatas.removeAll(v.subList(num, v.size))
+            } else {
+                val d = size
+                for (i in field until num) {
+                    val obj = getImage(imgs[i % imgs.size])
+                    val objData = ObjData(obj, BLACK)
+                    objData.reset(d.width, d.height)
+                    objDatas.add(objData)
+                }
+            }
+            field = num
+        }
+
+    private var strings: Int = 0
+        set(num) {
+            if (num < field) {
+                val v = ArrayList<ObjData>(objDatas.size)
+                for (objData in objDatas) {
+                    if (objData.shape is TextData) {
+                        v.add(objData)
+                    }
+                }
+                objDatas.removeAll(v.subList(num, v.size))
+            } else {
+                val d = size
+                for (i in field until num) {
+                    val j = i % fonts.size
+                    val k = i % STRINGS.size
+                    val obj = TextData(STRINGS[k], fonts[j])
+                    val objData = ObjData(obj, paints[i % paints.size])
+                    objData.reset(d.width, d.height)
+                    objDatas.add(objData)
+                }
+            }
+            field = num
+        }
+
     init {
         background = BLACK
-        setStrings(1)
-        setImages(2)
-        setShapes(10)
+        strings = 1
+        images = 2
+        shapes = 10
     }
 
     override val customControls = listOf<CControl>(DemoControls(this) to BorderLayout.EAST)
-
-    fun setImages(num: Int) {
-        if (num < numImages) {
-            val v = ArrayList<ObjData>(objDatas.size)
-            for (objData in objDatas) {
-                if (objData.shape is Image) {
-                    v.add(objData)
-                }
-            }
-            objDatas.removeAll(v.subList(num, v.size))
-        } else {
-            val d = size
-            for (i in numImages until num) {
-                val obj = getImage(imgs[i % imgs.size])
-                val objData = ObjData(obj, BLACK)
-                objData.reset(d.width, d.height)
-                objDatas.add(objData)
-            }
-        }
-        numImages = num
-    }
-
-    fun setStrings(num: Int) {
-        if (num < numStrings) {
-            val v = ArrayList<ObjData>(objDatas.size)
-            for (objData in objDatas) {
-                if (objData.shape is TextData) {
-                    v.add(objData)
-                }
-            }
-            objDatas.removeAll(v.subList(num, v.size))
-        } else {
-            val d = size
-            for (i in numStrings until num) {
-                val j = i % fonts.size
-                val k = i % strings.size
-                val obj = TextData(strings[k], fonts[j])
-                val objData = ObjData(obj, paints[i % paints.size])
-                objData.reset(d.width, d.height)
-                objDatas.add(objData)
-            }
-        }
-        numStrings = num
-    }
-
-    fun setShapes(num: Int) {
-        if (num < numShapes) {
-            val v = ArrayList<ObjData>(objDatas.size)
-            for (objData in objDatas) {
-                if (objData.shape is Shape) {
-                    v.add(objData)
-                }
-            }
-            objDatas.removeAll(v.subList(num, v.size))
-        } else {
-            val d = size
-            for (i in numShapes until num) {
-                val obj: Shape = when (i % 7) {
-                    0 -> GeneralPath()
-                    1 -> Rectangle2D.Double()
-                    2 -> Ellipse2D.Double()
-                    3 -> Arc2D.Double()
-                    4 -> RoundRectangle2D.Double()
-                    5 -> CubicCurve2D.Double()
-                    6 -> QuadCurve2D.Double()
-                    else -> error(7)
-                }
-                val objData = ObjData(obj, paints[i % paints.size])
-                objData.reset(d.width, d.height)
-                objDatas.add(objData)
-            }
-        }
-        numShapes = num
-    }
 
     override fun reset(newWidth: Int, newHeight: Int) {
         for (objData in objDatas) {
@@ -334,104 +330,51 @@ class TransformAnim : AnimatingControlsSurface()
         }
     }
 
-    internal class DemoControls(var demo: TransformAnim) : CustomControls(demo.name), ActionListener, ChangeListener
+    internal class DemoControls(private val demo: TransformAnim) : CustomControls(demo.name)
     {
-        private var shapeSlider: JSlider
-        private var stringSlider: JSlider
-        private var imageSlider: JSlider
-        var toolbar: JToolBar
-        private var buttonBorder = ButtonBorder()
+        private val toolbar = JToolBar().apply { isFloatable = false }
 
         init {
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
             add(Box.createVerticalStrut(5))
 
-            val bar = JToolBar(SwingConstants.VERTICAL)
-            bar.isFloatable = false
-            shapeSlider = JSlider(SwingConstants.HORIZONTAL, 0, 20, demo.numShapes)
-            shapeSlider.addChangeListener(this)
-            var tb = TitledBorder(EtchedBorder())
-            tb.titleFont = FONT
-            tb.title = demo.numShapes.toString() + " Shapes"
-            shapeSlider.border = tb
-            shapeSlider.isOpaque = true
-            shapeSlider.preferredSize = Dimension(80, 44)
-            bar.add(shapeSlider)
-            bar.addSeparator()
+            add(JToolBar(SwingConstants.VERTICAL).apply {
+                isFloatable = false
+                add(createSlider("Shapes", 20, demo::shapes))
+                add(createSlider("Strings", 10, demo::strings))
+                add(createSlider("Images", 10, demo::images))
+            })
 
-            stringSlider = JSlider(SwingConstants.HORIZONTAL, 0, 10, demo.numStrings)
-            stringSlider.addChangeListener(this)
-            tb = TitledBorder(EtchedBorder())
-            tb.titleFont = FONT
-            tb.title = demo.numStrings.toString() + " Strings"
-            stringSlider.border = tb
-            stringSlider.isOpaque = true
-            stringSlider.preferredSize = Dimension(80, 44)
-            bar.add(stringSlider)
-            bar.addSeparator()
-
-            imageSlider = JSlider(SwingConstants.HORIZONTAL, 0, 10, demo.numImages)
-            imageSlider.addChangeListener(this)
-            tb = TitledBorder(EtchedBorder())
-            tb.titleFont = FONT
-            tb.title = demo.numImages.toString() + " Images"
-            imageSlider.border = tb
-            imageSlider.isOpaque = true
-            imageSlider.preferredSize = Dimension(80, 44)
-            bar.add(imageSlider)
-            bar.addSeparator()
-            add(bar)
-
-            toolbar = JToolBar()
-            toolbar.isFloatable = false
-            addButton("T", "translate", demo.doTranslate)
-            addButton("R", "rotate", demo.doRotate)
-            addButton("SC", "scale", demo.doScale)
-            addButton("SH", "shear", demo.doShear)
+            toolbar.add(createButton("T", "Translate", demo::doTranslate))
+            toolbar.add(createButton("R", "Rotate", demo::doRotate))
+            toolbar.add(createButton("SC", "Scale", demo::doScale))
+            toolbar.add(createButton("SH", "Shear", demo::doShear))
             add(toolbar)
         }
 
-        private fun addButton(s: String, tt: String, state: Boolean) {
-            val b = toolbar.add(JToggleButton(s)) as JToggleButton
-            b.font = FONT
-            b.isSelected = state
-            b.toolTipText = tt
-            b.isFocusPainted = false
-            b.border = buttonBorder
-            b.addActionListener(this)
-        }
-
-        override fun actionPerformed(e: ActionEvent) {
-            val b = e.source as JToggleButton
-            when {
-                b.text == "T" -> demo.doTranslate = b.isSelected
-                b.text == "R" -> demo.doRotate = b.isSelected
-                b.text == "SC" -> demo.doScale = b.isSelected
-                b.text == "SH" -> demo.doShear = b.isSelected
+        private fun createSlider(suffix: String, max: Int, property: KMutableProperty0<Int>): JSlider {
+            fun formatTitle(value: Int) = "$value $suffix"
+            val titledBorder = TitledBorder(EtchedBorder()).apply {
+                title = formatTitle(property.get())
             }
-            checkRepaint()
-        }
-
-        override fun stateChanged(e: ChangeEvent) {
-            val slider = e.source as JSlider
-            val value = slider.value
-            val tb = slider.border as TitledBorder
-            when (slider) {
-                shapeSlider -> {
-                    tb.title = value.toString() + " Shapes"
-                    demo.setShapes(value)
-                }
-                stringSlider -> {
-                    tb.title = value.toString() + " Strings"
-                    demo.setStrings(value)
-                }
-                imageSlider -> {
-                    tb.title = value.toString() + " Images"
-                    demo.setImages(value)
+            return JSlider(SwingConstants.HORIZONTAL, 0, max, property.get()).apply {
+                border = titledBorder
+                isOpaque = true
+                preferredSize = Dimension(150, 44) // (80, 44)
+                addChangeListener {
+                    titledBorder.title = formatTitle(value)
+                    property.set(value)
+                    repaint()
+                    checkRepaint()
                 }
             }
-            checkRepaint()
-            slider.repaint()
+        }
+
+        private fun createButton(text: String, toolTip: String, property: KMutableProperty0<Boolean>): AbstractButton {
+            return createToolButton(text, property.get(), toolTip) { selected ->
+                property.set(selected)
+                checkRepaint()
+            }
         }
 
         private fun checkRepaint() {
@@ -440,9 +383,7 @@ class TransformAnim : AnimatingControlsSurface()
             }
         }
 
-        override fun getPreferredSize(): Dimension {
-            return Dimension(80, 38)
-        }
+        override fun getPreferredSize() = Dimension(150, 38) // (80, 38)
 
         override fun run() {
             val me = Thread.currentThread()
@@ -457,10 +398,6 @@ class TransformAnim : AnimatingControlsSurface()
                 }
             }
             thread = null
-        }
-
-        companion object {
-            private var FONT = Font("serif", Font.BOLD, 10)
         }
     }
 
@@ -485,7 +422,7 @@ class TransformAnim : AnimatingControlsSurface()
             Font("Arial", BOLD or ITALIC, 64),
             Font("Helvetica", PLAIN, 52))
 
-        private val strings = arrayOf("Transformation", "Rotate", "Translate", "Shear", "Scale")
+        private val STRINGS = arrayOf("Transformation", "Rotate", "Translate", "Shear", "Scale")
 
         private val imgs = arrayOf("duke.gif")
 
