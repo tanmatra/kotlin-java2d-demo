@@ -54,9 +54,6 @@ import java.awt.Color.WHITE
 import java.awt.Color.YELLOW
 import java.awt.Dimension
 import java.awt.Font
-import java.awt.Font.BOLD
-import java.awt.Font.ITALIC
-import java.awt.Font.PLAIN
 import java.awt.Graphics2D
 import java.awt.Image
 import java.awt.Paint
@@ -98,15 +95,9 @@ class TransformAnim : AnimatingControlsSurface()
     private var shapes: Int = 0
         set(num) {
             if (num < field) {
-                val v = ArrayList<ObjData>(objDatas.size)
-                for (objData in objDatas) {
-                    if (objData.shape is Shape) {
-                        v.add(objData)
-                    }
-                }
+                val v = objDatas.filter { it.shape is Shape }
                 objDatas.removeAll(v.subList(num, v.size))
             } else {
-                val d = size
                 for (i in field until num) {
                     val obj: Shape = when (i % 7) {
                         0 -> GeneralPath()
@@ -118,8 +109,8 @@ class TransformAnim : AnimatingControlsSurface()
                         6 -> QuadCurve2D.Double()
                         else -> error(7)
                     }
-                    val objData = ObjData(obj, paints[i % paints.size])
-                    objData.reset(d.width, d.height)
+                    val objData = ObjData(obj, PAINTS[i % PAINTS.size])
+                    objData.reset(width, height)
                     objDatas.add(objData)
                 }
             }
@@ -129,19 +120,13 @@ class TransformAnim : AnimatingControlsSurface()
     private var images: Int = 0
         set(num) {
             if (num < field) {
-                val v = ArrayList<ObjData>(objDatas.size)
-                for (objData in objDatas) {
-                    if (objData.shape is Image) {
-                        v.add(objData)
-                    }
-                }
+                val v = objDatas.filter { it.shape is Image }
                 objDatas.removeAll(v.subList(num, v.size))
             } else {
-                val d = size
                 for (i in field until num) {
-                    val obj = getImage(imgs[i % imgs.size])
-                    val objData = ObjData(obj, BLACK)
-                    objData.reset(d.width, d.height)
+                    val obj = getImage(IMAGES[i % IMAGES.size])
+                    val objData = ObjData(obj, Color.BLACK)
+                    objData.reset(width, height)
                     objDatas.add(objData)
                 }
             }
@@ -151,21 +136,13 @@ class TransformAnim : AnimatingControlsSurface()
     private var strings: Int = 0
         set(num) {
             if (num < field) {
-                val v = ArrayList<ObjData>(objDatas.size)
-                for (objData in objDatas) {
-                    if (objData.shape is TextData) {
-                        v.add(objData)
-                    }
-                }
+                val v = objDatas.filter { it.shape is TextData }
                 objDatas.removeAll(v.subList(num, v.size))
             } else {
-                val d = size
                 for (i in field until num) {
-                    val j = i % fonts.size
-                    val k = i % STRINGS.size
-                    val obj = TextData(STRINGS[k], fonts[j])
-                    val objData = ObjData(obj, paints[i % paints.size])
-                    objData.reset(d.width, d.height)
+                    val obj = TextData(STRINGS[i % STRINGS.size], FONTS[i % FONTS.size])
+                    val objData = ObjData(obj, PAINTS[i % PAINTS.size])
+                    objData.reset(width, height)
                     objDatas.add(objData)
                 }
             }
@@ -403,7 +380,7 @@ class TransformAnim : AnimatingControlsSurface()
 
     companion object
     {
-        private val texturePaint: TexturePaint = run {
+        private val TEXTURE_PAINT: TexturePaint = run {
             val bufferedImage = BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB)
             bufferedImage.createGraphics().use { gfx ->
                 gfx.antialiasing = true
@@ -415,21 +392,21 @@ class TransformAnim : AnimatingControlsSurface()
 
         private val BASIC_STROKE = BasicStroke(6f)
 
-        private val fonts = arrayOf(
-            Font("Times New Roman", PLAIN, 48),
-            Font("serif", BOLD or ITALIC, 24),
-            Font("Courier", BOLD, 36),
-            Font("Arial", BOLD or ITALIC, 64),
-            Font("Helvetica", PLAIN, 52))
+        private val FONTS = arrayOf(
+            Font("Times New Roman", Font.PLAIN, 48),
+            Font(Font.SERIF, Font.BOLD or Font.ITALIC, 24),
+            Font("Courier", Font.BOLD, 36),
+            Font("Arial", Font.BOLD or Font.ITALIC, 64),
+            Font("Helvetica", Font.PLAIN, 52))
 
         private val STRINGS = arrayOf("Transformation", "Rotate", "Translate", "Shear", "Scale")
 
-        private val imgs = arrayOf("duke.gif")
+        private val IMAGES = arrayOf("duke.gif")
 
-        private val paints = arrayOf(
+        private val PAINTS = arrayOf(
             RED,
             BLUE,
-            texturePaint,
+            TEXTURE_PAINT,
             GREEN,
             MAGENTA,
             ORANGE,
