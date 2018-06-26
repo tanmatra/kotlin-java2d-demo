@@ -83,16 +83,50 @@ class Gradient : ControlsSurface()
             (h / 2 + textLayout.bounds.height / 2).toInt().toFloat())
     }
 
+    private class ColorItem(val name: String, val color: Color)
+    {
+        val icon = DemoControls.ColoredSquare(color)
+    }
+
     internal class DemoControls(private val demo: Gradient) : CustomControls(demo.name)
     {
-        private val colors = arrayOf(Color.RED, Color.ORANGE, Color.YELLOW, Color.GREEN, Color.BLUE, Color.LIGHT_GRAY,
-                                     Color.CYAN, Color.MAGENTA)
-        private var colorName = arrayOf("Red", "Orange", "Yellow", "Green", "Blue", "Light Gray", "Cyan", "Magenta")
-        private var innerMI = arrayOfNulls<JMenuItem>(colors.size)
-        private var outerMI = arrayOfNulls<JMenuItem>(colors.size)
-        private var squares = arrayOfNulls<ColoredSquare>(colors.size)
-        private var imenu: JMenu
-        private var omenu: JMenu
+        private val colorItems = arrayOf(
+            ColorItem("Red", Color.RED),
+            ColorItem("Orange", Color.ORANGE),
+            ColorItem("Yellow", Color.YELLOW),
+            ColorItem("Green", Color.GREEN),
+            ColorItem("Blue", Color.BLUE),
+            ColorItem("Light Gray", Color.LIGHT_GRAY),
+            ColorItem("Cyan", Color.CYAN),
+            ColorItem("Magenta", Color.MAGENTA))
+
+        private val innerColorMenu = JMenu("Inner Color")
+        private val outerColorMenu = JMenu("Outer Color")
+
+        private var innerColorMenuItems = colorItems.map { colorItem ->
+            JMenuItem(colorItem.name).apply {
+                icon = colorItem.icon
+                addActionListener {
+                    demo.innerColor = colorItem.color
+                    innerColorMenu.icon = colorItem.icon
+                    demo.repaint()
+                }
+                innerColorMenu.add(this)
+            }
+        }
+
+        @Suppress("unused")
+        private var outerColorMenuItems = colorItems.map { colorItem ->
+            JMenuItem(colorItem.name).apply {
+                icon = colorItem.icon
+                addActionListener {
+                    demo.outerColor = colorItem.color
+                    outerColorMenu.icon = colorItem.icon
+                    demo.repaint()
+                }
+                outerColorMenu.add(this)
+            }
+        }
 
         init {
             val inMenuBar = JMenuBar()
@@ -100,31 +134,10 @@ class Gradient : ControlsSurface()
             val outMenuBar = JMenuBar()
             add(outMenuBar)
 
-            imenu = inMenuBar.add(JMenu("Inner Color"))
-            imenu.icon = ColoredSquare(demo.innerColor)
-            omenu = outMenuBar.add(JMenu("Outer Color"))
-            omenu.icon = ColoredSquare(demo.outerColor)
-            for (i in colors.indices) {
-                squares[i] = ColoredSquare(colors[i])
-                val innerMenuItem = JMenuItem(colorName[i]).apply {
-                    icon = squares[i]
-                    addActionListener {
-                        demo.innerColor = colors[i]
-                        imenu.icon = squares[i]
-                        demo.repaint()
-                    }
-                }
-                innerMI[i] = imenu.add(innerMenuItem)
-                val outerMenuItem = JMenuItem(colorName[i]).apply {
-                    icon = squares[i]
-                    addActionListener {
-                        demo.outerColor = colors[i]
-                        omenu.icon = squares[i]
-                        demo.repaint()
-                    }
-                }
-                outerMI[i] = omenu.add(outerMenuItem)
-            }
+            inMenuBar.add(innerColorMenu)
+            innerColorMenu.icon = ColoredSquare(demo.innerColor)
+            outMenuBar.add(outerColorMenu)
+            outerColorMenu.icon = ColoredSquare(demo.outerColor)
         }
 
         override fun getPreferredSize() = Dimension(200, 37)
@@ -136,21 +149,21 @@ class Gradient : ControlsSurface()
             }
             val me = Thread.currentThread()
             while (thread === me) {
-                for (i in innerMI.indices) {
+                for (i in innerColorMenuItems.indices) {
                     if (i != 4) {
                         try {
                             Thread.sleep(4444)
                         } catch (e: InterruptedException) {
                             return
                         }
-                        innerMI[i]!!.doClick()
+                        innerColorMenuItems[i].doClick()
                     }
                 }
             }
             thread = null
         }
 
-        internal inner class ColoredSquare(var color: Color) : Icon
+        internal class ColoredSquare(private val color: Color) : Icon
         {
             override fun paintIcon(c: Component, g: Graphics, x: Int, y: Int) {
                 val oldColor = g.color
