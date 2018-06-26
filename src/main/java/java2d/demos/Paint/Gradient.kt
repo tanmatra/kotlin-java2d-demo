@@ -49,13 +49,11 @@ import javax.swing.JMenuItem
 
 class Gradient : ControlsSurface()
 {
-    private var innerColor: Color
-    private var outerColor: Color
+    private var innerColor: Color = Color.GREEN
+    private var outerColor: Color = Color.BLUE
 
     init {
         background = Color.WHITE
-        innerColor = Color.GREEN
-        outerColor = Color.BLUE
     }
 
     override val customControls = listOf<CControl>(DemoControls(this) to BorderLayout.NORTH)
@@ -111,6 +109,7 @@ class Gradient : ControlsSurface()
                     innerColorMenu.icon = colorItem.icon
                     demo.repaint()
                 }
+                putClientProperty(COLOR_ITEM_PROPERTY, colorItem)
                 innerColorMenu.add(this)
             }
         }
@@ -124,6 +123,7 @@ class Gradient : ControlsSurface()
                     outerColorMenu.icon = colorItem.icon
                     demo.repaint()
                 }
+                putClientProperty(COLOR_ITEM_PROPERTY, colorItem)
                 outerColorMenu.add(this)
             }
         }
@@ -149,14 +149,15 @@ class Gradient : ControlsSurface()
             }
             val me = Thread.currentThread()
             while (thread === me) {
-                for (i in innerColorMenuItems.indices) {
-                    if (i != 4) {
+                for (menuItem in innerColorMenuItems) {
+                    val colorItem = menuItem.getClientProperty(COLOR_ITEM_PROPERTY) as ColorItem
+                    if (colorItem.color != demo.outerColor) {
                         try {
                             Thread.sleep(4444)
                         } catch (e: InterruptedException) {
                             return
                         }
-                        innerColorMenuItems[i].doClick()
+                        menuItem.doClick()
                     }
                 }
             }
@@ -175,6 +176,10 @@ class Gradient : ControlsSurface()
             override fun getIconWidth(): Int = 12
 
             override fun getIconHeight(): Int = 12
+        }
+
+        companion object {
+            private const val COLOR_ITEM_PROPERTY = "colorItem"
         }
     }
 
