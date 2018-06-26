@@ -31,27 +31,16 @@
  */
 package java2d.demos.Paint
 
+import java2d.CControl
 import java2d.ControlsSurface
 import java2d.CustomControls
+import java.awt.BorderLayout
 import java.awt.Color
-import java.awt.Color.black
-import java.awt.Color.blue
-import java.awt.Color.cyan
-import java.awt.Color.green
-import java.awt.Color.lightGray
-import java.awt.Color.magenta
-import java.awt.Color.orange
-import java.awt.Color.red
-import java.awt.Color.white
-import java.awt.Color.yellow
 import java.awt.Component
 import java.awt.Dimension
-import java.awt.Font
 import java.awt.GradientPaint
 import java.awt.Graphics
 import java.awt.Graphics2D
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
 import java.awt.font.TextLayout
 import javax.swing.Icon
 import javax.swing.JMenu
@@ -60,88 +49,82 @@ import javax.swing.JMenuItem
 
 class Gradient : ControlsSurface()
 {
-    protected var innerC: Color
-    protected var outerC: Color
+    private var innerColor: Color
+    private var outerColor: Color
 
     init {
-        background = white
-        innerC = green
-        outerC = blue
-        controls = arrayOf(DemoControls(this))
+        background = Color.WHITE
+        innerColor = Color.GREEN
+        outerColor = Color.BLUE
     }
+
+    override val customControls = listOf<CControl>(DemoControls(this) to BorderLayout.NORTH)
 
     override fun render(w: Int, h: Int, g2: Graphics2D) {
         val w2 = w / 2
         val h2 = h / 2
-        g2.paint = GradientPaint(0f, 0f, outerC, w * .35f, h * .35f, innerC)
+
+        g2.paint = GradientPaint(0f, 0f, outerColor, w * 0.35f, h * 0.35f, innerColor)
         g2.fillRect(0, 0, w2, h2)
-        g2.paint = GradientPaint(w.toFloat(), 0f, outerC, w * .65f, h * .35f, innerC)
+
+        g2.paint = GradientPaint(w.toFloat(), 0f, outerColor, w * 0.65f, h * 0.35f, innerColor)
         g2.fillRect(w2, 0, w2, h2)
-        g2.paint = GradientPaint(0f, h.toFloat(), outerC, w * .35f, h * .65f, innerC)
+
+        g2.paint = GradientPaint(0f, h.toFloat(), outerColor, w * 0.35f, h * 0.65f, innerColor)
         g2.fillRect(0, h2, w2, h2)
-        g2.paint = GradientPaint(w.toFloat(), h.toFloat(), outerC, w * .65f, h * .65f, innerC)
+
+        g2.paint = GradientPaint(w.toFloat(), h.toFloat(), outerColor, w * 0.65f, h * 0.65f, innerColor)
         g2.fillRect(w2, h2, w2, h2)
 
-        g2.color = black
-        val tl = TextLayout("GradientPaint", g2.font, g2.fontRenderContext)
-        tl.draw(g2,
-                (w / 2 - tl.bounds.width / 2).toInt().toFloat(),
-                (h / 2 + tl.bounds.height / 2).toInt().toFloat())
+        g2.color = Color.BLACK
+        val textLayout = TextLayout("GradientPaint", g2.font, g2.fontRenderContext)
+        textLayout.draw(g2,
+            (w / 2 - textLayout.bounds.width / 2).toInt().toFloat(),
+            (h / 2 + textLayout.bounds.height / 2).toInt().toFloat())
     }
 
-    internal class DemoControls(var demo: Gradient) : CustomControls(demo.name), ActionListener
+    internal class DemoControls(private val demo: Gradient) : CustomControls(demo.name)
     {
-        var colors = arrayOf(red, orange, yellow, green, blue, lightGray, cyan, magenta)
-        var colorName = arrayOf("Red", "Orange", "Yellow", "Green", "Blue", "lightGray", "Cyan", "Magenta")
-        var innerMI = arrayOfNulls<JMenuItem>(colors.size)
-        var outerMI = arrayOfNulls<JMenuItem>(colors.size)
-        var squares = arrayOfNulls<ColoredSquare>(colors.size)
-        var imenu: JMenu
-        var omenu: JMenu
+        private val colors = arrayOf(Color.RED, Color.ORANGE, Color.YELLOW, Color.GREEN, Color.BLUE, Color.LIGHT_GRAY,
+                                     Color.CYAN, Color.MAGENTA)
+        private var colorName = arrayOf("Red", "Orange", "Yellow", "Green", "Blue", "Light Gray", "Cyan", "Magenta")
+        private var innerMI = arrayOfNulls<JMenuItem>(colors.size)
+        private var outerMI = arrayOfNulls<JMenuItem>(colors.size)
+        private var squares = arrayOfNulls<ColoredSquare>(colors.size)
+        private var imenu: JMenu
+        private var omenu: JMenu
 
         init {
             val inMenuBar = JMenuBar()
             add(inMenuBar)
             val outMenuBar = JMenuBar()
             add(outMenuBar)
-            val FONT = Font("serif", Font.PLAIN, 10)
 
             imenu = inMenuBar.add(JMenu("Inner Color"))
-            imenu.font = FONT
-            imenu.icon = ColoredSquare(demo.innerC)
+            imenu.icon = ColoredSquare(demo.innerColor)
             omenu = outMenuBar.add(JMenu("Outer Color"))
-            omenu.font = FONT
-            omenu.icon = ColoredSquare(demo.outerC)
+            omenu.icon = ColoredSquare(demo.outerColor)
             for (i in colors.indices) {
                 squares[i] = ColoredSquare(colors[i])
                 val innerMenuItem = JMenuItem(colorName[i]).apply {
-                    font = FONT
                     icon = squares[i]
-                    addActionListener(this@DemoControls)
+                    addActionListener {
+                        demo.innerColor = colors[i]
+                        imenu.icon = squares[i]
+                        demo.repaint()
+                    }
                 }
                 innerMI[i] = imenu.add(innerMenuItem)
                 val outerMenuItem = JMenuItem(colorName[i]).apply {
-                    font = FONT
                     icon = squares[i]
-                    addActionListener(this@DemoControls)
+                    addActionListener {
+                        demo.outerColor = colors[i]
+                        omenu.icon = squares[i]
+                        demo.repaint()
+                    }
                 }
                 outerMI[i] = omenu.add(outerMenuItem)
             }
-        }
-
-        override fun actionPerformed(e: ActionEvent) {
-            for (i in colors.indices) {
-                if (e.source == innerMI[i]) {
-                    demo.innerC = colors[i]
-                    imenu.icon = squares[i]
-                    break
-                } else if (e.source == outerMI[i]) {
-                    demo.outerC = colors[i]
-                    omenu.icon = squares[i]
-                    break
-                }
-            }
-            demo.repaint()
         }
 
         override fun getPreferredSize() = Dimension(200, 37)
@@ -160,7 +143,6 @@ class Gradient : ControlsSurface()
                         } catch (e: InterruptedException) {
                             return
                         }
-
                         innerMI[i]!!.doClick()
                     }
                 }
