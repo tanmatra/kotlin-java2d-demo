@@ -32,6 +32,7 @@
 package java2d.demos.Paint
 
 import java2d.Surface
+import java2d.use
 import java.awt.BasicStroke
 import java.awt.Color.BLACK
 import java.awt.Color.GRAY
@@ -103,63 +104,71 @@ class Texture : Surface()
 
     companion object
     {
-        private var bluedots: TexturePaint? = null
-        private var greendots: TexturePaint? = null
-        private var triangles: TexturePaint? = null
-        private var blacklines: TexturePaint? = null
-        private var gradient: TexturePaint? = null
+        private val bluedots: TexturePaint = run {
+            val image = BufferedImage(2, 2, BufferedImage.TYPE_INT_RGB).apply {
+                setRGB(0, 0, 0xFFFFFFFF.toInt())
+                setRGB(1, 0, 0xFFFFFFFF.toInt())
+                setRGB(0, 1, 0xFFFFFFFF.toInt())
+                setRGB(1, 1, 0xFF0000FF.toInt())
+            }
+            TexturePaint(image, Rectangle(0, 0, 2, 2))
+        }
 
-        init {
-            var bi = BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB)
-            var gi = bi.createGraphics()
-            gi.background = WHITE
-            gi.clearRect(0, 0, 10, 10)
-            val p1 = GeneralPath()
-            p1.moveTo(0f, 0f)
-            p1.lineTo(5f, 10f)
-            p1.lineTo(10f, 0f)
-            p1.closePath()
-            gi.color = LIGHT_GRAY
-            gi.fill(p1)
-            triangles = TexturePaint(bi, Rectangle(0, 0, 10, 10))
+        private val greendots: TexturePaint = run {
+            val image = BufferedImage(2, 2, BufferedImage.TYPE_INT_RGB).apply {
+                setRGB(0, 0, 0xFFFFFFFF.toInt())
+                setRGB(1, 0, 0xFFFFFFFF.toInt())
+                setRGB(0, 1, 0xFFFFFFFF.toInt())
+                setRGB(1, 1, 0xFF00FF00.toInt())
+            }
+            TexturePaint(image, Rectangle(0, 0, 2, 2))
+        }
 
-            bi = BufferedImage(5, 5, BufferedImage.TYPE_INT_RGB)
-            gi = bi.createGraphics()
-            gi.color = BLACK
-            gi.fillRect(0, 0, 5, 5)
-            gi.color = GRAY
-            gi.fillRect(1, 1, 4, 4)
-            blacklines = TexturePaint(bi, Rectangle(0, 0, 5, 5))
+        private val triangles: TexturePaint = run {
+            val image = BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB)
+            image.createGraphics().use { gfx ->
+                gfx.background = WHITE
+                gfx.clearRect(0, 0, 10, 10)
+                val p1 = GeneralPath().apply {
+                    moveTo(0f, 0f)
+                    lineTo(5f, 10f)
+                    lineTo(10f, 0f)
+                    closePath()
+                }
+                gfx.color = LIGHT_GRAY
+                gfx.fill(p1)
+            }
+            TexturePaint(image, Rectangle(0, 0, 10, 10))
+        }
 
+        private val blacklines: TexturePaint = run {
+            val image = BufferedImage(5, 5, BufferedImage.TYPE_INT_RGB)
+            image.createGraphics().use { gfx ->
+                gfx.color = BLACK
+                gfx.fillRect(0, 0, 5, 5)
+                gfx.color = GRAY
+                gfx.fillRect(1, 1, 4, 4)
+            }
+            TexturePaint(image, Rectangle(0, 0, 5, 5))
+        }
+
+        private val gradient: TexturePaint = run {
             val w = 30
             val h = 30
-            bi = BufferedImage(w, h, BufferedImage.TYPE_INT_RGB)
-            gi = bi.createGraphics()
-            val oc = WHITE
-            val ic = LIGHT_GRAY
-            gi.paint = GradientPaint(0f, 0f, oc, w * .35f, h * .35f, ic)
-            gi.fillRect(0, 0, w / 2, h / 2)
-            gi.paint = GradientPaint(w.toFloat(), 0f, oc, w * .65f, h * .35f, ic)
-            gi.fillRect(w / 2, 0, w / 2, h / 2)
-            gi.paint = GradientPaint(0f, h.toFloat(), oc, w * .35f, h * .65f, ic)
-            gi.fillRect(0, h / 2, w / 2, h / 2)
-            gi.paint = GradientPaint(w.toFloat(), h.toFloat(), oc, w * .65f, h * .65f, ic)
-            gi.fillRect(w / 2, h / 2, w / 2, h / 2)
-            gradient = TexturePaint(bi, Rectangle(0, 0, w, h))
-
-            bi = BufferedImage(2, 2, BufferedImage.TYPE_INT_RGB)
-            bi.setRGB(0, 0, -0x1)
-            bi.setRGB(1, 0, -0x1)
-            bi.setRGB(0, 1, -0x1)
-            bi.setRGB(1, 1, -0xffff01)
-            bluedots = TexturePaint(bi, Rectangle(0, 0, 2, 2))
-
-            bi = BufferedImage(2, 2, BufferedImage.TYPE_INT_RGB)
-            bi.setRGB(0, 0, -0x1)
-            bi.setRGB(1, 0, -0x1)
-            bi.setRGB(0, 1, -0x1)
-            bi.setRGB(1, 1, -0xff0100)
-            greendots = TexturePaint(bi, Rectangle(0, 0, 2, 2))
+            val image = BufferedImage(w, h, BufferedImage.TYPE_INT_RGB)
+            image.createGraphics().use { gfx ->
+                val oc = WHITE
+                val ic = LIGHT_GRAY
+                gfx.paint = GradientPaint(0f, 0f, oc, w * 0.35f, h * 0.35f, ic)
+                gfx.fillRect(0, 0, w / 2, h / 2)
+                gfx.paint = GradientPaint(w.toFloat(), 0f, oc, w * 0.65f, h * 0.35f, ic)
+                gfx.fillRect(w / 2, 0, w / 2, h / 2)
+                gfx.paint = GradientPaint(0f, h.toFloat(), oc, w * 0.35f, h * 0.65f, ic)
+                gfx.fillRect(0, h / 2, w / 2, h / 2)
+                gfx.paint = GradientPaint(w.toFloat(), h.toFloat(), oc, w * 0.65f, h * 0.65f, ic)
+                gfx.fillRect(w / 2, h / 2, w / 2, h / 2)
+            }
+            TexturePaint(image, Rectangle(0, 0, w, h))
         }
 
         @JvmStatic
