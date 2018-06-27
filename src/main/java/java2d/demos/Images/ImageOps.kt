@@ -49,16 +49,14 @@ import java.awt.image.RescaleOp
 import javax.swing.JComboBox
 import javax.swing.JSlider
 import javax.swing.SwingConstants
-import javax.swing.event.ChangeEvent
-import javax.swing.event.ChangeListener
 
 /**
  * Images drawn using operators such as ConvolveOp LowPass & Sharpen,
  * LookupOp and RescaleOp.
  */
-class ImageOps : ControlsSurface(), ChangeListener
+class ImageOps : ControlsSurface()
 {
-    private val img: List<BufferedImage> = IMAGE_NAMES.map { name ->
+    private val images: List<BufferedImage> = IMAGE_NAMES.map { name ->
         val image = getImage(name)
         val iw = image.getWidth(this)
         val ih = image.getHeight(this)
@@ -67,19 +65,35 @@ class ImageOps : ControlsSurface(), ChangeListener
         }
     }
 
-    private val slider1 = JSlider(SwingConstants.VERTICAL, 0, 255, low).apply {
+    private val slider1 = JSlider(SwingConstants.VERTICAL, 0, 255, LOW).apply {
         preferredSize = Dimension(15, 100)
-        addChangeListener(this@ImageOps)
+        addChangeListener {
+            if (operationIndex == 0) {
+                initThresholdOperation(value, HIGH)
+            } else {
+                rescaleFactor = value
+                IMAGE_OPERATIONS[1] = RescaleOp(rescaleFactor / 128.0f, rescaleOffset, null)
+            }
+            this@ImageOps.repaint()
+        }
     }
 
-    private val slider2 = JSlider(SwingConstants.VERTICAL, 0, 255, high).apply {
+    private val slider2 = JSlider(SwingConstants.VERTICAL, 0, 255, HIGH).apply {
         preferredSize = Dimension(15, 100)
-        addChangeListener(this@ImageOps)
+        addChangeListener {
+            if (operationIndex == 0) {
+                initThresholdOperation(LOW, value)
+            } else {
+                rescaleOffset = value.toFloat()
+                IMAGE_OPERATIONS[1] = RescaleOp(rescaleFactor / 128.0f, rescaleOffset, null)
+            }
+            this@ImageOps.repaint()
+        }
     }
 
-    private var opsIndex: Int = 0
+    private var operationIndex: Int = 0
 
-    private var imgIndex: Int = 0
+    private var imageIndex: Int = 0
 
     init {
         isDoubleBuffered = true
@@ -92,31 +106,12 @@ class ImageOps : ControlsSurface(), ChangeListener
         slider2 to BorderLayout.EAST)
 
     override fun render(w: Int, h: Int, g2: Graphics2D) {
-        val iw = img[imgIndex].getWidth(null)
-        val ih = img[imgIndex].getHeight(null)
+        val iw = images[imageIndex].getWidth(null)
+        val ih = images[imageIndex].getHeight(null)
         val oldXform = g2.transform
         g2.scale(w.toDouble() / iw, h.toDouble() / ih)
-        g2.drawImage(img[imgIndex], biop[opsIndex], 0, 0)
+        g2.drawImage(images[imageIndex], IMAGE_OPERATIONS[operationIndex], 0, 0)
         g2.transform = oldXform
-    }
-
-    override fun stateChanged(e: ChangeEvent) {
-        if (e.source == slider1) {
-            if (opsIndex == 0) {
-                thresholdOp(slider1.value, high)
-            } else {
-                rescaleFactor = slider1.value
-                biop[1] = RescaleOp(rescaleFactor / 128.0f, rescaleOffset, null)
-            }
-        } else {
-            if (opsIndex == 0) {
-                thresholdOp(low, slider2.value)
-            } else {
-                rescaleOffset = slider2.value.toFloat()
-                biop[1] = RescaleOp(rescaleFactor / 128.0f, rescaleOffset, null)
-            }
-        }
-        repaint()
     }
 
     internal class DemoControls(private val demo: ImageOps) : CustomControls(demo.name)
@@ -126,7 +121,7 @@ class ImageOps : ControlsSurface(), ChangeListener
                 addItem(imageName)
             }
             addActionListener {
-                demo.imgIndex = selectedIndex
+                demo.imageIndex = selectedIndex
                 demo.repaint(10)
             }
         }
@@ -136,17 +131,17 @@ class ImageOps : ControlsSurface(), ChangeListener
                 addItem(operationName)
             }
             addActionListener {
-                demo.opsIndex = selectedIndex
-                when (demo.opsIndex) {
+                demo.operationIndex = selectedIndex
+                when (demo.operationIndex) {
                     0 -> {
-                        demo.slider1.value = ImageOps.low
-                        demo.slider2.value = ImageOps.high
+                        demo.slider1.value = LOW
+                        demo.slider2.value = HIGH
                         demo.slider1.isEnabled = true
                         demo.slider2.isEnabled = true
                     }
                     1 -> {
-                        demo.slider1.value = ImageOps.rescaleFactor
-                        demo.slider2.value = ImageOps.rescaleOffset.toInt()
+                        demo.slider1.value = rescaleFactor
+                        demo.slider2.value = rescaleOffset.toInt()
                         demo.slider1.isEnabled = true
                         demo.slider2.isEnabled = true
                     }
@@ -207,6 +202,37 @@ class ImageOps : ControlsSurface(), ChangeListener
     {
         private val IMAGE_NAMES = arrayOf("bld.jpg", "boat.png")
 
+        private const val LOW = 100
+        private const val HIGH = 200
+
+        private fun createConvolveOp(width: Int, height: Int, data: FloatArray) =
+            ConvolveOp(Kernel(width, height, data))
+
+        private val BLUR_3_X_3 = createConvolveOp(3, 3, floatArrayOf(
+            0.1f, 0.1f, 0.1f,
+            0.1f, 0.2f, 0.1f,
+            0.1f, 0.1f, 0.1f))
+
+        private val SHARPEN_3_X_3 = createConvolveOp(3, 3, floatArrayOf(
+            -1.0f, -1.0f, -1.0f,
+            -1.0f, 9.0f, -1.0f,
+            -1.0f, -1.0f, -1.0f))
+
+        private val EDGE_3_X_3 = createConvolveOp(3, 3, floatArrayOf(
+            0f, -1f, 0f,
+            -1f, 5f, -1f,
+            0f, -1f, 0f))
+
+        private val EDGE_5_X_5 = createConvolveOp(5, 5, floatArrayOf(
+            -1.0f, -1.0f, -1.0f, -1.0f, -1.0f,
+            -1.0f, -1.0f, -1.0f, -1.0f, -1.0f,
+            -1.0f, -1.0f, 24.0f, -1.0f, -1.0f,
+            -1.0f, -1.0f, -1.0f, -1.0f, -1.0f,
+            -1.0f, -1.0f, -1.0f, -1.0f, -1.0f))
+
+        private val invertedArray = ByteArray(256) { j -> (256 - j).toByte() }
+        private val orderedArray = ByteArray(256) { j -> j.toByte() }
+
         private val OPERATION_NAMES = arrayOf(
             "Threshold",
             "RescaleOp",
@@ -217,65 +243,32 @@ class ImageOps : ControlsSurface(), ChangeListener
             "3x3 Edge",
             "5x5 Edge")
 
-        private val biop = arrayOfNulls<BufferedImageOp>(OPERATION_NAMES.size)
+        private val IMAGE_OPERATIONS: Array<BufferedImageOp> = arrayOf(
+            createThresholdOperation(LOW, HIGH),
+            RescaleOp(1.0f, 0f, null),
+            LookupOp(ByteLookupTable(0, invertedArray), null),
+            LookupOp(ByteLookupTable(0, arrayOf(invertedArray, invertedArray, orderedArray)), null),
+            BLUR_3_X_3,
+            SHARPEN_3_X_3,
+            EDGE_3_X_3,
+            EDGE_5_X_5)
+
         private var rescaleFactor = 128
         private var rescaleOffset = 0f
-        private const val low = 100
-        private const val high = 200
 
-        init {
-            thresholdOp(low, high)
-            var i = 1
-            biop[i++] = RescaleOp(1.0f, 0f, null)
-            val invert = ByteArray(256)
-            val ordered = ByteArray(256)
-            for (j in 0 .. 255) {
-                invert[j] = (256 - j).toByte()
-                ordered[j] = j.toByte()
-            }
-            biop[i++] = LookupOp(ByteLookupTable(0, invert), null)
-            val yellowInvert = arrayOf(invert, invert, ordered)
-            biop[i++] = LookupOp(ByteLookupTable(0, yellowInvert), null)
-            val dim = arrayOf(intArrayOf(3, 3), intArrayOf(3, 3), intArrayOf(3, 3), intArrayOf(5, 5))
-
-            val data = arrayOf(
-                floatArrayOf(
-                    0.1f, 0.1f, 0.1f, // 3x3 blur
-                    0.1f, 0.2f, 0.1f,
-                    0.1f, 0.1f, 0.1f),
-                floatArrayOf(
-                    -1.0f, -1.0f, -1.0f, // 3x3 sharpen
-                    -1.0f, 9.0f, -1.0f,
-                    -1.0f, -1.0f, -1.0f),
-                floatArrayOf(
-                    0f, -1f, 0f, // 3x3 edge
-                    -1f, 5f, -1f,
-                    0f, -1f, 0f),
-                floatArrayOf(
-                    -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, // 5x5 edge
-                    -1.0f, -1.0f, -1.0f, -1.0f, -1.0f,
-                    -1.0f, -1.0f, 24.0f, -1.0f, -1.0f,
-                    -1.0f, -1.0f, -1.0f, -1.0f, -1.0f,
-                    -1.0f, -1.0f, -1.0f, -1.0f, -1.0f))
-
-            var j = 0
-            while (j < data.size) {
-                biop[i] = ConvolveOp(Kernel(dim[j][0], dim[j][1], data[j]))
-                j++
-                i++
-            }
-        }
-
-        fun thresholdOp(low: Int, high: Int) {
-            val threshold = ByteArray(256)
-            for (j in 0 .. 255) {
+        private fun createThresholdOperation(low: Int, high: Int): BufferedImageOp {
+            val threshold = ByteArray(256) { j ->
                 when {
-                    j > high -> threshold[j] = 255.toByte()
-                    j < low -> threshold[j] = 0.toByte()
-                    else -> threshold[j] = j.toByte()
+                    j < low -> 0.toByte()
+                    j > high -> 255.toByte()
+                    else -> j.toByte()
                 }
             }
-            biop[0] = LookupOp(ByteLookupTable(0, threshold), null)
+            return LookupOp(ByteLookupTable(0, threshold), null)
+        }
+
+        fun initThresholdOperation(low: Int, high: Int) {
+            IMAGE_OPERATIONS[0] = createThresholdOperation(low, high)
         }
 
         @JvmStatic
