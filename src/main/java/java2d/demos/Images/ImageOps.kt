@@ -38,10 +38,7 @@ import java2d.use
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Dimension
-import java.awt.Font
 import java.awt.Graphics2D
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
 import java.awt.image.BufferedImage
 import java.awt.image.BufferedImageOp
 import java.awt.image.ByteLookupTable
@@ -61,7 +58,7 @@ import javax.swing.event.ChangeListener
  */
 class ImageOps : ControlsSurface(), ChangeListener
 {
-    private val img: List<BufferedImage> = imgName.map { name ->
+    private val img: List<BufferedImage> = IMAGE_NAMES.map { name ->
         val image = getImage(name)
         val iw = image.getWidth(this)
         val ih = image.getHeight(this)
@@ -122,53 +119,52 @@ class ImageOps : ControlsSurface(), ChangeListener
         repaint()
     }
 
-    internal class DemoControls(var demo: ImageOps) : CustomControls(demo.name), ActionListener
+    internal class DemoControls(private val demo: ImageOps) : CustomControls(demo.name)
     {
-        private var imgCombo: JComboBox<String> = JComboBox()
-        private var opsCombo: JComboBox<String> = JComboBox()
-        private var FONT = Font("serif", Font.PLAIN, 10)
+        private val imageComboBox = JComboBox<String>().apply {
+            for (imageName in IMAGE_NAMES) {
+                addItem(imageName)
+            }
+            addActionListener {
+                demo.imgIndex = selectedIndex
+                demo.repaint(10)
+            }
+        }
+
+        private val operationsComboBox = JComboBox<String>().apply {
+            for (operationName in OPERATION_NAMES) {
+                addItem(operationName)
+            }
+            addActionListener {
+                demo.opsIndex = selectedIndex
+                when (demo.opsIndex) {
+                    0 -> {
+                        demo.slider1.value = ImageOps.low
+                        demo.slider2.value = ImageOps.high
+                        demo.slider1.isEnabled = true
+                        demo.slider2.isEnabled = true
+                    }
+                    1 -> {
+                        demo.slider1.value = ImageOps.rescaleFactor
+                        demo.slider2.value = ImageOps.rescaleOffset.toInt()
+                        demo.slider1.isEnabled = true
+                        demo.slider2.isEnabled = true
+                    }
+                    else -> {
+                        demo.slider1.isEnabled = false
+                        demo.slider2.isEnabled = false
+                    }
+                }
+                demo.repaint(10)
+            }
+        }
 
         init {
-            add(imgCombo)
-            imgCombo.font = FONT
-            for (name in ImageOps.imgName) {
-                imgCombo.addItem(name)
-            }
-            imgCombo.addActionListener(this)
-            add(opsCombo)
-            opsCombo.font = FONT
-            for (name in ImageOps.opsName) {
-                opsCombo.addItem(name)
-            }
-            opsCombo.addActionListener(this)
+            add(imageComboBox)
+            add(operationsComboBox)
         }
 
-        override fun actionPerformed(e: ActionEvent) {
-            if (e.source == opsCombo) {
-                demo.opsIndex = opsCombo.selectedIndex
-                if (demo.opsIndex == 0) {
-                    demo.slider1.value = ImageOps.low
-                    demo.slider2.value = ImageOps.high
-                    demo.slider1.isEnabled = true
-                    demo.slider2.isEnabled = true
-                } else if (demo.opsIndex == 1) {
-                    demo.slider1.value = ImageOps.rescaleFactor
-                    demo.slider2.value = ImageOps.rescaleOffset.toInt()
-                    demo.slider1.isEnabled = true
-                    demo.slider2.isEnabled = true
-                } else {
-                    demo.slider1.isEnabled = false
-                    demo.slider2.isEnabled = false
-                }
-            } else if (e.source == imgCombo) {
-                demo.imgIndex = imgCombo.selectedIndex
-            }
-            demo.repaint(10)
-        }
-
-        override fun getPreferredSize(): Dimension {
-            return Dimension(200, 39)
-        }
+        override fun getPreferredSize() = Dimension(200, 39)
 
         override fun run() {
             try {
@@ -179,10 +175,10 @@ class ImageOps : ControlsSurface(), ChangeListener
 
             val me = Thread.currentThread()
             while (thread === me) {
-                for (i in ImageOps.imgName.indices) {
-                    imgCombo.selectedIndex = i
-                    for (j in ImageOps.opsName.indices) {
-                        opsCombo.selectedIndex = j
+                for (i in IMAGE_NAMES.indices) {
+                    imageComboBox.selectedIndex = i
+                    for (j in OPERATION_NAMES.indices) {
+                        operationsComboBox.selectedIndex = j
                         if (j <= 1) {
                             var k = 50
                             while (k <= 200) {
@@ -192,7 +188,6 @@ class ImageOps : ControlsSurface(), ChangeListener
                                 } catch (e: InterruptedException) {
                                     return
                                 }
-
                                 k += 10
                             }
                         }
@@ -206,11 +201,13 @@ class ImageOps : ControlsSurface(), ChangeListener
             }
             thread = null
         }
-    } // End DemoControls
+    }
 
-    companion object {
-        private val imgName = arrayOf("bld.jpg", "boat.png")
-        private val opsName = arrayOf(
+    companion object
+    {
+        private val IMAGE_NAMES = arrayOf("bld.jpg", "boat.png")
+
+        private val OPERATION_NAMES = arrayOf(
             "Threshold",
             "RescaleOp",
             "Invert",
@@ -218,13 +215,13 @@ class ImageOps : ControlsSurface(), ChangeListener
             "3x3 Blur",
             "3x3 Sharpen",
             "3x3 Edge",
-            "5x5 Edge"
-                                     )
-        private val biop = arrayOfNulls<BufferedImageOp>(opsName.size)
+            "5x5 Edge")
+
+        private val biop = arrayOfNulls<BufferedImageOp>(OPERATION_NAMES.size)
         private var rescaleFactor = 128
         private var rescaleOffset = 0f
-        private val low = 100
-        private val high = 200
+        private const val low = 100
+        private const val high = 200
 
         init {
             thresholdOp(low, high)
@@ -240,42 +237,27 @@ class ImageOps : ControlsSurface(), ChangeListener
             val yellowInvert = arrayOf(invert, invert, ordered)
             biop[i++] = LookupOp(ByteLookupTable(0, yellowInvert), null)
             val dim = arrayOf(intArrayOf(3, 3), intArrayOf(3, 3), intArrayOf(3, 3), intArrayOf(5, 5))
+
             val data = arrayOf(
                 floatArrayOf(
                     0.1f, 0.1f, 0.1f, // 3x3 blur
-                    0.1f, 0.2f, 0.1f, 0.1f, 0.1f, 0.1f
-                            ), floatArrayOf(
+                    0.1f, 0.2f, 0.1f,
+                    0.1f, 0.1f, 0.1f),
+                floatArrayOf(
                     -1.0f, -1.0f, -1.0f, // 3x3 sharpen
-                    -1.0f, 9.0f, -1.0f, -1.0f, -1.0f, -1.0f
-                                           ), floatArrayOf(
+                    -1.0f, 9.0f, -1.0f,
+                    -1.0f, -1.0f, -1.0f),
+                floatArrayOf(
                     0f, -1f, 0f, // 3x3 edge
-                    -1f, 5f, -1f, 0f, -1f, 0f
-                                                          ), floatArrayOf(
-                    -1.0f,
-                    -1.0f,
-                    -1.0f,
-                    -1.0f,
-                    -1.0f, // 5x5 edge
-                    -1.0f,
-                    -1.0f,
-                    -1.0f,
-                    -1.0f,
-                    -1.0f,
-                    -1.0f,
-                    -1.0f,
-                    24.0f,
-                    -1.0f,
-                    -1.0f,
-                    -1.0f,
-                    -1.0f,
-                    -1.0f,
-                    -1.0f,
-                    -1.0f,
-                    -1.0f,
-                    -1.0f,
-                    -1.0f,
-                    -1.0f,
-                    -1.0f))
+                    -1f, 5f, -1f,
+                    0f, -1f, 0f),
+                floatArrayOf(
+                    -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, // 5x5 edge
+                    -1.0f, -1.0f, -1.0f, -1.0f, -1.0f,
+                    -1.0f, -1.0f, 24.0f, -1.0f, -1.0f,
+                    -1.0f, -1.0f, -1.0f, -1.0f, -1.0f,
+                    -1.0f, -1.0f, -1.0f, -1.0f, -1.0f))
+
             var j = 0
             while (j < data.size) {
                 biop[i] = ConvolveOp(Kernel(dim[j][0], dim[j][1], data[j]))
@@ -287,12 +269,10 @@ class ImageOps : ControlsSurface(), ChangeListener
         fun thresholdOp(low: Int, high: Int) {
             val threshold = ByteArray(256)
             for (j in 0 .. 255) {
-                if (j > high) {
-                    threshold[j] = 255.toByte()
-                } else if (j < low) {
-                    threshold[j] = 0.toByte()
-                } else {
-                    threshold[j] = j.toByte()
+                when {
+                    j > high -> threshold[j] = 255.toByte()
+                    j < low -> threshold[j] = 0.toByte()
+                    else -> threshold[j] = j.toByte()
                 }
             }
             biop[0] = LookupOp(ByteLookupTable(0, threshold), null)
