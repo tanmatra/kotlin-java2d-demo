@@ -49,6 +49,7 @@ import java.awt.image.RescaleOp
 import javax.swing.JComboBox
 import javax.swing.JSlider
 import javax.swing.SwingConstants
+import javax.swing.event.ChangeListener
 
 /**
  * Images drawn using operators such as ConvolveOp LowPass & Sharpen,
@@ -56,6 +57,16 @@ import javax.swing.SwingConstants
  */
 class ImageOps : ControlsSurface()
 {
+    private val imageOperations: Array<BufferedImageOp> = arrayOf(
+        createThresholdOperation(LOW, HIGH),
+        RescaleOp(1.0f, 0f, null),
+        LookupOp(ByteLookupTable(0, invertedArray), null),
+        LookupOp(ByteLookupTable(0, arrayOf(invertedArray, invertedArray, orderedArray)), null),
+        BLUR_3_X_3,
+        SHARPEN_3_X_3,
+        EDGE_3_X_3,
+        EDGE_5_X_5)
+
     private val images: List<BufferedImage> = IMAGE_NAMES.map { name ->
         val image = getImage(name)
         val iw = image.getWidth(this)
@@ -65,30 +76,22 @@ class ImageOps : ControlsSurface()
         }
     }
 
+    private val sliderChangeListener = ChangeListener {
+        when (operationIndex) {
+            0 -> initThresholdOperation()
+            1 -> initRescaleOperation()
+        }
+        repaint()
+    }
+
     private val slider1 = JSlider(SwingConstants.VERTICAL, 0, 255, LOW).apply {
         preferredSize = Dimension(15, 100)
-        addChangeListener {
-            if (operationIndex == 0) {
-                initThresholdOperation(value, HIGH)
-            } else {
-                rescaleFactor = value
-                IMAGE_OPERATIONS[1] = RescaleOp(rescaleFactor / 128.0f, rescaleOffset, null)
-            }
-            this@ImageOps.repaint()
-        }
+        addChangeListener(sliderChangeListener)
     }
 
     private val slider2 = JSlider(SwingConstants.VERTICAL, 0, 255, HIGH).apply {
         preferredSize = Dimension(15, 100)
-        addChangeListener {
-            if (operationIndex == 0) {
-                initThresholdOperation(LOW, value)
-            } else {
-                rescaleOffset = value.toFloat()
-                IMAGE_OPERATIONS[1] = RescaleOp(rescaleFactor / 128.0f, rescaleOffset, null)
-            }
-            this@ImageOps.repaint()
-        }
+        addChangeListener(sliderChangeListener)
     }
 
     private var operationIndex: Int = 0
@@ -105,12 +108,22 @@ class ImageOps : ControlsSurface()
         slider1 to BorderLayout.WEST,
         slider2 to BorderLayout.EAST)
 
+    private fun initThresholdOperation() {
+        imageOperations[0] = createThresholdOperation(slider1.value, slider2.value)
+    }
+
+    private fun initRescaleOperation() {
+        rescaleFactor = slider1.value
+        rescaleOffset = slider2.value.toFloat()
+        imageOperations[1] = RescaleOp(rescaleFactor / 128.0f, rescaleOffset, null)
+    }
+
     override fun render(w: Int, h: Int, g2: Graphics2D) {
         val iw = images[imageIndex].getWidth(null)
         val ih = images[imageIndex].getHeight(null)
         val oldXform = g2.transform
         g2.scale(w.toDouble() / iw, h.toDouble() / ih)
-        g2.drawImage(images[imageIndex], IMAGE_OPERATIONS[operationIndex], 0, 0)
+        g2.drawImage(images[imageIndex], imageOperations[operationIndex], 0, 0)
         g2.transform = oldXform
     }
 
@@ -243,16 +256,6 @@ class ImageOps : ControlsSurface()
             "3x3 Edge",
             "5x5 Edge")
 
-        private val IMAGE_OPERATIONS: Array<BufferedImageOp> = arrayOf(
-            createThresholdOperation(LOW, HIGH),
-            RescaleOp(1.0f, 0f, null),
-            LookupOp(ByteLookupTable(0, invertedArray), null),
-            LookupOp(ByteLookupTable(0, arrayOf(invertedArray, invertedArray, orderedArray)), null),
-            BLUR_3_X_3,
-            SHARPEN_3_X_3,
-            EDGE_3_X_3,
-            EDGE_5_X_5)
-
         private var rescaleFactor = 128
         private var rescaleOffset = 0f
 
@@ -265,10 +268,6 @@ class ImageOps : ControlsSurface()
                 }
             }
             return LookupOp(ByteLookupTable(0, threshold), null)
-        }
-
-        fun initThresholdOperation(low: Int, high: Int) {
-            IMAGE_OPERATIONS[0] = createThresholdOperation(low, high)
         }
 
         @JvmStatic
