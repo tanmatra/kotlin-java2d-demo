@@ -35,7 +35,6 @@ import java2d.Surface
 import java2d.getLogger
 import java2d.use
 import java.awt.Color
-import java.awt.Color.RED
 import java.awt.Font
 import java.awt.Graphics2D
 import java.awt.geom.GeneralPath
@@ -43,13 +42,11 @@ import java.awt.geom.Path2D
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.io.IOException
 import java.util.logging.Level
 import javax.imageio.IIOImage
 import javax.imageio.ImageIO
 import javax.imageio.ImageWriteParam
 import javax.imageio.plugins.jpeg.JPEGImageWriteParam
-import javax.imageio.stream.ImageOutputStream
 
 /**
  * Render a filled star & duke into a BufferedImage, save the BufferedImage
@@ -64,105 +61,80 @@ class JPEGFlip : Surface()
         background = Color.WHITE
     }
 
-    override fun render(w: Int, h: Int, g2: Graphics2D) {
-        val hh = h / 2
+    override fun render(width: Int, height: Int, g2: Graphics2D) {
+        val halfHeight = height / 2
 
-        val bi = BufferedImage(w, hh, BufferedImage.TYPE_INT_RGB)
-        bi.createGraphics().use { big ->
+        val bufferedImage1 = BufferedImage(width, halfHeight, BufferedImage.TYPE_INT_RGB)
+        bufferedImage1.createGraphics().use { imgGfx ->
             // .. use rendering hints from J2DCanvas ..
-            big.setRenderingHints(g2.renderingHints)
+            imgGfx.setRenderingHints(g2.renderingHints)
 
-            big.background = background
-            big.clearRect(0, 0, w, hh)
+            imgGfx.background = background
+            imgGfx.clearRect(0, 0, width, halfHeight)
 
-            big.color = Color.GREEN.darker()
+            imgGfx.color = Color.GREEN.darker()
             val path = GeneralPath(Path2D.WIND_NON_ZERO).apply {
-                moveTo(-w / 2.0f, -hh / 8.0f)
-                lineTo(+w / 2.0f, -hh / 8.0f)
-                lineTo(-w / 4.0f, +hh / 2.0f)
-                lineTo(+0.0f, -hh / 2.0f)
-                lineTo(+w / 4.0f, +hh / 2.0f)
+                moveTo(-width / 2.0f, -halfHeight / 8.0f)
+                lineTo(+width / 2.0f, -halfHeight / 8.0f)
+                lineTo(-width / 4.0f, +halfHeight / 2.0f)
+                lineTo(+0.0f, -halfHeight / 2.0f)
+                lineTo(+width / 4.0f, +halfHeight / 2.0f)
                 closePath()
             }
-            big.translate(w / 2, hh / 2)
-            big.fill(path)
+            imgGfx.translate(width / 2, halfHeight / 2)
+            imgGfx.fill(path)
 
-            val iw = image.getWidth(this)
-            var ih = image.getHeight(this)
-            if (hh < ih * 1.5) {
-                ih = (ih * (hh / (ih * 1.5))).toInt()
+            val imageWidth = image.getWidth(this)
+            var imageHeight = image.getHeight(this)
+            if (halfHeight < imageHeight * 1.5) {
+                imageHeight = (imageHeight * (halfHeight / (imageHeight * 1.5))).toInt()
             }
-            big.drawImage(image, -image.getWidth(this) / 2, -ih / 2, iw, ih, this)
+            imgGfx.drawImage(image, -image.getWidth(this) / 2, -imageHeight / 2, imageWidth, imageHeight, this)
         }
 
-        g2.drawImage(bi, 0, 0, this)
+        g2.drawImage(bufferedImage1, 0, 0, this)
         g2.font = Font(Font.DIALOG, Font.PLAIN, 10)
         g2.color = Color.BLACK
         g2.drawString("BufferedImage", 4, 12)
 
-        val bi1: BufferedImage?
-        var ios: ImageOutputStream? = null
         // To write the jpeg to a file uncomment the File* lines and
         // comment out the ByteArray*Stream lines.
-        //FileOutputStream out = null;
-        var out: ByteArrayOutputStream? = null
-        //FileInputStream in = null;
-        var input: ByteArrayInputStream? = null
-        try {
-            //File file = new File("images", "test.jpg");
-            //out = new FileOutputStream(file);
-            out = ByteArrayOutputStream()
-            ios = ImageIO.createImageOutputStream(out)
-            val encoder = ImageIO.getImageWritersByFormatName("JPEG").next()
-            val param = JPEGImageWriteParam(null).apply {
-                compressionMode = ImageWriteParam.MODE_EXPLICIT
-                compressionQuality = 1.0f
+        val bufferedImage2: BufferedImage? = try {
+            // val file = File("images", "test.jpg");
+            // FileOutputStream(file).use { out -> ... }
+            val bytes = ByteArrayOutputStream().use { output ->
+                ImageIO.createImageOutputStream(output).use { imageOutput ->
+                    val encoder = ImageIO.getImageWritersByFormatName("JPEG").next()
+                    val param = JPEGImageWriteParam(null).apply {
+                        compressionMode = ImageWriteParam.MODE_EXPLICIT
+                        compressionQuality = 1.0f
+                    }
+                    encoder.output = imageOutput
+                    encoder.write(null, IIOImage(bufferedImage1, null, null), param)
+                }
+                output.toByteArray()
             }
-
-            encoder.output = ios
-            encoder.write(null, IIOImage(bi, null, null), param)
-
-            //in = new FileInputStream(file);
-            input = ByteArrayInputStream(out.toByteArray())
-            bi1 = ImageIO.read(input)
+            // FileInputStream(file).use { input -> ... }
+            ByteArrayInputStream(bytes).use { input ->
+                ImageIO.read(input)
+            }
         } catch (ex: Exception) {
-            g2.color = RED
-            g2.drawString("Error encoding or decoding the image", 5, hh * 2 - 5)
-            return
-        } finally {
-            if (ios != null) {
-                try {
-                    ios.close()
-                } catch (ex: IOException) {
-                    getLogger<JPEGFlip>().log(Level.SEVERE, null, ex)
-                }
-            }
-            if (out != null) {
-                try {
-                    out.close()
-                } catch (ex: IOException) {
-                    getLogger<JPEGFlip>().log(Level.SEVERE, null, ex)
-                }
-            }
-            if (input != null) {
-                try {
-                    input.close()
-                } catch (ex: IOException) {
-                    getLogger<JPEGFlip>().log(Level.SEVERE, null, ex)
-                }
-            }
-        }
-
-        if (bi1 == null) {
+            getLogger<JPEGFlip>().log(Level.SEVERE, null, ex)
             g2.color = Color.RED
-            g2.drawString("Error reading the image", 5, hh * 2 - 5)
+            g2.drawString("Error encoding or decoding the image", 5, halfHeight * 2 - 5)
             return
         }
 
-        g2.drawImage(bi1, w, hh * 2, -w, -hh, null)
+        if (bufferedImage2 == null) {
+            g2.color = Color.RED
+            g2.drawString("Error reading the image", 5, halfHeight * 2 - 5)
+            return
+        }
 
-        g2.drawString("JPEGImage Flipped", 4, hh * 2 - 4)
-        g2.drawLine(0, hh, w, hh)
+        g2.drawImage(bufferedImage2, width, halfHeight * 2, -width, -halfHeight, null)
+
+        g2.drawString("JPEGImage Flipped", 4, halfHeight * 2 - 4)
+        g2.drawLine(0, halfHeight, width, halfHeight)
     }
 
     companion object {
