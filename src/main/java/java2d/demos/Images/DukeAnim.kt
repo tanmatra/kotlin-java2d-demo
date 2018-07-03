@@ -29,69 +29,67 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package java2d.demos.Images;
+package java2d.demos.Images
 
-
-import java.awt.*;
-import javax.swing.JButton;
-import java.awt.image.ImageObserver;
-import java2d.AnimatingSurface;
-import java2d.DemoPanel;
-
+import java2d.AnimatingSurface
+import java2d.DemoPanel
+import java.awt.Color
+import java.awt.Graphics2D
+import java.awt.Image
+import java.awt.image.ImageObserver
+import javax.swing.JButton
 
 /**
  * Animated gif with a transparent background.
  */
-@SuppressWarnings("serial")
-public class DukeAnim extends AnimatingSurface implements ImageObserver {
+class DukeAnim : AnimatingSurface(), ImageObserver
+{
+    private var ix: Int = 0
+    private var startStopButton: JButton? = null
+    private val agif: Image = getImage("duke.running.gif")
+    private val clouds: Image = getImage("clouds.jpg")
+    private val aw: Int = agif.getWidth(this) / 2
+    private val ah: Int = agif.getHeight(this) / 2
+    private val cw: Int = clouds.getWidth(this)
 
-    private static Image agif, clouds;
-    private static int aw, ah, cw;
-    private int x;
-    private JButton b;
-
-    @SuppressWarnings("LeakingThisInConstructor")
-    public DukeAnim() {
-        setBackground(Color.white);
-        clouds = getImage("clouds.jpg");
-        agif = getImage("duke.running.gif");
-        aw = agif.getWidth(this) / 2;
-        ah = agif.getHeight(this) / 2;
-        cw = clouds.getWidth(this);
-        setDontThread(true);
+    init {
+        background = Color.WHITE
+        dontThread = true
     }
 
-    @Override
-    public void reset(int w, int h) {
-        b = ((DemoPanel) getParent()).getTools().getStartStopButton();
+    override fun reset(newWidth: Int, newHeight: Int) {
+        startStopButton = (parent as DemoPanel).tools?.startStopButton
     }
 
-    @Override
-    public void step(int w, int h) {
-    }
+    override fun step(width: Int, height: Int) {}
 
-    @Override
-    public void render(int w, int h, Graphics2D g2) {
-        if ((x -= 3) <= -cw) {
-            x = w;
+    override fun render(w: Int, h: Int, g2: Graphics2D) {
+        ix -= 3
+        if (ix <= -cw) {
+            ix = w
         }
-        g2.drawImage(clouds, x, 10, cw, h - 20, this);
-        g2.drawImage(agif, w / 2 - aw, h / 2 - ah, this);
+        g2.drawImage(clouds, ix, 10, cw, h - 20, this)
+        g2.drawImage(agif, w / 2 - aw, h / 2 - ah, this)
     }
 
-    @Override
-    public boolean imageUpdate(Image img, int infoflags,
-            int x, int y, int width, int height) {
-        if (b.isSelected() && (infoflags & ALLBITS) != 0) {
-            repaint();
+    override fun imageUpdate(
+        img: Image?, infoflags: Int,
+        x: Int, y: Int, width: Int, height: Int
+    ): Boolean {
+        startStopButton?.let { button ->
+            if (button.isSelected) {
+                if (infoflags and (ImageObserver.ALLBITS or ImageObserver.FRAMEBITS) != 0) {
+                    repaint()
+                }
+            }
         }
-        if (b.isSelected() && (infoflags & FRAMEBITS) != 0) {
-            repaint();
-        }
-        return isShowing();
+        return isShowing
     }
 
-    public static void main(String s[]) {
-        createDemoFrame(new DukeAnim());
+    companion object {
+        @JvmStatic
+        fun main(s: Array<String>) {
+            createDemoFrame(DukeAnim())
+        }
     }
 }
