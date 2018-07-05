@@ -160,3 +160,6 @@ infix fun IntRange.shift(offset: Int) = start + offset .. endInclusive + offset
 
 val Insets.horizontal get() = left + right
 val Insets.vertical get() = top + bottom
+
+@Suppress("NOTHING_TO_INLINE")
+inline infix fun Int.hasBits(bits: Int) = (this and bits) != 0

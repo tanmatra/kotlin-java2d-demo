@@ -33,6 +33,7 @@ package java2d.demos.Images
 
 import java2d.AnimatingSurface
 import java2d.DemoPanel
+import java2d.hasBits
 import java.awt.Color
 import java.awt.Graphics2D
 import java.awt.Image
@@ -72,13 +73,14 @@ class DukeAnim : AnimatingSurface(), ImageObserver
         g2.drawImage(agif, w / 2 - aw, h / 2 - ah, this)
     }
 
+
     override fun imageUpdate(
         img: Image?, infoflags: Int,
         x: Int, y: Int, width: Int, height: Int
     ): Boolean {
         startStopButton?.let { button ->
             if (button.isSelected) {
-                if (infoflags and (ImageObserver.ALLBITS or ImageObserver.FRAMEBITS) != 0) {
+                if (infoflags hasBits (ImageObserver.ALLBITS or ImageObserver.FRAMEBITS)) {
                     repaint()
                 }
             }
