@@ -169,7 +169,7 @@ val Insets.vertical get() = top + bottom
 @Suppress("NOTHING_TO_INLINE")
 inline infix fun Int.hasBits(bits: Int) = (this and bits) != 0
 
-fun createTitledSlider(suffix: String, max: Int, property: KMutableProperty0<Int>, notify: () -> Unit): JSlider {
+fun createTitledSlider(suffix: String, max: Int, property: KMutableProperty0<Int>): JSlider {
     fun formatTitle(value: Int) = "$value $suffix"
     val titledBorder = TitledBorder(EtchedBorder()).apply {
         title = formatTitle(property.get())
@@ -182,7 +182,6 @@ fun createTitledSlider(suffix: String, max: Int, property: KMutableProperty0<Int
             titledBorder.title = formatTitle(value)
             property.set(value)
             repaint()
-            notify()
         }
     }
 }

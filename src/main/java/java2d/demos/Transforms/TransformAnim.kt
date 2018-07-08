@@ -90,13 +90,13 @@ class TransformAnim : AnimatingControlsSurface()
     private var doScale = true
     private var doShear: Boolean = false
 
-    private var shapes: Int = 0
-        set(num) {
-            if (num < field) {
+    private var shapesCount: Int = 0
+        set(value) {
+            if (value < field) {
                 val v = objDatas.filter { it.shape is Shape }
-                objDatas.removeAll(v.subList(num, v.size))
+                objDatas.removeAll(v.subList(value, v.size))
             } else {
-                for (i in field until num) {
+                for (i in field until value) {
                     val obj: Shape = when (i % 7) {
                         0 -> GeneralPath()
                         1 -> Rectangle2D.Double()
@@ -112,46 +112,49 @@ class TransformAnim : AnimatingControlsSurface()
                     objDatas.add(objData)
                 }
             }
-            field = num
+            field = value
+            checkRepaint()
         }
 
-    private var images: Int = 0
-        set(num) {
-            if (num < field) {
+    private var imagesCount: Int = 0
+        set(value) {
+            if (value < field) {
                 val v = objDatas.filter { it.shape is Image }
-                objDatas.removeAll(v.subList(num, v.size))
+                objDatas.removeAll(v.subList(value, v.size))
             } else {
-                for (i in field until num) {
+                for (i in field until value) {
                     val obj = getImage(IMAGES[i % IMAGES.size])
                     val objData = ObjData(obj, Color.BLACK)
                     objData.reset(width, height)
                     objDatas.add(objData)
                 }
             }
-            field = num
+            field = value
+            checkRepaint()
         }
 
-    private var strings: Int = 0
-        set(num) {
-            if (num < field) {
+    private var stringsCount: Int = 0
+        set(value) {
+            if (value < field) {
                 val v = objDatas.filter { it.shape is TextData }
-                objDatas.removeAll(v.subList(num, v.size))
+                objDatas.removeAll(v.subList(value, v.size))
             } else {
-                for (i in field until num) {
+                for (i in field until value) {
                     val obj = TextData(STRINGS[i % STRINGS.size], FONTS[i % FONTS.size])
                     val objData = ObjData(obj, PAINTS[i % PAINTS.size])
                     objData.reset(width, height)
                     objDatas.add(objData)
                 }
             }
-            field = num
+            field = value
+            checkRepaint()
         }
 
     init {
         background = BLACK
-        strings = 1
-        images = 2
-        shapes = 10
+        stringsCount = 1
+        imagesCount = 2
+        shapesCount = 10
     }
 
     override val customControls = listOf<CControl>(DemoControls(this) to BorderLayout.EAST)
@@ -185,6 +188,12 @@ class TransformAnim : AnimatingControlsSurface()
                 }
                 is Shape -> g2.fill(obj)
             }
+        }
+    }
+
+    private fun checkRepaint() {
+        if (!isRunning) {
+            repaint()
         }
     }
 
@@ -315,10 +324,9 @@ class TransformAnim : AnimatingControlsSurface()
 
             add(JToolBar(SwingConstants.VERTICAL).apply {
                 isFloatable = false
-                val notify = ::checkRepaint
-                add(createTitledSlider("Shapes", 20, demo::shapes, notify))
-                add(createTitledSlider("Strings", 10, demo::strings, notify))
-                add(createTitledSlider("Images", 10, demo::images, notify))
+                add(createTitledSlider("Shapes", 20, demo::shapesCount))
+                add(createTitledSlider("Strings", 10, demo::stringsCount))
+                add(createTitledSlider("Images", 10, demo::imagesCount))
             })
 
             toolbar.add(createButton("T", "Translate", demo::doTranslate))
@@ -331,13 +339,7 @@ class TransformAnim : AnimatingControlsSurface()
         private fun createButton(text: String, toolTip: String, property: KMutableProperty0<Boolean>): AbstractButton {
             return createToolButton(text, property.get(), toolTip) { selected ->
                 property.set(selected)
-                checkRepaint()
-            }
-        }
-
-        private fun checkRepaint() {
-            if (!demo.isRunning) {
-                demo.repaint()
+                demo.checkRepaint()
             }
         }
 

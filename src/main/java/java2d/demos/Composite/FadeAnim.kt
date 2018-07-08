@@ -94,6 +94,7 @@ class FadeAnim : AnimatingControlsSurface()
                 }
             }
             field = value
+            checkRepaint()
         }
 
     private var stringsCount: Int = 0
@@ -112,6 +113,7 @@ class FadeAnim : AnimatingControlsSurface()
                 }
             }
             field = value
+            checkRepaint()
         }
 
     private var imagesCount: Int = 0
@@ -135,6 +137,7 @@ class FadeAnim : AnimatingControlsSurface()
                 }
             }
             field = value
+            checkRepaint()
         }
 
     init {
@@ -178,6 +181,12 @@ class FadeAnim : AnimatingControlsSurface()
                 is Shape -> g2.fill(item)
             }
             g2.translate(-objectData.x, -objectData.y)
+        }
+    }
+
+    private fun checkRepaint() {
+        if (!isRunning) {
+            repaint()
         }
     }
 
@@ -295,9 +304,9 @@ class FadeAnim : AnimatingControlsSurface()
 
     internal class DemoControls(var demo: FadeAnim) : CustomControls(demo.name)
     {
-        private val shapeSlider = createTitledSlider("Shapes", 20, demo::shapesCount, ::checkRepaint)
-        private val stringSlider = createTitledSlider("Strings", 10, demo::stringsCount, ::checkRepaint)
-        private val imageSlider = createTitledSlider("Images", 10, demo::imagesCount, ::checkRepaint)
+        private val shapeSlider = createTitledSlider("Shapes", 20, demo::shapesCount)
+        private val stringSlider = createTitledSlider("Strings", 10, demo::stringsCount)
+        private val imageSlider = createTitledSlider("Images", 10, demo::imagesCount)
 
         init {
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
@@ -309,12 +318,6 @@ class FadeAnim : AnimatingControlsSurface()
             toolbar.add(imageSlider)
 
             add(toolbar)
-        }
-
-        private fun checkRepaint() {
-            if (!demo.isRunning) {
-                demo.repaint()
-            }
         }
 
         override fun getPreferredSize() = Dimension(120, 0)
