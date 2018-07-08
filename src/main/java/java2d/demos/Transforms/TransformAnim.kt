@@ -36,6 +36,7 @@ import java2d.AnimatingControlsSurface
 import java2d.CControl
 import java2d.CustomControls
 import java2d.antialiasing
+import java2d.createTitledSlider
 import java2d.createToolButton
 import java2d.use
 import java.awt.BasicStroke
@@ -73,11 +74,8 @@ import java.util.ArrayList
 import javax.swing.AbstractButton
 import javax.swing.Box
 import javax.swing.BoxLayout
-import javax.swing.JSlider
 import javax.swing.JToolBar
 import javax.swing.SwingConstants
-import javax.swing.border.EtchedBorder
-import javax.swing.border.TitledBorder
 import kotlin.reflect.KMutableProperty0
 
 /**
@@ -317,9 +315,10 @@ class TransformAnim : AnimatingControlsSurface()
 
             add(JToolBar(SwingConstants.VERTICAL).apply {
                 isFloatable = false
-                add(createSlider("Shapes", 20, demo::shapes))
-                add(createSlider("Strings", 10, demo::strings))
-                add(createSlider("Images", 10, demo::images))
+                val notify = ::checkRepaint
+                add(createTitledSlider("Shapes", 20, demo::shapes, notify))
+                add(createTitledSlider("Strings", 10, demo::strings, notify))
+                add(createTitledSlider("Images", 10, demo::images, notify))
             })
 
             toolbar.add(createButton("T", "Translate", demo::doTranslate))
@@ -327,24 +326,6 @@ class TransformAnim : AnimatingControlsSurface()
             toolbar.add(createButton("SC", "Scale", demo::doScale))
             toolbar.add(createButton("SH", "Shear", demo::doShear))
             add(toolbar)
-        }
-
-        private fun createSlider(suffix: String, max: Int, property: KMutableProperty0<Int>): JSlider {
-            fun formatTitle(value: Int) = "$value $suffix"
-            val titledBorder = TitledBorder(EtchedBorder()).apply {
-                title = formatTitle(property.get())
-            }
-            return JSlider(SwingConstants.HORIZONTAL, 0, max, property.get()).apply {
-                border = titledBorder
-                isOpaque = true
-                preferredSize = Dimension(150, 44) // (80, 44)
-                addChangeListener {
-                    titledBorder.title = formatTitle(value)
-                    property.set(value)
-                    repaint()
-                    checkRepaint()
-                }
-            }
         }
 
         private fun createButton(text: String, toolTip: String, property: KMutableProperty0<Boolean>): AbstractButton {

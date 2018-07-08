@@ -14,7 +14,12 @@ import java.lang.reflect.InvocationTargetException
 import java.util.logging.Logger
 import javax.swing.AbstractButton
 import javax.swing.JComponent
+import javax.swing.JSlider
 import javax.swing.JToggleButton
+import javax.swing.SwingConstants
+import javax.swing.border.EtchedBorder
+import javax.swing.border.TitledBorder
+import kotlin.reflect.KMutableProperty0
 
 fun JComponent.restrictHeight(height: Int) {
     val prefSize = Dimension(preferredSize.width, height)
@@ -163,3 +168,21 @@ val Insets.vertical get() = top + bottom
 
 @Suppress("NOTHING_TO_INLINE")
 inline infix fun Int.hasBits(bits: Int) = (this and bits) != 0
+
+fun createTitledSlider(suffix: String, max: Int, property: KMutableProperty0<Int>, notify: () -> Unit): JSlider {
+    fun formatTitle(value: Int) = "$value $suffix"
+    val titledBorder = TitledBorder(EtchedBorder()).apply {
+        title = formatTitle(property.get())
+    }
+    return JSlider(SwingConstants.HORIZONTAL, 0, max, property.get()).apply {
+        border = titledBorder
+        isOpaque = true
+        preferredSize = Dimension(150, 44) // (80, 44)
+        addChangeListener {
+            titledBorder.title = formatTitle(value)
+            property.set(value)
+            repaint()
+            notify()
+        }
+    }
+}
