@@ -94,4 +94,10 @@ abstract class AnimatingSurface : Surface(), Runnable
             thread?.interrupt()
         }
     }
+
+    internal fun checkRepaint() {
+        if (!isRunning) {
+            repaint()
+        }
+    }
 }

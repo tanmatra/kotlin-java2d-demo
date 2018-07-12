@@ -184,12 +184,6 @@ class FadeAnim : AnimatingControlsSurface()
         }
     }
 
-    private fun checkRepaint() {
-        if (!isRunning) {
-            repaint()
-        }
-    }
-
     internal class TextData(val string: String, val font: Font, cmp: Component)
     {
         val width: Int

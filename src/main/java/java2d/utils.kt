@@ -43,6 +43,12 @@ fun createToolButton(text: String,
     }
 }
 
+fun createPropertyButton(text: String, toolTip: String, property: KMutableProperty0<Boolean>): AbstractButton {
+    return createToolButton(text, property.get(), toolTip) { selected ->
+        property.set(selected)
+    }
+}
+
 inline fun <reified T> getLogger() = Logger.getLogger(T::class.java.name)
 
 fun byteArrayFrom(vararg ints: Int) = ByteArray(ints.size) { i -> ints[i].toByte() }

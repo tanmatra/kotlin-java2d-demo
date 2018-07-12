@@ -35,9 +35,10 @@ package java2d.demos.Transforms
 import java2d.AnimatingControlsSurface
 import java2d.CControl
 import java2d.CustomControls
+import java2d.RepaintingProperty
 import java2d.antialiasing
+import java2d.createPropertyButton
 import java2d.createTitledSlider
-import java2d.createToolButton
 import java2d.use
 import java.awt.BasicStroke
 import java.awt.BorderLayout
@@ -76,7 +77,6 @@ import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.JToolBar
 import javax.swing.SwingConstants
-import kotlin.reflect.KMutableProperty0
 
 /**
  * Animation of shapes, text and images rotating, scaling and translating
@@ -85,10 +85,11 @@ import kotlin.reflect.KMutableProperty0
 class TransformAnim : AnimatingControlsSurface()
 {
     private val objDatas = ArrayList<ObjData>(13)
-    private var doRotate = true
-    private var doTranslate = true
-    private var doScale = true
-    private var doShear: Boolean = false
+
+    private var doRotate by RepaintingProperty(true)
+    private var doTranslate by RepaintingProperty(true)
+    private var doScale by RepaintingProperty(true)
+    private var doShear by RepaintingProperty(false)
 
     private var shapesCount: Int = 0
         set(value) {
@@ -188,12 +189,6 @@ class TransformAnim : AnimatingControlsSurface()
                 }
                 is Shape -> g2.fill(obj)
             }
-        }
-    }
-
-    private fun checkRepaint() {
-        if (!isRunning) {
-            repaint()
         }
     }
 
@@ -329,18 +324,11 @@ class TransformAnim : AnimatingControlsSurface()
                 add(createTitledSlider("Images", 10, demo::imagesCount))
             })
 
-            toolbar.add(createButton("T", "Translate", demo::doTranslate))
-            toolbar.add(createButton("R", "Rotate", demo::doRotate))
-            toolbar.add(createButton("SC", "Scale", demo::doScale))
-            toolbar.add(createButton("SH", "Shear", demo::doShear))
+            toolbar.add(createPropertyButton("T", "Translate", demo::doTranslate))
+            toolbar.add(createPropertyButton("R", "Rotate", demo::doRotate))
+            toolbar.add(createPropertyButton("SC", "Scale", demo::doScale))
+            toolbar.add(createPropertyButton("SH", "Shear", demo::doShear))
             add(toolbar)
-        }
-
-        private fun createButton(text: String, toolTip: String, property: KMutableProperty0<Boolean>): AbstractButton {
-            return createToolButton(text, property.get(), toolTip) { selected ->
-                property.set(selected)
-                demo.checkRepaint()
-            }
         }
 
         override fun getPreferredSize() = Dimension(150, 38) // (80, 38)
