@@ -73,9 +73,10 @@ class Text : ControlsSurface()
 
     private var doClip: Boolean by RepaintingProperty(true)
 
+    private val image: Image = getImage("clouds.jpg")
+
     init {
         background = Color.WHITE
-        img = getImage("clouds.jpg")
     }
 
     override val customControls = listOf<CControl>(DemoControls(this) to BorderLayout.NORTH)
@@ -118,7 +119,7 @@ class Text : ControlsSurface()
                     j += 3
                 }
             }
-            ClipType.IMAGE -> g2.drawImage(img, r.x, r.y, r.width, r.height, null)
+            ClipType.IMAGE -> g2.drawImage(image, r.x, r.y, r.width, r.height, null)
             ClipType.TEXTURE_PAINT -> {
                 g2.paint = texturePaint
                 g2.fill(r)
@@ -199,8 +200,6 @@ class Text : ControlsSurface()
     companion object
     {
         private val DEFAULT_CLIP_TYPE = ClipType.LINES
-
-        internal lateinit var img: Image
 
         internal val texturePaint: TexturePaint = run {
             val image = BufferedImage(5, 5, BufferedImage.TYPE_INT_RGB)
