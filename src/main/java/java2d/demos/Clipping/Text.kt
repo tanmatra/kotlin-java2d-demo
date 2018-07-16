@@ -60,7 +60,17 @@ import javax.swing.JToolBar
  */
 class Text : ControlsSurface()
 {
-    private var clipType = "Lines" // TODO: enum
+    private enum class ClipType(val displayName: String, val description: String)
+    {
+        LINES("Lines", "Lines"),
+        IMAGE("Image", "Image"),
+        TEXTURE_PAINT("TP", "Texture paint"),
+        GRADIENT_PAINT("GP", "Gradient paint"),
+        TEXT("Text", "Text")
+    }
+
+    private var clipType: ClipType by RepaintingProperty(DEFAULT_CLIP_TYPE)
+
     private var doClip: Boolean by RepaintingProperty(true)
 
     init {
@@ -94,7 +104,7 @@ class Text : ControlsSurface()
         }
 
         when (clipType) {
-            "Lines" -> {
+            ClipType.LINES -> {
                 g2.color = Color.BLACK
                 g2.fill(r)
                 g2.color = Color.YELLOW
@@ -108,16 +118,16 @@ class Text : ControlsSurface()
                     j += 3
                 }
             }
-            "Image" -> g2.drawImage(img, r.x, r.y, r.width, r.height, null)
-            "TP" -> {
+            ClipType.IMAGE -> g2.drawImage(img, r.x, r.y, r.width, r.height, null)
+            ClipType.TEXTURE_PAINT -> {
                 g2.paint = texturePaint
                 g2.fill(r)
             }
-            "GP" -> {
+            ClipType.GRADIENT_PAINT -> {
                 g2.paint = GradientPaint(0f, 0f, Color.BLUE, w.toFloat(), h.toFloat(), Color.YELLOW)
                 g2.fill(r)
             }
-            "Text" -> {
+            ClipType.TEXT -> {
                 g2.color = Color.BLACK
                 g2.fill(shape.bounds)
                 g2.color = Color.CYAN
@@ -147,25 +157,18 @@ class Text : ControlsSurface()
     internal class DemoControls(private val demo: Text) : CustomControls(demo.name)
     {
         private val toolbar = JToolBar().apply { isFloatable = false }
-        private val buttonGroup = ButtonGroup()
 
         init {
+            val buttonGroup = ButtonGroup()
             add(toolbar)
             toolbar.add(createBooleanButton(demo::doClip, "Clip"))
-            addTool("Lines", true)
-            addTool("Image", false)
-            addTool("TP", false)
-            addTool("GP", false)
-            addTool("Text", false)
-        }
-
-        private fun addTool(str: String, state: Boolean) {
-            createToolButton(str, state) {
-                demo.clipType = str
-                demo.repaint()
-            }.also {
-                toolbar.add(it)
-                buttonGroup.add(it)
+            for (clipType in enumValues<ClipType>()) {
+                val initialState = (clipType == demo.clipType)
+                val button = createToolButton(clipType.displayName, initialState, clipType.description) {
+                    demo.clipType = clipType
+                }
+                toolbar.add(button)
+                buttonGroup.add(button)
             }
         }
 
@@ -195,6 +198,8 @@ class Text : ControlsSurface()
 
     companion object
     {
+        private val DEFAULT_CLIP_TYPE = ClipType.LINES
+
         internal lateinit var img: Image
 
         internal val texturePaint: TexturePaint = run {
