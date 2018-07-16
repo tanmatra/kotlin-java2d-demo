@@ -33,17 +33,7 @@ package java2d.demos.Arcs_Curves
 
 import java2d.AnimatingSurface
 import java.awt.BasicStroke
-import java.awt.Color.BLACK
-import java.awt.Color.BLUE
-import java.awt.Color.CYAN
-import java.awt.Color.GREEN
-import java.awt.Color.LIGHT_GRAY
-import java.awt.Color.MAGENTA
-import java.awt.Color.ORANGE
-import java.awt.Color.PINK
-import java.awt.Color.RED
-import java.awt.Color.WHITE
-import java.awt.Color.YELLOW
+import java.awt.Color
 import java.awt.Graphics2D
 import java.awt.geom.Ellipse2D
 
@@ -53,55 +43,53 @@ import java.awt.geom.Ellipse2D
 class Ellipses : AnimatingSurface()
 {
     private val ellipses = Array(25) { Ellipse2D.Float() }
-    private val esize = DoubleArray(ellipses.size)
-    private val estroke = FloatArray(ellipses.size)
+    private val strokes = FloatArray(ellipses.size)
     private var maxSize: Double = 0.0
 
     init {
-        background = BLACK
+        background = Color.BLACK
         for (i in ellipses.indices) {
-            getRandomXY(i, 20 * Math.random(), 200, 200)
+            randomizeEllipse(i, 20 * Math.random(), 200, 200)
         }
     }
 
-    private fun getRandomXY(i: Int, size: Double, w: Int, h: Int) {
-        esize[i] = size
-        estroke[i] = 1.0f
-        val x = Math.random() * (w - maxSize / 2)
-        val y = Math.random() * (h - maxSize / 2)
-        ellipses[i].setFrame(x, y, size, size)
+    private fun randomizeEllipse(index: Int, size: Double, areaWidth: Int, areaHeight: Int) {
+        strokes[index] = 1.0f
+        val x = Math.random() * (areaWidth - maxSize / 2)
+        val y = Math.random() * (areaHeight - maxSize / 2)
+        ellipses[index].setFrame(x, y, size, size)
     }
 
     override fun reset(newWidth: Int, newHeight: Int) {
         maxSize = (newWidth / 10).toDouble()
         for (i in ellipses.indices) {
-            getRandomXY(i, maxSize * Math.random(), newWidth, newHeight)
+            randomizeEllipse(i, maxSize * Math.random(), newWidth, newHeight)
         }
     }
 
     override fun step(width: Int, height: Int) {
-        for (i in ellipses.indices) {
-            estroke[i] += 0.025f
-            esize[i]++
-            if (esize[i] > maxSize) {
-                getRandomXY(i, 1.0, width, height)
-            } else {
-                ellipses[i].setFrame(ellipses[i].getX(), ellipses[i].getY(), esize[i], esize[i])
+        for ((i, ellipse) in ellipses.withIndex()) {
+            strokes[i] += 0.025f
+            ellipse.width += 1
+            ellipse.height += 1
+            if (ellipse.width > maxSize || ellipse.height > maxSize) {
+                randomizeEllipse(i, 1.0, width, height)
             }
         }
     }
 
     override fun render(w: Int, h: Int, g2: Graphics2D) {
-        for (i in ellipses.indices) {
-            g2.color = colors[i % colors.size]
-            g2.stroke = BasicStroke(estroke[i])
-            g2.draw(ellipses[i])
+        for ((i, ellipse) in ellipses.withIndex()) {
+            g2.color = COLORS[i % COLORS.size]
+            g2.stroke = BasicStroke(strokes[i])
+            g2.draw(ellipse)
         }
     }
 
     companion object
     {
-        private val colors = arrayOf(BLUE, CYAN, GREEN, MAGENTA, ORANGE, PINK, RED, YELLOW, LIGHT_GRAY, WHITE)
+        private val COLORS = arrayOf(Color.BLUE, Color.CYAN, Color.GREEN, Color.MAGENTA, Color.ORANGE, Color.PINK,
+                                     Color.RED, Color.YELLOW, Color.LIGHT_GRAY, Color.WHITE)
 
         @JvmStatic
         fun main(argv: Array<String>) {
