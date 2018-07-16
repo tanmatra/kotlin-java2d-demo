@@ -53,7 +53,17 @@ import javax.swing.JToolBar
  */
 class Areas : ControlsSurface()
 {
-    private var areaType: String by RepaintingProperty("nop") //TODO: enum
+    private enum class AreaType(val displayName: String, val description: String)
+    {
+        NOP("nop", "no area operation"),
+        ADD("add", "add"),
+        SUB("sub", "subtract"),
+        XOR("xor", "exclusiveOr"),
+        INT("int", "intersection"),
+        PEAR("pear", "pear")
+    }
+
+    private var areaType: AreaType by RepaintingProperty(DEFAULT_AREA_TYPE)
 
     init {
         background = Color.WHITE
@@ -80,7 +90,7 @@ class Areas : ControlsSurface()
         val area = Area(p1)
         g2.color = Color.YELLOW
         when (areaType) {
-            "nop" -> {
+            AreaType.NOP -> {
                 g2.fill(p1)
                 g2.fill(p2)
                 g2.color = Color.RED
@@ -88,11 +98,11 @@ class Areas : ControlsSurface()
                 g2.draw(p2)
                 return
             }
-            "add" -> area.add(Area(p2))
-            "sub" -> area.subtract(Area(p2))
-            "xor" -> area.exclusiveOr(Area(p2))
-            "int" -> area.intersect(Area(p2))
-            "pear" -> {
+            AreaType.ADD -> area.add(Area(p2))
+            AreaType.SUB -> area.subtract(Area(p2))
+            AreaType.XOR -> area.exclusiveOr(Area(p2))
+            AreaType.INT -> area.intersect(Area(p2))
+            AreaType.PEAR -> {
                 val sx = (w / 100).toDouble()
                 val sy = (h / 140).toDouble()
                 g2.scale(sx, sy)
@@ -145,24 +155,18 @@ class Areas : ControlsSurface()
     internal class DemoControls(private val demo: Areas) : CustomControls(demo.name)
     {
         private val toolbar = JToolBar().apply { isFloatable = false }
-        private val buttonGroup = ButtonGroup()
 
         init {
+            val buttonGroup = ButtonGroup()
             add(toolbar)
-            addTool("nop", "no area operation", true)
-            addTool("add", "add", false)
-            addTool("sub", "subtract", false)
-            addTool("xor", "exclusiveOr", false)
-            addTool("int", "intersection", false)
-            addTool("pear", "pear", false)
-        }
-
-        private fun addTool(str: String, tooltip: String, state: Boolean) {
-            val button = createToolButton(str, state, tooltip) {
-                demo.areaType = str
+            for (areaType in enumValues<AreaType>()) {
+                val initialState = (areaType == demo.areaType)
+                val button = createToolButton(areaType.displayName, initialState, areaType.description) {
+                    demo.areaType = areaType
+                }
+                buttonGroup.add(button)
+                toolbar.add(button)
             }
-            buttonGroup.add(button)
-            toolbar.add(button)
         }
 
         override fun getPreferredSize() = Dimension(200, 40)
@@ -191,6 +195,8 @@ class Areas : ControlsSurface()
 
     companion object
     {
+        private val DEFAULT_AREA_TYPE = AreaType.NOP
+
         @JvmStatic
         fun main(argv: Array<String>) {
             createDemoFrame(Areas())
