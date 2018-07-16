@@ -407,6 +407,10 @@ abstract class Surface : JPanel(), Printable
         println(string)
     }
 
+    internal open fun checkRepaint() {
+        repaint()
+    }
+
     companion object
     {
         // Lookup tables for BYTE_BINARY 1, 2 and 4 bits.

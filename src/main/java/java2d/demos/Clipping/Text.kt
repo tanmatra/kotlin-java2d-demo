@@ -34,6 +34,8 @@ package java2d.demos.Clipping
 import java2d.CControl
 import java2d.ControlsSurface
 import java2d.CustomControls
+import java2d.RepaintingProperty
+import java2d.createBooleanButton
 import java2d.createToolButton
 import java.awt.BasicStroke
 import java.awt.BorderLayout
@@ -58,8 +60,8 @@ import javax.swing.JToolBar
  */
 class Text : ControlsSurface()
 {
-    private var clipType = "Lines"
-    private var doClip = true
+    private var clipType = "Lines" // TODO: enum
+    private var doClip: Boolean by RepaintingProperty(true)
 
     init {
         background = Color.WHITE
@@ -142,17 +144,14 @@ class Text : ControlsSurface()
         g2.draw(shape)
     }
 
-    internal class DemoControls(private var demo: Text) : CustomControls(demo.name)
+    internal class DemoControls(private val demo: Text) : CustomControls(demo.name)
     {
         private val toolbar = JToolBar().apply { isFloatable = false }
         private val buttonGroup = ButtonGroup()
 
         init {
             add(toolbar)
-            toolbar.add(createToolButton("Clip", true) { selected ->
-                demo.doClip = selected
-                demo.repaint()
-            })
+            toolbar.add(createBooleanButton(demo::doClip, "Clip"))
             addTool("Lines", true)
             addTool("Image", false)
             addTool("TP", false)

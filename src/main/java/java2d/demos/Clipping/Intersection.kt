@@ -34,7 +34,8 @@ package java2d.demos.Clipping
 import java2d.AnimatingControlsSurface
 import java2d.CControl
 import java2d.CustomControls
-import java2d.createToolButton
+import java2d.RepaintingProperty
+import java2d.createBooleanButton
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Dimension
@@ -50,7 +51,6 @@ import java.awt.geom.GeneralPath
 import java.awt.geom.Rectangle2D
 import javax.swing.AbstractButton
 import javax.swing.JToolBar
-import kotlin.reflect.KMutableProperty0
 
 /**
  * Animated intersection clipping of lines, an image and a textured rectangle.
@@ -68,9 +68,11 @@ class Intersection : AnimatingControlsSurface()
     private var sh: Double = 0.0
     private lateinit var ovals: GeneralPath
     private lateinit var rectshape: Rectangle2D
-    private var doIntersection = true
-    private var doOvals = true
-    private var doText: Boolean = false
+
+    private var doIntersection: Boolean by RepaintingProperty(true)
+    private var doOvals: Boolean by RepaintingProperty(true)
+    private var doText: Boolean by RepaintingProperty(false)
+
     private var threeSixty: Boolean = false
 
     init {
@@ -189,18 +191,9 @@ class Intersection : AnimatingControlsSurface()
 
         init {
             add(toolbar)
-            addTool("Intersect", true, demo::doIntersection)
-            addTool("Text", false, demo::doText)
-            addTool("Ovals", true, demo::doOvals)
-        }
-
-        private fun addTool(title: String, state: Boolean, property: KMutableProperty0<Boolean>) {
-            toolbar.add(createToolButton(title, state) { selected ->
-                property.set(selected)
-                if (!demo.animating!!.isRunning) {
-                    demo.repaint()
-                }
-            })
+            toolbar.add(createBooleanButton(demo::doIntersection, "Intersect"))
+            toolbar.add(createBooleanButton(demo::doText, "Text"))
+            toolbar.add(createBooleanButton(demo::doOvals, "Ovals"))
         }
 
         override fun getPreferredSize() = Dimension(200, 40)

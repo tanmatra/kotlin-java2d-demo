@@ -37,7 +37,7 @@ import java2d.CControl
 import java2d.CustomControls
 import java2d.RepaintingProperty
 import java2d.antialiasing
-import java2d.createPropertyButton
+import java2d.createBooleanButton
 import java2d.createTitledSlider
 import java2d.use
 import java.awt.BasicStroke
@@ -324,10 +324,10 @@ class TransformAnim : AnimatingControlsSurface()
                 add(createTitledSlider("Images", 10, demo::imagesCount))
             })
 
-            toolbar.add(createPropertyButton("T", "Translate", demo::doTranslate))
-            toolbar.add(createPropertyButton("R", "Rotate", demo::doRotate))
-            toolbar.add(createPropertyButton("SC", "Scale", demo::doScale))
-            toolbar.add(createPropertyButton("SH", "Shear", demo::doShear))
+            toolbar.add(createBooleanButton(demo::doTranslate, "T", "Translate"))
+            toolbar.add(createBooleanButton(demo::doRotate, "R", "Rotate"))
+            toolbar.add(createBooleanButton(demo::doScale, "SC", "Scale"))
+            toolbar.add(createBooleanButton(demo::doShear, "SH", "Shear"))
             add(toolbar)
         }
 

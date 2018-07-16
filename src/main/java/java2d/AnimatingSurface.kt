@@ -95,7 +95,7 @@ abstract class AnimatingSurface : Surface(), Runnable
         }
     }
 
-    internal fun checkRepaint() {
+    override fun checkRepaint() {
         if (!isRunning) {
             repaint()
         }

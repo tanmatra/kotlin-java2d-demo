@@ -34,6 +34,8 @@ package java2d.demos.Clipping
 import java2d.AnimatingControlsSurface
 import java2d.CControl
 import java2d.CustomControls
+import java2d.RepaintingProperty
+import java2d.createBooleanButton
 import java2d.createToolButton
 import java.awt.BorderLayout
 import java.awt.Color
@@ -63,7 +65,7 @@ class ClipAnim : AnimatingControlsSurface()
         AnimVal(false),
         AnimVal(false))
 
-    private var doObjects = true
+    private var doObjects: Boolean by RepaintingProperty(true)
     private val originalFont = Font(Font.SERIF, Font.PLAIN, 12)
     private var textFont: Font? = null
     private var gradient: GradientPaint? = null
@@ -209,28 +211,19 @@ class ClipAnim : AnimatingControlsSurface()
         }
     }
 
-    internal class DemoControls(private val demo: ClipAnim) : CustomControls(demo.name)/*, ActionListener*/
+    internal class DemoControls(demo: ClipAnim) : CustomControls(demo.name)
     {
-        var toolbar: JToolBar  = JToolBar().apply { isFloatable = false }
+        private val toolbar = JToolBar().apply { isFloatable = false }
 
         init {
             add(toolbar)
-            toolbar.add(createToolButton("Objects", true) { selected ->
-                demo.doObjects = selected
-                checkRepaint()
-            })
+            toolbar.add(createBooleanButton(demo::doObjects, "Objects"))
             demo.animval.forEachIndexed { index, animVal ->
                 val initiallySelected = index == 0
                 toolbar.add(createToolButton("Clip${index + 1}", initiallySelected) { selected ->
                     animVal.isSelected = selected
-                    checkRepaint()
+                    demo.checkRepaint()
                 })
-            }
-        }
-
-        private fun checkRepaint() {
-            if (!demo.animating!!.isRunning) {
-                demo.repaint()
             }
         }
 

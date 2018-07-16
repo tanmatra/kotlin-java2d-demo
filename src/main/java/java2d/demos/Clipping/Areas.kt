@@ -34,6 +34,7 @@ package java2d.demos.Clipping
 import java2d.CControl
 import java2d.ControlsSurface
 import java2d.CustomControls
+import java2d.RepaintingProperty
 import java2d.createToolButton
 import java.awt.BorderLayout
 import java.awt.Color
@@ -52,7 +53,7 @@ import javax.swing.JToolBar
  */
 class Areas : ControlsSurface()
 {
-    private var areaType = "nop"
+    private var areaType: String by RepaintingProperty("nop") //TODO: enum
 
     init {
         background = Color.WHITE
@@ -141,7 +142,7 @@ class Areas : ControlsSurface()
         g2.draw(area)
     }
 
-    internal class DemoControls(var demo: Areas) : CustomControls(demo.name)
+    internal class DemoControls(private val demo: Areas) : CustomControls(demo.name)
     {
         private val toolbar = JToolBar().apply { isFloatable = false }
         private val buttonGroup = ButtonGroup()
@@ -159,7 +160,6 @@ class Areas : ControlsSurface()
         private fun addTool(str: String, tooltip: String, state: Boolean) {
             val button = createToolButton(str, state, tooltip) {
                 demo.areaType = str
-                demo.repaint()
             }
             buttonGroup.add(button)
             toolbar.add(button)

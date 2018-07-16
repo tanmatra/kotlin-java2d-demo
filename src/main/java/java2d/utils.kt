@@ -43,7 +43,11 @@ fun createToolButton(text: String,
     }
 }
 
-fun createPropertyButton(text: String, toolTip: String, property: KMutableProperty0<Boolean>): AbstractButton {
+fun createBooleanButton(
+    property: KMutableProperty0<Boolean>,
+    text: String,
+    toolTip: String? = null
+): AbstractButton {
     return createToolButton(text, property.get(), toolTip) { selected ->
         property.set(selected)
     }

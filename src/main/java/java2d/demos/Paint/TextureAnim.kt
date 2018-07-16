@@ -34,8 +34,9 @@ package java2d.demos.Paint
 import java2d.AnimatingControlsSurface
 import java2d.CControl
 import java2d.CustomControls
+import java2d.RepaintingProperty
 import java2d.Surface
-import java2d.createToolButton
+import java2d.createBooleanButton
 import java2d.use
 import java.awt.BorderLayout
 import java.awt.Color
@@ -54,7 +55,6 @@ import javax.swing.JMenu
 import javax.swing.JMenuBar
 import javax.swing.JMenuItem
 import javax.swing.JToolBar
-import kotlin.reflect.KMutableProperty0
 
 /**
  * TexturePaint animation with controls for transformations.
@@ -63,12 +63,12 @@ class TextureAnim : AnimatingControlsSurface()
 {
     private var textureType: TextureType = TextureType.RGB
     private var newTexture: Boolean = false
-    private var bounceSize = false
-    private var bounceRect = true
-    private var rotate = false
-    private var shearX = false
-    private var shearY = false
-    private var showAnchor = true
+    private var bounceSize: Boolean by RepaintingProperty(false)
+    private var bounceRect: Boolean by RepaintingProperty(true)
+    private var rotate: Boolean by RepaintingProperty(false)
+    private var shearX: Boolean by RepaintingProperty(false)
+    private var shearY: Boolean by RepaintingProperty(false)
+    private var showAnchor: Boolean by RepaintingProperty(true)
     private val images = arrayOf(
         getImage("duke.gif"), // 8 bit GIF
         getImage("duke.png")) // 24 bit PNG
@@ -203,12 +203,12 @@ class TextureAnim : AnimatingControlsSurface()
 
         init {
             add(toolbar)
-            addTool("BO", "Bounce", ::bounceRect)
-            addTool("SA", "Show anchor", ::showAnchor)
-            addTool("RS", "Resize", ::bounceSize)
-            addTool("RO", "Rotate", ::rotate)
-            addTool("SX", "Shear X", ::shearX)
-            addTool("SY", "Shear Y", ::shearY)
+            toolbar.add(createBooleanButton(::bounceRect, "BO", "Bounce"))
+            toolbar.add(createBooleanButton(::showAnchor, "SA", "Show anchor"))
+            toolbar.add(createBooleanButton(::bounceSize, "RS", "Resize"))
+            toolbar.add(createBooleanButton(::rotate, "RO", "Rotate"))
+            toolbar.add(createBooleanButton(::shearX, "SX", "Shear X"))
+            toolbar.add(createBooleanButton(::shearY, "SY", "Shear Y"))
 
             add(JComboBox<String>().apply {
                 for (i in TEXTURE_SIZES) {
@@ -237,14 +237,6 @@ class TextureAnim : AnimatingControlsSurface()
             }
             menu.icon = menu.getItem(0).icon
             add(menuBar)
-        }
-
-        private fun addTool(text: String, toolTip: String, property: KMutableProperty0<Boolean>) {
-            val state = property.get()
-            toolbar.add(createToolButton(text, state, toolTip) { selected ->
-                property.set(selected)
-                checkRepaint()
-            })
         }
 
         private fun checkRepaint() {
