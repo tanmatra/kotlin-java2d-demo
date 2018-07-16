@@ -29,49 +29,46 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package java2d.demos.Colors;
+package java2d.demos.Colors
 
-
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.geom.Ellipse2D;
-import java2d.Surface;
-
-import static java.awt.Color.RED;
-import static java.awt.Color.WHITE;
-
+import java2d.Surface
+import java.awt.Color
+import java.awt.Graphics2D
+import java.awt.geom.Ellipse2D
 
 /**
  * Creating colors with an alpha value.
  */
-@SuppressWarnings("serial")
-public class BullsEye extends Surface {
-
-    public BullsEye() {
-        setBackground(WHITE);
+class BullsEye : Surface()
+{
+    init {
+        background = Color.WHITE
     }
 
-    @Override
-    public void render(int w, int h, Graphics2D g2) {
-
-        Color reds[] = { RED.darker(), RED };
-        for (int N = 0; N < 18; N++) {
-            float i = (N + 2) / 2.0f;
-            float x = (5 + i * (w / 2 / 10));
-            float y = (5 + i * (h / 2 / 10));
-            float ew = (w - 10) - (i * w / 10);
-            float eh = (h - 10) - (i * h / 10);
-            float alpha = (N == 0) ? 0.1f : 1.0f / (19.0f - N);
-            if (N >= 16) {
-                g2.setColor(reds[N - 16]);
+    override fun render(w: Int, h: Int, g2: Graphics2D) {
+        for (n in 0 .. 17) {
+            val i = (n + 2) / 2.0f
+            val x = 5 + i * (w / 2 / 10)
+            val y = 5 + i * (h / 2 / 10)
+            val ew = w - 10 - i * w / 10
+            val eh = h - 10 - i * h / 10
+            val alpha = if (n == 0) 0.1f else 1.0f / (19.0f - n)
+            if (n >= 16) {
+                g2.color = reds[n - 16]
             } else {
-                g2.setColor(new Color(0f, 0f, 0f, alpha));
+                g2.color = Color(0f, 0f, 0f, alpha)
             }
-            g2.fill(new Ellipse2D.Float(x, y, ew, eh));
+            g2.fill(Ellipse2D.Float(x, y, ew, eh))
         }
     }
 
-    public static void main(String s[]) {
-        createDemoFrame(new BullsEye());
+    companion object
+    {
+        private val reds = arrayOf(Color.RED.darker(), Color.RED)
+
+        @JvmStatic
+        fun main(s: Array<String>) {
+            createDemoFrame(BullsEye())
+        }
     }
 }
