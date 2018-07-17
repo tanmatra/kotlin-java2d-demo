@@ -32,15 +32,19 @@
 package java2d.demos.Colors
 
 import java2d.Surface
+import java2d.systemTextAntialiasing
+import java2d.textAntialiasing
 import java2d.use
 import java.awt.Color
 import java.awt.Font
 import java.awt.Graphics2D
 import java.awt.Image
 import java.awt.color.ColorSpace
+import java.awt.font.TextAttribute
 import java.awt.font.TextLayout
 import java.awt.image.BufferedImage
 import java.awt.image.ColorConvertOp
+import java.text.AttributedString
 
 /**
  * ColorConvertOp a ColorSpace.TYPE_RGB BufferedImage to a ColorSpace.CS_GRAY
@@ -58,6 +62,7 @@ class ColorConvert : Surface()
         val imageWidth = image.getWidth(this)
         val imageHeight = image.getHeight(this)
         g2.color = Color.BLACK
+        g2.textAntialiasing = systemTextAntialiasing
         val titleTextLayout = TextLayout(TITLE, g2.font, g2.fontRenderContext)
         titleTextLayout.draw(g2,
                              (w / 2 - titleTextLayout.bounds.width / 2).toFloat(),
@@ -69,20 +74,22 @@ class ColorConvert : Surface()
             srcGr.setRenderingHints(hints)
             srcGr.drawImage(image, 0, 0, null)
 
-            val textFont = Font(Font.SERIF, Font.BOLD, imageWidth / 6)
-            val textLayout = TextLayout(TEXT, textFont, g2.fontRenderContext)
+            val attrString = AttributedString(TEXT).apply {
+                addAttribute(TextAttribute.FONT, Font(Font.SERIF, Font.BOLD, imageWidth / 6))
+                for (i in TEXT.indices) {
+                    addAttribute(TextAttribute.FOREGROUND, COLORS[i % COLORS.size], i, i + 1)
+                }
+            }
+            val textLayout = TextLayout(attrString.iterator, g2.fontRenderContext)
             val textBounds = textLayout.bounds
-            var charX = 0.0f
+            textLayout.draw(srcGr,
+                            (imageWidth / 2 - textBounds.width / 2).toFloat(),
+                            (imageHeight / 2 + textBounds.height / 2).toFloat())
+
             val boxWidth = imageWidth / TEXT.length
             val boxHeight = imageHeight / TEXT.length
-            for ((i, char) in TEXT.withIndex()) {
-                val singleCharLayout = TextLayout(char.toString(), textFont, g2.fontRenderContext)
-                val shape = singleCharLayout.getOutline(null)
+            for (i in TEXT.indices) {
                 srcGr.color = COLORS[i % COLORS.size]
-                singleCharLayout.draw(srcGr,
-                                      (imageWidth / 2 - textBounds.width / 2 + charX).toFloat(),
-                                      (imageHeight / 2 + textBounds.height / 2).toFloat())
-                charX += shape.bounds.getWidth().toFloat()
                 srcGr.fillRect(i * boxWidth, imageHeight - boxHeight, boxWidth, boxHeight)
                 srcGr.color = COLORS[COLORS.size - 1 - i % COLORS.size]
                 srcGr.fillRect(i * boxWidth, 0, boxWidth, boxHeight)
