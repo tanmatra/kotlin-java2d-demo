@@ -13,17 +13,39 @@ import static java.lang.Math.sqrt;
 /**
  * 3D Objects : Solid Cube, Cube & Octahedron with polygonal faces.
  */
-public class Objects3D
+class Objects3D
 {
     private static final int UP = 0;
     private static final int DOWN = 1;
+
+    private static final int NCOLOUR = 10;
+
+    private static final Color[][] COLOURS = new Color[NCOLOUR][7];
+
+    static {
+        initColours();
+    }
+
+    private static void initColours() {
+        for (int i = 0; i < NCOLOUR; i++) {
+            int val = 255 - (NCOLOUR - i - 1) * 100 / NCOLOUR;
+            COLOURS[i] = new Color[] {
+                    new Color(val, val, val), // white
+                    new Color(val,   0,   0), // red
+                    new Color(0,   val,   0), // green
+                    new Color(0,     0, val), // blue
+                    new Color(val, val,   0), // yellow
+                    new Color(0,   val, val), // cyan
+                    new Color(val,   0, val)  // magenta
+            };
+        }
+    }
+
     private int[][] polygons;
     private double[][] points;
     private int npoint;
     private int[][] faces;
     private int nface;
-    private int ncolour = 10;
-    private Color[][] colours = new Color[ncolour][7];
     private double[] lightvec = { 0, 1, 1 };
     private double Zeye = 10;
     private double angle;
@@ -64,20 +86,6 @@ public class Objects3D
         rotPts = new double[npoint][3];
         scrPts = new int[npoint][2];
 
-        for (int i = 0; i < ncolour; i++) {
-            int val = 255 - (ncolour - i - 1) * 100 / ncolour;
-            Color[] c = {
-                new Color(val, val, val), // white
-                new Color(val, 0, 0), // red
-                new Color(0, val, 0), // green
-                new Color(0, 0, val), // blue
-                new Color(val, val, 0), // yellow
-                new Color(0, val, val), // cyan
-                new Color(val, 0, val) // magenta
-            };
-            colours[i] = c;
-        }
-
         double len = sqrt(lightvec[0] * lightvec[0] + lightvec[1] * lightvec[1] + lightvec[2] * lightvec[2]);
         lightvec[0] = lightvec[0] / len;
         lightvec[1] = lightvec[1] / len;
@@ -114,14 +122,14 @@ public class Objects3D
     private Color getColour(int f, int index) {
         int colour = (int) ((rotPts[f][0] * lightvec[0] +
                              rotPts[f][1] * lightvec[1] +
-                             rotPts[f][2] * lightvec[2]) * ncolour);
+                             rotPts[f][2] * lightvec[2]) * NCOLOUR);
         if (colour < 0) {
             colour = 0;
         }
-        if (colour > ncolour - 1) {
-            colour = ncolour - 1;
+        if (colour > NCOLOUR - 1) {
+            colour = NCOLOUR - 1;
         }
-        return colours[colour][polygons[faces[f][index]][1]];
+        return COLOURS[colour][polygons[faces[f][index]][1]];
     }
 
     private void calcScrPts(double x, double y, double z) {
@@ -173,14 +181,12 @@ public class Objects3D
 
         if (scale > scaleAmt * 1.4) {
             scaleDirection = DOWN;
-        }
-        if (scale < scaleAmt * 0.4) {
+        } else if (scale < scaleAmt * 0.4) {
             scaleDirection = UP;
         }
         if (scaleDirection == UP) {
             scale += random();
-        }
-        if (scaleDirection == DOWN) {
+        } else if (scaleDirection == DOWN) {
             scale -= random();
         }
 
