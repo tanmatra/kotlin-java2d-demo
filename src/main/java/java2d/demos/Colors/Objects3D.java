@@ -15,8 +15,8 @@ import static java.lang.Math.sqrt;
  */
 public class Objects3D
 {
-    private final int UP = 0;
-    private final int DOWN = 1;
+    private static final int UP = 0;
+    private static final int DOWN = 1;
     private int[][] polygons;
     private double[][] points;
     private int npoint;
@@ -27,25 +27,28 @@ public class Objects3D
     private double[] lightvec = { 0, 1, 1 };
     private double Zeye = 10;
     private double angle;
-    private Matrix3D orient, tmp, tmp2, tmp3;
+    private Matrix3D orient;
+    private Matrix3D tmp;
+    private Matrix3D tmp2;
+    private Matrix3D tmp3;
     private int scaleDirection;
-    private double scale, scaleAmt;
-    private double ix = 3.0, iy = 3.0;
+    private double scale;
+    private double scaleAmt;
+    private double ix = 3.0;
+    private double iy = 3.0;
     private double[][] rotPts;
     private int[][] scrPts;
-    private int xx[] = new int[20];
-    private int yy[] = new int[20];
-    private double x, y;
-    private int p, j;
-    private int colour;
-    private double bounce, persp;
+    private int[] xx = new int[20];
+    private int[] yy = new int[20];
+    private double x;
+    private double y;
 
     public Objects3D(int[][] polygons,
                      double[][] points,
                      int[][] faces,
                      int w,
-                     int h) {
-
+                     int h)
+    {
         this.polygons = polygons;
         this.points = points;
         this.faces = faces;
@@ -75,24 +78,21 @@ public class Objects3D
             colours[i] = c;
         }
 
-        double len = sqrt(lightvec[0] * lightvec[0] + lightvec[1]
-                * lightvec[1] + lightvec[2] * lightvec[2]);
+        double len = sqrt(lightvec[0] * lightvec[0] + lightvec[1] * lightvec[1] + lightvec[2] * lightvec[2]);
         lightvec[0] = lightvec[0] / len;
         lightvec[1] = lightvec[1] / len;
         lightvec[2] = lightvec[2] / len;
 
         double max = 0;
         for (int i = 0; i < npoint; i++) {
-            len = sqrt(points[i][0] * points[i][0] + points[i][1]
-                    * points[i][1] + points[i][2] * points[i][2]);
+            len = sqrt(points[i][0] * points[i][0] + points[i][1] * points[i][1] + points[i][2] * points[i][2]);
             if (len > max) {
                 max = len;
             }
         }
 
         for (int i = 0; i < nface; i++) {
-            len = sqrt(points[i][0] * points[i][0] + points[i][1]
-                    * points[i][1] + points[i][2] * points[i][2]);
+            len = sqrt(points[i][0] * points[i][0] + points[i][1] * points[i][1] + points[i][2] * points[i][2]);
             points[i][0] = points[i][0] / len;
             points[i][1] = points[i][1] / len;
             points[i][2] = points[i][2] / len;
@@ -102,8 +102,8 @@ public class Objects3D
         tmp = new Matrix3D();
         tmp2 = new Matrix3D();
         tmp3 = new Matrix3D();
-        tmp.Rotation(2, 0, PI / 50);
-        CalcScrPts((double) w / 3, (double) h / 3, 0);
+        tmp.rotation(2, 0, PI / 50);
+        calcScrPts((double) w / 3, (double) h / 3, 0);
 
         scale = min(w / 3.0 / max / 1.2, h / 3.0 / max / 1.2);
         scaleAmt = scale;
@@ -112,8 +112,9 @@ public class Objects3D
     }
 
     private Color getColour(int f, int index) {
-        colour = (int) ((rotPts[f][0] * lightvec[0] + rotPts[f][1]
-                * lightvec[1] + rotPts[f][2] * lightvec[2]) * ncolour);
+        int colour = (int) ((rotPts[f][0] * lightvec[0] +
+                             rotPts[f][1] * lightvec[1] +
+                             rotPts[f][2] * lightvec[2]) * ncolour);
         if (colour < 0) {
             colour = 0;
         }
@@ -123,32 +124,24 @@ public class Objects3D
         return colours[colour][polygons[faces[f][index]][1]];
     }
 
-    private void CalcScrPts(double x, double y, double z) {
-        for (p = 0; p < npoint; p++) {
-
-            rotPts[p][2] = points[p][0] * orient.M[2][0]
-                    + points[p][1] * orient.M[2][1]
-                    + points[p][2] * orient.M[2][2];
-
-            rotPts[p][0] = points[p][0] * orient.M[0][0]
-                    + points[p][1] * orient.M[0][1]
-                    + points[p][2] * orient.M[0][2];
-
-            rotPts[p][1] = -points[p][0] * orient.M[1][0]
-                    - points[p][1] * orient.M[1][1]
-                    - points[p][2] * orient.M[1][2];
+    private void calcScrPts(double x, double y, double z) {
+        for (int p = 0; p < npoint; p++) {
+            rotPts[p][2] = points[p][0] * orient.M[2][0] + points[p][1] * orient.M[2][1] + points[p][2] * orient.M[2][2];
+            rotPts[p][0] = points[p][0] * orient.M[0][0] + points[p][1] * orient.M[0][1] + points[p][2] * orient.M[0][2];
+            rotPts[p][1] = -points[p][0] * orient.M[1][0] - points[p][1] * orient.M[1][1] - points[p][2] * orient.M[1][2];
         }
-        for (p = nface; p < npoint; p++) {
+        for (int p = nface; p < npoint; p++) {
             rotPts[p][2] += z;
-            persp = (Zeye - rotPts[p][2]) / (scale * Zeye);
+            final double persp = (Zeye - rotPts[p][2]) / (scale * Zeye);
             scrPts[p][0] = (int) (rotPts[p][0] / persp + x);
             scrPts[p][1] = (int) (rotPts[p][1] / persp + y);
         }
     }
 
     private boolean faceUp(int f) {
-        return (rotPts[f][0] * rotPts[nface + f][0] + rotPts[f][1] * rotPts[nface
-                + f][1] + rotPts[f][2] * (rotPts[nface + f][2] - Zeye) < 0);
+        return (rotPts[f][0] * rotPts[nface + f][0] +
+                rotPts[f][1] * rotPts[nface + f][1] +
+                rotPts[f][2] * (rotPts[nface + f][2] - Zeye)) < 0;
     }
 
     public void step(int w, int h) {
@@ -172,11 +165,11 @@ public class Objects3D
         }
 
         angle += random() * 0.15;
-        tmp3.Rotation(1, 2, angle);
-        tmp2.Rotation(1, 0, angle * sqrt(2) / 2);
-        tmp.Rotation(0, 2, angle * PI / 4);
-        orient.M = tmp3.Times(tmp2.Times(tmp.M));
-        bounce = abs(cos(0.5 * (angle))) * 2 - 1;
+        tmp3.rotation(1, 2, angle);
+        tmp2.rotation(1, 0, angle * sqrt(2) / 2);
+        tmp.rotation(0, 2, angle * PI / 4);
+        orient.M = tmp3.times(tmp2.times(tmp.M));
+        final double bounce = abs(cos(0.5 * (angle))) * 2 - 1;
 
         if (scale > scaleAmt * 1.4) {
             scaleDirection = DOWN;
@@ -191,20 +184,20 @@ public class Objects3D
             scale -= random();
         }
 
-        CalcScrPts(x, y, bounce);
+        calcScrPts(x, y, bounce);
     }
 
     public void render(Graphics2D g2) {
         for (int f = 0; f < nface; f++) {
             if (faceUp(f)) {
-                for (j = 1; j < faces[f][0] + 1; j++) {
-                    DrawPoly(g2, faces[f][j], getColour(f, j));
+                for (int j = 1; j < faces[f][0] + 1; j++) {
+                    drawPoly(g2, faces[f][j], getColour(f, j));
                 }
             }
         }
     }
 
-    private void DrawPoly(Graphics2D g2, int poly, Color colour) {
+    private void drawPoly(Graphics2D g2, int poly, Color colour) {
         for (int point = 2; point < polygons[poly][0] + 2; point++) {
             xx[point - 2] = scrPts[polygons[poly][point]][0];
             yy[point - 2] = scrPts[polygons[poly][point]][1];
@@ -214,4 +207,4 @@ public class Objects3D
         g2.setColor(Color.black);
         g2.drawPolygon(xx, yy, polygons[poly][0]);
     }
-} // End Objects3D
+}
