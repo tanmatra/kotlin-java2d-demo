@@ -20,39 +20,32 @@ internal class Objects3D(
     w: Int,
     h: Int
 ) {
-    private val npoint: Int
-    private val nface: Int
+    private val npoint: Int = points.size
+    private val nface: Int = faces.size
     private val lightvec = doubleArrayOf(0.0, 1.0, 1.0)
-    private val Zeye = 10.0
-    private var angle: Double = 0.toDouble()
-    private val orient: Matrix3D
-    private val tmp: Matrix3D
-    private val tmp2: Matrix3D
-    private val tmp3: Matrix3D
+    private var angle: Double = 0.0
+    private val orient = Matrix3D()
+    private val tmp = Matrix3D()
+    private val tmp2 = Matrix3D()
+    private val tmp3 = Matrix3D()
     private var scaleDirection: Int = 0
-    private var scale: Double = 0.toDouble()
+    private var scale: Double = 0.0
     private val scaleAmt: Double
     private var ix = 3.0
     private var iy = 3.0
-    private val rotPts: Array<DoubleArray>
-    private val scrPts: Array<IntArray>
+    private val rotPts: Array<DoubleArray> = Array(npoint) { DoubleArray(3) }
+    private val scrPts: Array<IntArray> = Array(npoint) { IntArray(2) }
     private val xx = IntArray(20)
     private val yy = IntArray(20)
-    private var x: Double = 0.toDouble()
-    private var y: Double = 0.toDouble()
+    private var x: Double = 0.0
+    private var y: Double = 0.0
 
     init {
-        npoint = points.size
-        nface = faces.size
-
         x = w * random()
         y = h * random()
 
         ix = if (random() > 0.5) ix else -ix
         iy = if (random() > 0.5) iy else -iy
-
-        rotPts = Array(npoint) { DoubleArray(3) }
-        scrPts = Array(npoint) { IntArray(2) }
 
         var len = sqrt(lightvec[0] * lightvec[0] + lightvec[1] * lightvec[1] + lightvec[2] * lightvec[2])
         lightvec[0] = lightvec[0] / len
@@ -74,10 +67,6 @@ internal class Objects3D(
             points[i][2] = points[i][2] / len
         }
 
-        orient = Matrix3D()
-        tmp = Matrix3D()
-        tmp2 = Matrix3D()
-        tmp3 = Matrix3D()
         tmp.rotation(2, 0, PI / 50)
         calcScrPts(w.toDouble() / 3, h.toDouble() / 3, 0.0)
 
@@ -91,11 +80,9 @@ internal class Objects3D(
         var colour = ((rotPts[f][0] * lightvec[0] +
                        rotPts[f][1] * lightvec[1] +
                        rotPts[f][2] * lightvec[2]) * NCOLOUR).toInt()
-        if (colour < 0) {
-            colour = 0
-        }
-        if (colour > NCOLOUR - 1) {
-            colour = NCOLOUR - 1
+        when {
+            colour < 0 -> colour = 0
+            colour > NCOLOUR - 1 -> colour = NCOLOUR - 1
         }
         return COLOURS[colour][polygons[faces[f][index]][1]]
     }
@@ -104,8 +91,7 @@ internal class Objects3D(
         for (p in 0 until npoint) {
             rotPts[p][2] = points[p][0] * orient.M[2][0] + points[p][1] * orient.M[2][1] + points[p][2] * orient.M[2][2]
             rotPts[p][0] = points[p][0] * orient.M[0][0] + points[p][1] * orient.M[0][1] + points[p][2] * orient.M[0][2]
-            rotPts[p][1] = -points[p][0] * orient.M[1][0] - points[p][1] * orient.M[1][1] - points[p][2] *
-                orient.M[1][2]
+            rotPts[p][1] = -points[p][0] * orient.M[1][0] - points[p][1] * orient.M[1][1] - points[p][2] * orient.M[1][2]
         }
         for (p in nface until npoint) {
             rotPts[p][2] += z
@@ -116,9 +102,9 @@ internal class Objects3D(
     }
 
     private fun faceUp(f: Int): Boolean {
-        return rotPts[f][0] * rotPts[nface + f][0] +
-            rotPts[f][1] * rotPts[nface + f][1] +
-            rotPts[f][2] * (rotPts[nface + f][2] - Zeye) < 0
+        return (rotPts[f][0] * rotPts[nface + f][0] +
+                rotPts[f][1] * rotPts[nface + f][1] +
+                rotPts[f][2] * (rotPts[nface + f][2] - Zeye)) < 0
     }
 
     fun step(w: Int, h: Int) {
@@ -148,15 +134,13 @@ internal class Objects3D(
         orient.M = tmp3.times(tmp2.times(tmp.M))
         val bounce = abs(cos(0.5 * angle)) * 2 - 1
 
-        if (scale > scaleAmt * 1.4) {
-            scaleDirection = DOWN
-        } else if (scale < scaleAmt * 0.4) {
-            scaleDirection = UP
+        when {
+            scale > scaleAmt * 1.4 -> scaleDirection = DOWN
+            scale < scaleAmt * 0.4 -> scaleDirection = UP
         }
-        if (scaleDirection == UP) {
-            scale += random()
-        } else if (scaleDirection == DOWN) {
-            scale -= random()
+        when (scaleDirection) {
+            UP -> scale += random()
+            DOWN -> scale -= random()
         }
 
         calcScrPts(x, y, bounce)
@@ -179,7 +163,7 @@ internal class Objects3D(
         }
         g2.color = colour
         g2.fillPolygon(xx, yy, polygons[poly][0])
-        g2.color = Color.black
+        g2.color = Color.BLACK
         g2.drawPolygon(xx, yy, polygons[poly][0])
     }
 
@@ -187,8 +171,8 @@ internal class Objects3D(
     {
         private const val UP = 0
         private const val DOWN = 1
-
         private const val NCOLOUR = 10
+        private const val Zeye = 10.0
 
         private val COLOURS: Array<Array<Color>> = Array(NCOLOUR) { i ->
             val v = 255 - (NCOLOUR - i - 1) * 100 / NCOLOUR
