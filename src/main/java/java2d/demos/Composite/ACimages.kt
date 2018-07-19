@@ -35,7 +35,6 @@ import java2d.Surface
 import java.awt.AlphaComposite
 import java.awt.Color
 import java.awt.Graphics2D
-import java.awt.Image
 import java.awt.Shape
 import java.awt.font.TextLayout
 import java.awt.geom.Ellipse2D
@@ -47,11 +46,10 @@ import java.awt.geom.RoundRectangle2D
  */
 class ACimages : Surface()
 {
+    private val images = IMAGE_NAMES.map { name -> getImage("$name.gif") }
+
     init {
         background = Color.WHITE
-        for (i in imgs.indices) {
-            imgs[i] = getImage(s[i] + ".gif")
-        }
     }
 
     override fun render(w: Int, h: Int, g2: Graphics2D) {
@@ -61,7 +59,7 @@ class ACimages : Surface()
         var xx = 0.0f
         var yy = 15.0f
 
-        for (i in imgs.indices) {
+        for (i in images.indices) {
             xx = if (i % 3 == 0) 0.0f else xx + w / 3
             when (i) {
                 3 -> yy = (h / 3 + 15).toFloat()
@@ -72,29 +70,33 @@ class ACimages : Surface()
             g2.color = Color.BLACK
             alpha += 0.1f
             val ac = AlphaComposite.SrcOver.derive(alpha)
-            val str = "a=" + java.lang.Float.toString(alpha).substring(0, 3)
+            val str = "a=%.1f".format(alpha)
             TextLayout(str, g2.font, g2.fontRenderContext).draw(g2, xx + 3, yy - 2)
 
-            var shape: Shape? = null
-
-            when (i % 3) {
-                0 -> shape = Ellipse2D.Float(xx, yy, iw.toFloat(), ih.toFloat())
-                1 -> shape = RoundRectangle2D.Float(xx, yy, iw.toFloat(), ih.toFloat(), 25f, 25f)
-                2 -> shape = Rectangle2D.Float(xx, yy, iw.toFloat(), ih.toFloat())
+            val shape: Shape = when (i % 3) {
+                0 -> Ellipse2D.Float(xx, yy, iw.toFloat(), ih.toFloat())
+                1 -> RoundRectangle2D.Float(xx, yy, iw.toFloat(), ih.toFloat(), 25f, 25f)
+                2 -> Rectangle2D.Float(xx, yy, iw.toFloat(), ih.toFloat())
+                else -> error(3)
             }
-            g2.color = colors[i]
+            g2.color = COLORS[i]
             g2.composite = ac
             g2.fill(shape)
-            g2.drawImage(imgs[i], xx.toInt(), yy.toInt(), iw, ih, null)
+            g2.drawImage(images[i], xx.toInt(), yy.toInt(), iw, ih, null)
         }
     }
 
     companion object
     {
-        private val s = arrayOf("box", "fight", "magnify", "boxwave", "globe", "snooze", "tip", "thumbsup", "dukeplug")
-        private val imgs = arrayOfNulls<Image>(s.size)
-        private val colors = arrayOf(Color.BLUE, Color.CYAN, Color.GREEN, Color.MAGENTA, Color.ORANGE, Color.PINK,
-                                     Color.RED, Color.YELLOW, Color.LIGHT_GRAY)
+        private val IMAGE_NAMES = arrayOf(
+            "box", "fight", "magnify",
+            "boxwave", "globe", "snooze",
+            "tip", "thumbsup", "dukeplug")
+
+        private val COLORS = arrayOf(
+            Color.BLUE, Color.CYAN, Color.GREEN,
+            Color.MAGENTA, Color.ORANGE, Color.PINK,
+            Color.RED, Color.YELLOW, Color.LIGHT_GRAY)
 
         @JvmStatic
         fun main(s: Array<String>) {
