@@ -1,5 +1,8 @@
 package java2d.demos.Colors
 
+import java2d.distance
+import java2d.normalize
+import java2d.replaceAll
 import java.awt.Color
 import java.awt.Graphics2D
 
@@ -20,8 +23,6 @@ internal class Objects3D(
     w: Int,
     h: Int
 ) {
-    private val npoint: Int = points.size
-    private val nface: Int = faces.size
     private val lightvec = doubleArrayOf(0.0, 1.0, 1.0)
     private var angle: Double = 0.0
     private val orient = Matrix3D()
@@ -33,8 +34,8 @@ internal class Objects3D(
     private val scaleAmt: Double
     private var ix = 3.0
     private var iy = 3.0
-    private val rotPts: Array<DoubleArray> = Array(npoint) { DoubleArray(3) }
-    private val scrPts: Array<IntArray> = Array(npoint) { IntArray(2) }
+    private val rotPts: Array<DoubleArray> = Array(points.size) { DoubleArray(3) }
+    private val scrPts: Array<IntArray> = Array(points.size) { IntArray(2) }
     private val xx = IntArray(20)
     private val yy = IntArray(20)
     private var x: Double = 0.0
@@ -47,24 +48,14 @@ internal class Objects3D(
         ix = if (random() > 0.5) ix else -ix
         iy = if (random() > 0.5) iy else -iy
 
-        var len = sqrt(lightvec[0] * lightvec[0] + lightvec[1] * lightvec[1] + lightvec[2] * lightvec[2])
-        lightvec[0] = lightvec[0] / len
-        lightvec[1] = lightvec[1] / len
-        lightvec[2] = lightvec[2] / len
+        lightvec.normalize()
 
-        var max = 0.0
-        for (i in 0 until npoint) {
-            len = sqrt(points[i][0] * points[i][0] + points[i][1] * points[i][1] + points[i][2] * points[i][2])
-            if (len > max) {
-                max = len
-            }
-        }
+        val max = points.map { it.distance() }.max() ?: 0.0
 
-        for (i in 0 until nface) {
-            len = sqrt(points[i][0] * points[i][0] + points[i][1] * points[i][1] + points[i][2] * points[i][2])
-            points[i][0] = points[i][0] / len
-            points[i][1] = points[i][1] / len
-            points[i][2] = points[i][2] / len
+        for (i in faces.indices) { // NOTE: iterating not all points
+            val p = points[i]
+            val distance = p.distance()
+            p.replaceAll { it / distance }
         }
 
         tmp.rotation(2, 0, PI / 50)
@@ -88,12 +79,12 @@ internal class Objects3D(
     }
 
     private fun calcScrPts(x: Double, y: Double, z: Double) {
-        for (p in 0 until npoint) {
+        for (p in 0 until points.size) {
             rotPts[p][2] = points[p][0] * orient.M[2][0] + points[p][1] * orient.M[2][1] + points[p][2] * orient.M[2][2]
             rotPts[p][0] = points[p][0] * orient.M[0][0] + points[p][1] * orient.M[0][1] + points[p][2] * orient.M[0][2]
             rotPts[p][1] = -points[p][0] * orient.M[1][0] - points[p][1] * orient.M[1][1] - points[p][2] * orient.M[1][2]
         }
-        for (p in nface until npoint) {
+        for (p in faces.size until points.size) {
             rotPts[p][2] += z
             val persp = (Zeye - rotPts[p][2]) / (scale * Zeye)
             scrPts[p][0] = (rotPts[p][0] / persp + x).toInt()
@@ -102,9 +93,9 @@ internal class Objects3D(
     }
 
     private fun faceUp(f: Int): Boolean {
-        return (rotPts[f][0] * rotPts[nface + f][0] +
-                rotPts[f][1] * rotPts[nface + f][1] +
-                rotPts[f][2] * (rotPts[nface + f][2] - Zeye)) < 0
+        return (rotPts[f][0] * rotPts[faces.size + f][0] +
+                rotPts[f][1] * rotPts[faces.size + f][1] +
+                rotPts[f][2] * (rotPts[faces.size + f][2] - Zeye)) < 0
     }
 
     fun step(w: Int, h: Int) {
@@ -147,7 +138,7 @@ internal class Objects3D(
     }
 
     fun render(g2: Graphics2D) {
-        for (f in 0 until nface) {
+        for (f in faces.indices) {
             if (faceUp(f)) {
                 for (j in 1 until faces[f][0] + 1) {
                     drawPoly(g2, faces[f][j], getColour(f, j))

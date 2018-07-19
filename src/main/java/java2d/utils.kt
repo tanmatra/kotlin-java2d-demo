@@ -195,3 +195,18 @@ fun createTitledSlider(suffix: String, max: Int, property: KMutableProperty0<Int
         }
     }
 }
+
+fun sqr(d: Double): Double = d * d
+
+fun DoubleArray.distance() = Math.sqrt(sumByDouble { sqr(it) })
+
+inline fun DoubleArray.replaceAll(transform: (Double) -> Double) {
+    for (i in indices) {
+        this[i] = transform(this[i])
+    }
+}
+
+fun DoubleArray.normalize() {
+    val distance = distance()
+    replaceAll { it / distance }
+}
