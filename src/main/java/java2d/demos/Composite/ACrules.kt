@@ -32,6 +32,7 @@
 package java2d.demos.Composite
 
 import java2d.AnimatingSurface
+import java2d.use
 import java.awt.AlphaComposite.Clear
 import java.awt.AlphaComposite.Dst
 import java.awt.AlphaComposite.DstAtop
@@ -61,27 +62,27 @@ import java.awt.image.BufferedImage
 class ACrules : AnimatingSurface()
 {
     private var fadeIndex: Int = 0
-    private var srca = fadeValues[fadeIndex][0]
-    private var dsta = fadeValues[fadeIndex][3]
-    private var fadeLabel = fadeNames[0]
-    private var statBI: BufferedImage? = null
-    private var animBI: BufferedImage? = null
-    private var PADLEFT: Int = 0
-    private var PADRIGHT: Int = 0
-    private var HPAD: Int = 0
-    private var PADABOVE: Int = 0
-    private var PADBELOW: Int = 0
-    private var VPAD: Int = 0
-    private var RECTWIDTH: Int = 0
-    private var RECTHEIGHT: Int = 0
-    private var PADDEDHEIGHT: Int = 0
+    private var srcAlpha = FADE_VALUES[fadeIndex][0]
+    private var dstAlpha = FADE_VALUES[fadeIndex][3]
+    private var fadeLabel = FADE_NAMES[0]
+    private lateinit var staticBufImg: BufferedImage
+    private lateinit var animatedBufImg: BufferedImage
+    private var padLeft: Int = 0
+    private var padRight: Int = 0
+    private var horizontalPad: Int = 0
+    private var padAbove: Int = 0
+    private var padBelow: Int = 0
+    private var verticalPad: Int = 0
+    private var rectWidth: Int = 0
+    private var rectHeight: Int = 0
+    private var paddedHeight: Int = 0
     private val srcpath = GeneralPath()
     private val dstpath = GeneralPath()
-    private var lm: LineMetrics? = null
-    private var dBI: BufferedImage? = null
-    private var sBI: BufferedImage? = null
-    private var gradientDst: GradientPaint? = null
-    private var gradientSrc: GradientPaint? = null
+    private lateinit var lineMetrics: LineMetrics
+    private lateinit var dstBufImg: BufferedImage
+    private lateinit var srcBufImg: BufferedImage
+    private lateinit var srcGradient: GradientPaint
+    private lateinit var dstGradient: GradientPaint
 
     init {
         background = Color.WHITE
@@ -89,153 +90,157 @@ class ACrules : AnimatingSurface()
 
     override fun reset(newWidth: Int, newHeight: Int) {
         sleepAmount = 400
+
         val frc = FontRenderContext(null, false, false)
-        lm = FONT.getLineMetrics(compNames[0], frc)
+        lineMetrics = FONT.getLineMetrics(COMPOSITE_NAMES[0], frc)
 
-        PADLEFT = if (newWidth < 150) 10 else 15
-        PADRIGHT = if (newWidth < 150) 10 else 15
-        HPAD = PADLEFT + PADRIGHT
-        PADBELOW = if (newHeight < 250) 1 else 2
-        PADABOVE = PADBELOW + lm!!.height.toInt()
-        VPAD = PADABOVE + PADBELOW
-        RECTWIDTH = newWidth / 4 - HPAD
-        RECTWIDTH = if (RECTWIDTH < 6) 6 else RECTWIDTH
-        RECTHEIGHT = (newHeight - VPAD) / HALF_NUM_RULES - VPAD
-        RECTHEIGHT = if (RECTHEIGHT < 6) 6 else RECTHEIGHT
-        PADDEDHEIGHT = RECTHEIGHT + VPAD
+        padLeft = if (newWidth < 150) 10 else 15
+        padRight = if (newWidth < 150) 10 else 15
+        horizontalPad = padLeft + padRight
 
-        srcpath.reset()
-        srcpath.moveTo(0f, 0f)
-        srcpath.lineTo(RECTWIDTH.toFloat(), 0f)
-        srcpath.lineTo(0f, RECTHEIGHT.toFloat())
-        srcpath.closePath()
+        padBelow = if (newHeight < 250) 1 else 2
+        padAbove = padBelow + lineMetrics.height.toInt()
+        verticalPad = padAbove + padBelow
 
-        dstpath.reset()
-        dstpath.moveTo(0f, 0f)
-        dstpath.lineTo(RECTWIDTH.toFloat(), RECTHEIGHT.toFloat())
-        dstpath.lineTo(RECTWIDTH.toFloat(), 0f)
-        dstpath.closePath()
+        rectWidth = (newWidth / 4 - horizontalPad).coerceAtLeast(6)
+        rectHeight = ((newHeight - verticalPad) / HALF_NUM_RULES - verticalPad).coerceAtLeast(6)
 
-        dBI = BufferedImage(RECTWIDTH, RECTHEIGHT, BufferedImage.TYPE_INT_ARGB)
-        sBI = BufferedImage(RECTWIDTH, RECTHEIGHT, BufferedImage.TYPE_INT_ARGB)
+        paddedHeight = rectHeight + verticalPad
 
-        gradientDst = GradientPaint(
+        with(srcpath) {
+            reset()
+            moveTo(0f, 0f)
+            lineTo(rectWidth.toFloat(), 0f)
+            lineTo(0f, rectHeight.toFloat())
+            closePath()
+        }
+
+        with(dstpath) {
+            reset()
+            moveTo(0f, 0f)
+            lineTo(rectWidth.toFloat(), rectHeight.toFloat())
+            lineTo(rectWidth.toFloat(), 0f)
+            closePath()
+        }
+
+        dstBufImg = BufferedImage(rectWidth, rectHeight, BufferedImage.TYPE_INT_ARGB)
+        srcBufImg = BufferedImage(rectWidth, rectHeight, BufferedImage.TYPE_INT_ARGB)
+
+        dstGradient = GradientPaint(
             0f, 0f,
             Color(1.0f, 0.0f, 0.0f, 1.0f),
-            0f, RECTHEIGHT.toFloat(),
+            0f, rectHeight.toFloat(),
             Color(1.0f, 0.0f, 0.0f, 0.0f))
 
-        gradientSrc = GradientPaint(
+        srcGradient = GradientPaint(
             0f, 0f,
             Color(0.0f, 0.0f, 1.0f, 1.0f),
-            RECTWIDTH.toFloat(), 0f,
+            rectWidth.toFloat(), 0f,
             Color(0.0f, 0.0f, 1.0f, 0.0f))
 
-        statBI = BufferedImage(newWidth / 2, newHeight, BufferedImage.TYPE_INT_RGB)
-        statBI = drawCompBI(statBI!!, true)
-        animBI = BufferedImage(newWidth / 2, newHeight, BufferedImage.TYPE_INT_RGB)
+        staticBufImg = BufferedImage(newWidth / 2, newHeight, BufferedImage.TYPE_INT_RGB)
+        drawComposites(staticBufImg, doGradient = true)
+        animatedBufImg = BufferedImage(newWidth / 2, newHeight, BufferedImage.TYPE_INT_RGB)
     }
 
     override fun step(width: Int, height: Int) {
         if (sleepAmount == 5000L) {
             sleepAmount = 200
         }
-        srca += fadeValues[fadeIndex][1]
-        dsta += fadeValues[fadeIndex][4]
-        fadeLabel = fadeNames[fadeIndex]
-        if (srca < 0 || srca > 1.0 || dsta < 0 || dsta > 1.0) {
+        srcAlpha += FADE_VALUES[fadeIndex][1]
+        dstAlpha += FADE_VALUES[fadeIndex][4]
+        fadeLabel = FADE_NAMES[fadeIndex]
+        if (srcAlpha < 0 || srcAlpha > 1.0 || dstAlpha < 0 || dstAlpha > 1.0) {
             sleepAmount = 5000
-            srca = fadeValues[fadeIndex][2]
-            dsta = fadeValues[fadeIndex][5]
-            if (fadeIndex++ == fadeValues.size - 1) {
+            srcAlpha = FADE_VALUES[fadeIndex][2]
+            dstAlpha = FADE_VALUES[fadeIndex][5]
+            if (fadeIndex++ == FADE_VALUES.size - 1) {
                 fadeIndex = 0
             }
         }
     }
 
     override fun render(w: Int, h: Int, g2: Graphics2D) {
-        if (statBI == null || animBI == null) {
-            return
-        }
-        g2.drawImage(statBI, 0, 0, null)
-        g2.drawImage(drawCompBI(animBI!!, false), w / 2, 0, null)
+        g2.drawImage(staticBufImg, 0, 0, null)
+        drawComposites(animatedBufImg, doGradient = false)
+        g2.drawImage(animatedBufImg, w / 2, 0, null)
 
-        g2.color = Color.black
+        g2.color = Color.BLACK
         val frc = g2.fontRenderContext
-        var tl = TextLayout("AC Rules", g2.font, frc)
+        val tl = TextLayout("AC Rules", g2.font, frc)
         tl.draw(g2, 15.0f, tl.bounds.height.toFloat() + 3.0f)
 
-        tl = TextLayout(fadeLabel, FONT, frc)
-        var x = (w * 0.75 - tl.bounds.width / 2).toFloat()
-        if (x + tl.bounds.width > w) {
-            x = (w - tl.bounds.width).toFloat()
+        val tl2 = TextLayout(fadeLabel, FONT, frc)
+        var x = (w * 0.75 - tl2.bounds.width / 2).toFloat()
+        if (x + tl2.bounds.width > w) {
+            x = (w - tl2.bounds.width).toFloat()
         }
-        tl.draw(g2, x, tl.bounds.height.toFloat() + 3.0f)
+        tl2.draw(g2, x, tl2.bounds.height.toFloat() + 3.0f)
     }
 
-    private fun drawCompBI(bi: BufferedImage, doGradient: Boolean): BufferedImage {
-        val big = bi.createGraphics()
-        big.color = background
-        big.fillRect(0, 0, bi.width, bi.height)
-        big.setRenderingHint(RenderingHints.KEY_ANTIALIASING, antiAlias)
-        big.font = FONT
+    private fun drawComposites(bufImg: BufferedImage, doGradient: Boolean) {
+        bufImg.createGraphics().use { gr ->
+            gr.color = background
+            gr.fillRect(0, 0, bufImg.width, bufImg.height)
+            gr.setRenderingHint(RenderingHints.KEY_ANTIALIASING, antiAlias)
+            gr.font = FONT
 
-        val gD = dBI!!.createGraphics()
-        gD.setRenderingHint(RenderingHints.KEY_ANTIALIASING, antiAlias)
-        val gS = sBI!!.createGraphics()
-        gS.setRenderingHint(RenderingHints.KEY_ANTIALIASING, antiAlias)
+            dstBufImg.createGraphics().use { dstGr ->
+                dstGr.setRenderingHint(RenderingHints.KEY_ANTIALIASING, antiAlias)
+                srcBufImg.createGraphics().use { srcGr ->
+                    srcGr.setRenderingHint(RenderingHints.KEY_ANTIALIASING, antiAlias)
 
-        var x = 0
-        var y = 0
-        val yy = lm!!.height.toInt() + VPAD
+                    var y = 0
+                    val yy = lineMetrics.height.toInt() + verticalPad
 
-        for (i in compNames.indices) {
-            y = if (i == 0 || i == HALF_NUM_RULES) yy else y + PADDEDHEIGHT
-            x = if (i >= HALF_NUM_RULES) bi.width / 2 + PADLEFT else PADLEFT
-            big.translate(x, y)
+                    for (i in COMPOSITE_NAMES.indices) {
+                        y = if (i == 0 || i == HALF_NUM_RULES) yy else y + paddedHeight
+                        val x = if (i >= HALF_NUM_RULES) bufImg.width / 2 + padLeft else padLeft
+                        gr.translate(x, y)
 
-            gD.composite = Clear
-            gD.fillRect(0, 0, RECTWIDTH, RECTHEIGHT)
-            gD.composite = Src
-            if (doGradient) {
-                gD.paint = gradientDst
-                gD.fillRect(0, 0, RECTWIDTH, RECTHEIGHT)
-            } else {
-                gD.paint = Color(1.0f, 0.0f, 0.0f, dsta)
-                gD.fill(dstpath)
+                        with(dstGr) {
+                            composite = Clear
+                            fillRect(0, 0, rectWidth, rectHeight)
+                            composite = Src
+                            if (doGradient) {
+                                paint = dstGradient
+                                fillRect(0, 0, rectWidth, rectHeight)
+                            } else {
+                                paint = Color(1.0f, 0.0f, 0.0f, dstAlpha)
+                                fill(dstpath)
+                            }
+                        }
+
+                        with(srcGr) {
+                            composite = Clear
+                            fillRect(0, 0, rectWidth, rectHeight)
+                            composite = Src
+                            if (doGradient) {
+                                paint = srcGradient
+                                fillRect(0, 0, rectWidth, rectHeight)
+                            } else {
+                                paint = Color(0.0f, 0.0f, 1.0f, srcAlpha)
+                                fill(srcpath)
+                            }
+                        }
+
+                        dstGr.composite = COMPOSITES[i]
+                        dstGr.drawImage(srcBufImg, 0, 0, null)
+
+                        gr.drawImage(dstBufImg, 0, 0, null)
+                        gr.color = Color.black
+                        gr.drawString(COMPOSITE_NAMES[i], 0f, -lineMetrics.descent)
+                        gr.drawRect(0, 0, rectWidth, rectHeight)
+                        gr.translate(-x, -y)
+                    }
+                }
             }
-
-            gS.composite = Clear
-            gS.fillRect(0, 0, RECTWIDTH, RECTHEIGHT)
-            gS.composite = Src
-            if (doGradient) {
-                gS.paint = gradientSrc
-                gS.fillRect(0, 0, RECTWIDTH, RECTHEIGHT)
-            } else {
-                gS.paint = Color(0.0f, 0.0f, 1.0f, srca)
-                gS.fill(srcpath)
-            }
-
-            gD.composite = compObjs[i]
-            gD.drawImage(sBI, 0, 0, null)
-
-            big.drawImage(dBI, 0, 0, null)
-            big.color = Color.black
-            big.drawString(compNames[i], 0f, -lm!!.descent)
-            big.drawRect(0, 0, RECTWIDTH, RECTHEIGHT)
-            big.translate(-x, -y)
         }
-
-        gD.dispose()
-        gS.dispose()
-        big.dispose()
-
-        return bi
     }
 
     companion object
     {
-        private val compNames = arrayOf(
+        private val COMPOSITE_NAMES = arrayOf(
             "Src",
             "SrcOver",
             "SrcIn",
@@ -249,18 +254,18 @@ class ACrules : AnimatingSurface()
             "DstAtop",
             "Xor")
 
-        private val compObjs =
+        private val COMPOSITES =
             arrayOf(Src, SrcOver, SrcIn, SrcOut, SrcAtop, Clear, Dst, DstOver, DstIn, DstOut, DstAtop, Xor)
 
-        private val NUM_RULES = compObjs.size
+        private val NUM_RULES = COMPOSITES.size
         private val HALF_NUM_RULES = NUM_RULES / 2
 
-        private val fadeValues = arrayOf(
+        private val FADE_VALUES = arrayOf(
             floatArrayOf(1.0f, -0.1f, 0.0f, 1.0f, 0.0f, 1.0f),
             floatArrayOf(0.0f, 0.1f, 1.0f, 1.0f, -0.1f, 0.0f),
             floatArrayOf(1.0f, 0.0f, 1.0f, 0.0f, 0.1f, 1.0f))
 
-        private val fadeNames = arrayOf(
+        private val FADE_NAMES = arrayOf(
             "Src => transparent, Dest opaque",
             "Src => opaque, Dest => transparent",
             "Src opaque, Dest => opaque")
