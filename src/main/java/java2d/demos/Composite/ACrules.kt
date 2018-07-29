@@ -33,6 +33,7 @@ package java2d.demos.Composite
 
 import java2d.AnimatingSurface
 import java2d.use
+import java.awt.AlphaComposite
 import java.awt.AlphaComposite.Clear
 import java.awt.AlphaComposite.Dst
 import java.awt.AlphaComposite.DstAtop
@@ -54,6 +55,7 @@ import java.awt.font.FontRenderContext
 import java.awt.font.LineMetrics
 import java.awt.font.TextLayout
 import java.awt.geom.GeneralPath
+import java.awt.geom.Path2D
 import java.awt.image.BufferedImage
 
 /**
@@ -76,8 +78,8 @@ class ACrules : AnimatingSurface()
     private var rectWidth: Int = 0
     private var rectHeight: Int = 0
     private var paddedHeight: Int = 0
-    private val srcpath = GeneralPath()
-    private val dstpath = GeneralPath()
+    private val srcPath = GeneralPath()
+    private val dstPath = GeneralPath()
     private lateinit var lineMetrics: LineMetrics
     private lateinit var dstBufImg: BufferedImage
     private lateinit var srcBufImg: BufferedImage
@@ -107,7 +109,7 @@ class ACrules : AnimatingSurface()
 
         paddedHeight = rectHeight + verticalPad
 
-        with(srcpath) {
+        with(srcPath) {
             reset()
             moveTo(0f, 0f)
             lineTo(rectWidth.toFloat(), 0f)
@@ -115,7 +117,7 @@ class ACrules : AnimatingSurface()
             closePath()
         }
 
-        with(dstpath) {
+        with(dstPath) {
             reset()
             moveTo(0f, 0f)
             lineTo(rectWidth.toFloat(), rectHeight.toFloat())
@@ -193,36 +195,16 @@ class ACrules : AnimatingSurface()
                     var y = 0
                     val yy = lineMetrics.height.toInt() + verticalPad
 
+                    val dstColor = Color(1.0f, 0.0f, 0.0f, dstAlpha)
+                    val srcColor = Color(0.0f, 0.0f, 1.0f, srcAlpha)
+
                     for (i in COMPOSITE_NAMES.indices) {
                         y = if (i == 0 || i == HALF_NUM_RULES) yy else y + paddedHeight
                         val x = if (i >= HALF_NUM_RULES) bufImg.width / 2 + padLeft else padLeft
                         gr.translate(x, y)
 
-                        with(dstGr) {
-                            composite = Clear
-                            fillRect(0, 0, rectWidth, rectHeight)
-                            composite = Src
-                            if (doGradient) {
-                                paint = dstGradient
-                                fillRect(0, 0, rectWidth, rectHeight)
-                            } else {
-                                paint = Color(1.0f, 0.0f, 0.0f, dstAlpha)
-                                fill(dstpath)
-                            }
-                        }
-
-                        with(srcGr) {
-                            composite = Clear
-                            fillRect(0, 0, rectWidth, rectHeight)
-                            composite = Src
-                            if (doGradient) {
-                                paint = srcGradient
-                                fillRect(0, 0, rectWidth, rectHeight)
-                            } else {
-                                paint = Color(0.0f, 0.0f, 1.0f, srcAlpha)
-                                fill(srcpath)
-                            }
-                        }
+                        drawElement(dstGr, doGradient, dstGradient, dstColor, dstPath)
+                        drawElement(srcGr, doGradient, srcGradient, srcColor, srcPath)
 
                         dstGr.composite = COMPOSITES[i]
                         dstGr.drawImage(srcBufImg, 0, 0, null)
@@ -234,6 +216,27 @@ class ACrules : AnimatingSurface()
                         gr.translate(-x, -y)
                     }
                 }
+            }
+        }
+    }
+
+    private fun drawElement(
+        gr: Graphics2D,
+        doGradient: Boolean,
+        gradient: GradientPaint,
+        color: Color,
+        path: Path2D)
+    {
+        with(gr) {
+            composite = AlphaComposite.Clear
+            fillRect(0, 0, rectWidth, rectHeight)
+            composite = AlphaComposite.Src
+            if (doGradient) {
+                paint = gradient
+                fillRect(0, 0, rectWidth, rectHeight)
+            } else {
+                paint = color
+                fill(path)
             }
         }
     }
