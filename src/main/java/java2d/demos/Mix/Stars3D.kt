@@ -31,21 +31,16 @@
  */
 package java2d.demos.Mix
 
+import java2d.CControl
 import java2d.ControlsSurface
 import java2d.CustomControls
 import java.awt.AlphaComposite
+import java.awt.BorderLayout
 import java.awt.Color
-import java.awt.Color.BLACK
-import java.awt.Color.BLUE
-import java.awt.Color.GREEN
-import java.awt.Color.RED
-import java.awt.Color.WHITE
 import java.awt.Dimension
 import java.awt.Font
 import java.awt.Graphics2D
 import java.awt.Shape
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
 import java.awt.geom.AffineTransform
 import java.awt.geom.GeneralPath
 import java.awt.geom.Line2D
@@ -61,21 +56,18 @@ import javax.swing.JTextField
  */
 class Stars3D : ControlsSurface()
 {
-    private var shape: Shape? = null
-    private var tshape: Shape? = null
-    private var ribbon: Shape? = null
     private var fontSize = 72
     private var text = "Java2D"
-    private var numStars = 300
 
     init {
-        background = BLACK
-        controls = arrayOf(DemoControls(this))
+        background = Color.BLACK
     }
+
+    override val customControls = listOf<CControl>(DemoControls(this) to BorderLayout.NORTH)
 
     override fun render(w: Int, h: Int, g2: Graphics2D) {
         val rect = Rectangle2D.Double()
-        for (i in 0 until numStars) {
+        repeat(STARS) { i ->
             g2.color = colors[i % 3]
             g2.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, Math.random().toFloat())
             rect.setRect(w * Math.random(), h * Math.random(), 2.0, 2.0)
@@ -83,10 +75,10 @@ class Stars3D : ControlsSurface()
         }
 
         val frc = g2.fontRenderContext
-        val font = Font("serif.bolditalic", Font.PLAIN, fontSize)
-        shape = font.createGlyphVector(frc, text).outline
-        tshape = at.createTransformedShape(shape)
-        val pi = shape!!.getPathIterator(null)
+        val font = Font(Font.SERIF, Font.BOLD or Font.ITALIC, fontSize)
+        val shape: Shape = font.createGlyphVector(frc, text).outline
+        val transShape: Shape = transform.createTransformedShape(shape)
+        val pathIterator = shape.getPathIterator(null)
 
         val seg = FloatArray(6)
         val tseg = FloatArray(6)
@@ -105,11 +97,11 @@ class Stars3D : ControlsSurface()
         // Iterate through the Shape and build the ribbon
         // by adding general path objects.
         //
-        while (!pi.isDone) {
-            val segType = pi.currentSegment(seg)
+        while (!pathIterator.isDone) {
+            val segType = pathIterator.currentSegment(seg)
             when (segType) {
                 PathIterator.SEG_MOVETO -> {
-                    at.transform(seg, 0, tseg, 0, 1)
+                    transform.transform(seg, 0, tseg, 0, 1)
                     x = seg[0]
                     y = seg[1]
                     tx = tseg[0]
@@ -120,7 +112,7 @@ class Stars3D : ControlsSurface()
                     tcy = ty
                 }
                 PathIterator.SEG_LINETO -> {
-                    at.transform(seg, 0, tseg, 0, 1)
+                    transform.transform(seg, 0, tseg, 0, 1)
                     if (Line2D.relativeCCW(
                             x.toDouble(),
                             y.toDouble(),
@@ -147,9 +139,8 @@ class Stars3D : ControlsSurface()
                     tx = tseg[0]
                     ty = tseg[1]
                 }
-
                 PathIterator.SEG_QUADTO -> {
-                    at.transform(seg, 0, tseg, 0, 2)
+                    transform.transform(seg, 0, tseg, 0, 2)
                     if (Line2D.relativeCCW(
                             x.toDouble(),
                             y.toDouble(),
@@ -176,9 +167,8 @@ class Stars3D : ControlsSurface()
                     tx = tseg[2]
                     ty = tseg[3]
                 }
-
                 PathIterator.SEG_CUBICTO -> {
-                    at.transform(seg, 0, tseg, 0, 3)
+                    transform.transform(seg, 0, tseg, 0, 3)
                     if (Line2D.relativeCCW(
                             x.toDouble(),
                             y.toDouble(),
@@ -199,13 +189,11 @@ class Stars3D : ControlsSurface()
                         working.lineTo(seg[4], seg[5])
                         working.curveTo(seg[2], seg[3], seg[0], seg[1], x, y)
                     }
-
                     x = seg[4]
                     y = seg[5]
                     tx = tseg[4]
                     ty = tseg[5]
                 }
-
                 PathIterator.SEG_CLOSE -> {
                     if (Line2D.relativeCCW(
                             x.toDouble(),
@@ -233,65 +221,53 @@ class Stars3D : ControlsSurface()
                     ty = tcy
                 }
             }
-            pi.next()
+            pathIterator.next()
         } // while
-        ribbon = working
+        val ribbon: Shape = working
 
-        if (composite != null) {
-            g2.composite = composite
-        } else {
-            g2.composite = AlphaComposite.SrcOver
-        }
-        val r = shape!!.bounds
-        g2.translate(w * .5 - r.width * .5, h * .5 + r.height * .5)
+        g2.composite = composite ?: AlphaComposite.SrcOver
+        val r = shape.bounds
+        g2.translate(w * 0.5 - r.width * 0.5, h * 0.5 + r.height * 0.5)
 
-        g2.color = BLUE
-        g2.fill(tshape)
+        g2.color = Color.BLUE
+        g2.fill(transShape)
         g2.color = Color(255, 255, 255, 200)
         g2.fill(ribbon)
 
-        g2.color = WHITE
+        g2.color = Color.WHITE
         g2.fill(shape)
 
-        g2.color = BLUE
+        g2.color = Color.BLUE
         g2.draw(shape)
     }
 
-    internal class DemoControls(private val demo: Stars3D) : CustomControls(demo.name), ActionListener
+    internal class DemoControls(private val demo: Stars3D) : CustomControls(demo.name)
     {
-        private var tf1: JTextField
-        private var tf2: JTextField
-
-        init {
-            var l = JLabel("  Text:")
-            l.foreground = BLACK
-            add(l)
-            tf1 = JTextField(demo.text)
-            add(tf1)
-            tf1.preferredSize = Dimension(60, 20)
-            tf1.addActionListener(this)
-            l = JLabel("  Size:")
-            l.foreground = BLACK
-            add(l)
-            tf2 = JTextField(demo.fontSize.toString())
-            add(tf2)
-            tf2.preferredSize = Dimension(30, 20)
-            tf2.addActionListener(this)
+        private val textTextField = JTextField(demo.text).apply {
+            preferredSize = Dimension(60, 20)
+            addActionListener {
+                demo.text = text.trim()
+                demo.repaint()
+            }
+        }
+        private val fontSizeTextField = JTextField(demo.fontSize.toString()).apply {
+            preferredSize = Dimension(30, 20)
+            addActionListener {
+                val size = try {
+                    text.trim().toInt()
+                } catch (e: NumberFormatException) {
+                    return@addActionListener
+                }
+                demo.fontSize = size.coerceAtLeast(10)
+                demo.repaint()
+            }
         }
 
-        override fun actionPerformed(e: ActionEvent) {
-            try {
-                if (e.source == tf1) {
-                    demo.text = tf1.text.trim()
-                } else if (e.source == tf2) {
-                    demo.fontSize = Integer.parseInt(tf2.text.trim())
-                    if (demo.fontSize < 10) {
-                        demo.fontSize = 10
-                    }
-                }
-                demo.repaint()
-            } catch (ignored: Exception) {
-            }
+        init {
+            add(JLabel("  Text:"))
+            add(textTextField)
+            add(JLabel("  Size:"))
+            add(fontSizeTextField)
         }
 
         override fun getPreferredSize() = Dimension(200, 37)
@@ -305,14 +281,13 @@ class Stars3D : ControlsSurface()
             }
 
             val length = size.width / 4
-            val size = intArrayOf(length, length)
-            val str = arrayOf("JAVA", "J2D")
+            val samples = arrayOf("JAVA" to length, "J2D" to length)
             while (thread === me) {
-                for (i in str.indices) {
-                    demo.fontSize = size[i]
-                    tf2.text = demo.fontSize.toString()
-                    demo.text = str[i]
-                    tf1.text = demo.text
+                for ((text, size) in samples) {
+                    demo.fontSize = size
+                    demo.text = text
+                    fontSizeTextField.text = size.toString()
+                    textTextField.text = text
                     demo.repaint()
                     try {
                         Thread.sleep(5555)
@@ -327,9 +302,11 @@ class Stars3D : ControlsSurface()
 
     companion object
     {
-        private val colors = arrayOf(RED, GREEN, WHITE)
+        private const val STARS = 300
 
-        private val at = AffineTransform.getTranslateInstance(-5.0, -5.0)
+        private val colors = arrayOf(Color.RED, Color.GREEN, Color.WHITE)
+
+        private val transform = AffineTransform.getTranslateInstance(-5.0, -5.0)
 
         @JvmStatic
         fun main(argv: Array<String>) {
