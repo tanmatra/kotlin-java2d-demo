@@ -32,18 +32,13 @@
 package java2d.demos.Mix
 
 import java2d.AnimatingControlsSurface
+import java2d.CControl
 import java2d.CustomControls
+import java2d.createBooleanButton
+import java.awt.BorderLayout
 import java.awt.Color
-import java.awt.Color.BLUE
-import java.awt.Color.GREEN
-import java.awt.Color.ORANGE
-import java.awt.Color.RED
-import java.awt.Color.WHITE
-import java.awt.Color.YELLOW
 import java.awt.Dimension
 import java.awt.Graphics2D
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
 import java.awt.image.BufferedImage
 import java.awt.image.DataBufferByte
 import java.awt.image.IndexColorModel
@@ -52,7 +47,6 @@ import java.lang.Math.random
 import java.lang.Math.sqrt
 import javax.swing.AbstractButton
 import javax.swing.JComboBox
-import javax.swing.JToggleButton
 import javax.swing.JToolBar
 
 /**
@@ -64,29 +58,25 @@ class Balls private constructor() : AnimatingControlsSurface()
 
     private var lasttime: Long = 0
 
-    private val balls: Array<Ball> = Array(colors.size) { i ->
-        Ball(colors[i], 30)
-    }
+    private val balls: Array<Ball> = COLORS.map { setting -> Ball(setting, 30) }.toTypedArray()
 
     private var clearToggle: Boolean = false
+
     private val combo = JComboBox<String>()
 
     init {
-        background = WHITE
-        balls[0].isSelected = true
-        balls[3].isSelected = true
-        balls[4].isSelected = true
-        balls[6].isSelected = true
-        controls = arrayOf(DemoControls(this))
+        background = Color.WHITE
     }
 
-    override fun reset(w: Int, h: Int) {
-        if (w > 400 && h > 100) {
+    override val customControls = listOf<CControl>(DemoControls(this) to BorderLayout.NORTH)
+
+    override fun reset(newWidth: Int, newHeight: Int) {
+        if (newWidth > 400 && newHeight > 100) {
             combo.selectedIndex = 5
         }
     }
 
-    override fun step(w: Int, h: Int) {
+    override fun step(width: Int, height: Int) {
         if (lasttime == 0L) {
             lasttime = System.currentTimeMillis()
         }
@@ -94,18 +84,15 @@ class Balls private constructor() : AnimatingControlsSurface()
         val deltaT = now - lasttime
         var active = false
         for (ball in balls) {
-            if (ball == null) {
-                return
-            }
-            ball.step(deltaT, w, h)
-            if (ball.Vy > .02 || -ball.Vy > .02 || ball.y + ball.bsize < h) {
+            ball.step(deltaT, width, height)
+            if (ball.vy > 0.02 || -ball.vy > 0.02 || ball.y + ball.size < height) {
                 active = true
             }
         }
         if (!active) {
             for (ball in balls) {
-                ball.Vx = random().toFloat() / 4.0f - 0.125f
-                ball.Vy = -random().toFloat() / 4.0f - 0.2f
+                ball.vx = random().toFloat() / 4.0f - 0.125f
+                ball.vy = -random().toFloat() / 4.0f - 0.2f
             }
             clearToggle = true
         }
@@ -113,7 +100,7 @@ class Balls private constructor() : AnimatingControlsSurface()
 
     override fun render(w: Int, h: Int, g2: Graphics2D) {
         for (b in balls) {
-            if (b == null || b.imgs[b.index] == null || !b.isSelected) {
+            if (b.imgs[b.index] == null || !b.isSelected) {
                 continue
             }
             g2.drawImage(b.imgs[b.index], b.x.toInt(), b.y.toInt(), this)
@@ -121,13 +108,17 @@ class Balls private constructor() : AnimatingControlsSurface()
         lasttime = now
     }
 
-    protected class Ball internal constructor(private val color: Color, bsize: Int)
-    {
-        internal var bsize: Int = 0
-        var x: Float = 0.toFloat()
-        var y: Float = 0.toFloat()
-        internal var Vx = 0.1f
-        internal var Vy = 0.05f
+    internal class Ball(
+        internal val setting: ColorSetting,
+        size: Int
+    ) {
+        private val color = setting.color
+        internal var isSelected = setting.isSelected
+        internal var size: Int = 0
+        var x: Float = 0.0f
+        var y: Float = 0.0f
+        internal var vx = 0.1f
+        internal var vy = 0.05f
 
         internal lateinit var imgs: Array<BufferedImage?>
 
@@ -136,16 +127,15 @@ class Balls private constructor() : AnimatingControlsSurface()
         var index = (random() * (nImgs - 1)).toInt()
 
         private var indexDirection = UP
-        private var jitter: Float = 0.toFloat()
-        internal var isSelected: Boolean = false
+        private var jitter: Float = 0.0f
 
         init {
-            makeImages(bsize)
+            makeImages(size)
         }
 
-        internal fun makeImages(bsize: Int) {
-            this.bsize = bsize * 2
-            val R = bsize
+        internal fun makeImages(size: Int) {
+            this.size = size * 2
+            val R = size
             val data = ByteArray(R * 2 * R * 2)
             var maxr = 0
             var Y = 2 * R
@@ -194,46 +184,41 @@ class Balls private constructor() : AnimatingControlsSurface()
         }
 
         fun step(deltaT: Long, w: Int, h: Int) {
+            jitter = random().toFloat() * 0.01f - 0.005f
 
-            jitter = random().toFloat() * .01f - .005f
-
-            x += (Vx * deltaT + Ax / 2.0 * deltaT.toDouble() * deltaT.toDouble()).toFloat()
-            y += (Vy * deltaT + Ay / 2.0 * deltaT.toDouble() * deltaT.toDouble()).toFloat()
+            x += (vx * deltaT + Ax / 2.0 * deltaT.toDouble() * deltaT.toDouble()).toFloat()
+            y += (vy * deltaT + Ay / 2.0 * deltaT.toDouble() * deltaT.toDouble()).toFloat()
             if (x <= 0.0f) {
                 x = 0.0f
-                Vx = -Vx * inelasticity + jitter
+                vx = -vx * inelasticity + jitter
                 //collision_x = true;
             }
-            if (x + bsize >= w) {
-                x = (w - bsize).toFloat()
-                Vx = -Vx * inelasticity + jitter
+            if (x + size >= w) {
+                x = (w - size).toFloat()
+                vx = -vx * inelasticity + jitter
                 //collision_x = true;
             }
-            if (y <= 0) {
-                y = 0f
-                Vy = -Vy * inelasticity + jitter
+            if (y <= 0.0f) {
+                y = 0.0f
+                vy = -vy * inelasticity + jitter
                 //collision_y = true;
             }
-            if (y + bsize >= h) {
-                y = (h - bsize).toFloat()
-                Vx *= inelasticity
-                Vy = -Vy * inelasticity + jitter
+            if (y + size >= h) {
+                y = (h - size).toFloat()
+                vx *= inelasticity
+                vy = -vy * inelasticity + jitter
                 //collision_y = true;
             }
-            Vy = Vy + Ay * deltaT
-            Vx = Vx + Ax * deltaT
+            vy += Ay * deltaT
+            vx += Ax * deltaT
 
-            if (indexDirection == UP) {
-                index++
+            when (indexDirection) {
+                UP -> index++
+                DOWN -> index--
             }
-            if (indexDirection == DOWN) {
-                --index
-            }
-            if (index + 1 == nImgs) {
-                indexDirection = DOWN
-            }
-            if (index == 0) {
-                indexDirection = UP
+            when {
+                index + 1 == nImgs -> indexDirection = DOWN
+                index == 0 -> indexDirection = UP
             }
         }
 
@@ -248,66 +233,32 @@ class Balls private constructor() : AnimatingControlsSurface()
         }
     }
 
-    internal inner class DemoControls(var demo: Balls) : CustomControls(demo.name), ActionListener
+    internal inner class DemoControls(private val demo: Balls) : CustomControls(demo.name)
     {
-        private val toolbar = JToolBar()
+        private val toolbar = JToolBar().apply { isFloatable = false }
 
         init {
             add(toolbar)
-            toolbar.isFloatable = false
-            addTool("Clear", true)
-            addTool("R", demo.balls[0].isSelected)
-            addTool("O", demo.balls[1].isSelected)
-            addTool("Y", demo.balls[2].isSelected)
-            addTool("G", demo.balls[3].isSelected)
-            addTool("B", demo.balls[4].isSelected)
-            addTool("I", demo.balls[5].isSelected)
-            addTool("V", demo.balls[6].isSelected)
+            toolbar.add(createBooleanButton(demo::clearSurface, "Clear"))
+
+            for (ball in balls) {
+                toolbar.add(createBooleanButton(ball::isSelected, ball.setting.name))
+            }
+
             add(combo)
-            combo.addItem("10")
-            combo.addItem("20")
-            combo.addItem("30")
-            combo.addItem("40")
-            combo.addItem("50")
-            combo.addItem("60")
-            combo.addItem("70")
-            combo.addItem("80")
+            for (n in 10 .. 80 step 10) {
+                combo.addItem(n.toString())
+            }
             combo.selectedIndex = 2
-            combo.addActionListener(this)
-        }
-
-        fun addTool(str: String, state: Boolean) {
-            val b = toolbar.add(JToggleButton(str)) as JToggleButton
-            b.isFocusPainted = false
-            b.isSelected = state
-            b.addActionListener(this)
-            val width = b.preferredSize.width
-            val prefSize = Dimension(width, 21)
-            b.preferredSize = prefSize
-            b.maximumSize = prefSize
-            b.minimumSize = prefSize
-        }
-
-        override fun actionPerformed(e: ActionEvent) {
-            if (e.source is JComboBox<*>) {
-                val size = Integer.parseInt(combo.selectedItem as String)
+            combo.addActionListener {
+                val size = (combo.selectedItem as String).toInt()
                 for (ball in demo.balls) {
                     ball.makeImages(size)
                 }
-                return
-            }
-            val b = e.source as JToggleButton
-            if (b.text == "Clear") {
-                demo.clearSurface = b.isSelected
-            } else {
-                val index = toolbar.getComponentIndex(b) - 1
-                demo.balls[index].isSelected = b.isSelected
             }
         }
 
-        override fun getPreferredSize(): Dimension {
-            return Dimension(200, 40)
-        }
+        override fun getPreferredSize() = Dimension(200, 40)
 
         override fun run() {
             try {
@@ -335,11 +286,23 @@ class Balls private constructor() : AnimatingControlsSurface()
             }
             thread = null
         }
-    } // End DemoControls
+    }
+
+    internal class ColorSetting(
+        val name: String,
+        val color: Color,
+        val isSelected: Boolean)
 
     companion object
     {
-        private val colors = arrayOf(RED, ORANGE, YELLOW, GREEN.darker(), BLUE, Color(75, 0, 82), Color(238, 130, 238))
+        private val COLORS = arrayOf(
+            ColorSetting("R", Color.RED,            true),
+            ColorSetting("O", Color.ORANGE,         false),
+            ColorSetting("Y", Color.YELLOW,         false),
+            ColorSetting("G", Color.GREEN.darker(), true),
+            ColorSetting("B", Color.BLUE,           true),
+            ColorSetting("I", Color(75, 0, 82),     false),
+            ColorSetting("V", Color(238, 130, 238), true))
 
         @JvmStatic
         fun main(argv: Array<String>) {
