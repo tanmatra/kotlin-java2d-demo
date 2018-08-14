@@ -34,7 +34,6 @@ package java2d
 import java.awt.Component
 import java.awt.Image
 import java.awt.MediaTracker
-import java.net.URLClassLoader
 import java.util.concurrent.ConcurrentHashMap
 import java.util.logging.Level
 
@@ -95,8 +94,7 @@ object DemoImages
             return img
         }
 
-        val urlLoader = component.javaClass.classLoader as URLClassLoader
-        val fileLoc = urlLoader.findResource("images/$name")
+        val fileLoc = component.javaClass.classLoader.getResource("images/$name")
         img = component.toolkit.createImage(fileLoc)
 
         val tracker = MediaTracker(component)
