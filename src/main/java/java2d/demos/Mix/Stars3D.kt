@@ -80,18 +80,18 @@ class Stars3D : ControlsSurface()
         val transShape: Shape = transform.createTransformedShape(shape)
         val pathIterator = shape.getPathIterator(null)
 
-        val seg = FloatArray(6)
-        val tseg = FloatArray(6)
+        val seg = DoubleArray(6)
+        val tseg = DoubleArray(6)
 
         val working = GeneralPath(Path2D.WIND_NON_ZERO)
-        var x = 0f
-        var y = 0f // Current point on the path
-        var tx = 0f
-        var ty = 0f // Transformed path point
-        var cx = 0f
-        var cy = 0f // Last moveTo point, for SEG_CLOSE
-        var tcx = 0f
-        var tcy = 0f // Transformed last moveTo point
+        var x = 0.0
+        var y = 0.0 // Current point on the path
+        var tx = 0.0
+        var ty = 0.0 // Transformed path point
+        var cx = 0.0
+        var cy = 0.0 // Last moveTo point, for SEG_CLOSE
+        var tcx = 0.0
+        var tcy = 0.0 // Transformed last moveTo point
 
         //
         // Iterate through the Shape and build the ribbon
@@ -113,14 +113,7 @@ class Stars3D : ControlsSurface()
                 }
                 PathIterator.SEG_LINETO -> {
                     transform.transform(seg, 0, tseg, 0, 1)
-                    if (Line2D.relativeCCW(
-                            x.toDouble(),
-                            y.toDouble(),
-                            tx.toDouble(),
-                            ty.toDouble(),
-                            seg[0].toDouble(),
-                            seg[1].toDouble()) < 0
-                    ) {
+                    if (Line2D.relativeCCW(x, y, tx, ty, seg[0], seg[1]) < 0) {
                         working.moveTo(x, y)
                         working.lineTo(seg[0], seg[1])
                         working.lineTo(tseg[0], tseg[1])
@@ -133,7 +126,6 @@ class Stars3D : ControlsSurface()
                         working.lineTo(seg[0], seg[1])
                         working.lineTo(x, y)
                     }
-
                     x = seg[0]
                     y = seg[1]
                     tx = tseg[0]
@@ -141,14 +133,7 @@ class Stars3D : ControlsSurface()
                 }
                 PathIterator.SEG_QUADTO -> {
                     transform.transform(seg, 0, tseg, 0, 2)
-                    if (Line2D.relativeCCW(
-                            x.toDouble(),
-                            y.toDouble(),
-                            tx.toDouble(),
-                            ty.toDouble(),
-                            seg[2].toDouble(),
-                            seg[3].toDouble()) < 0
-                    ) {
+                    if (Line2D.relativeCCW(x, y, tx, ty, seg[2], seg[3]) < 0) {
                         working.moveTo(x, y)
                         working.quadTo(seg[0], seg[1], seg[2], seg[3])
                         working.lineTo(tseg[2], tseg[3])
@@ -161,7 +146,6 @@ class Stars3D : ControlsSurface()
                         working.lineTo(seg[2], seg[3])
                         working.quadTo(seg[0], seg[1], x, y)
                     }
-
                     x = seg[2]
                     y = seg[3]
                     tx = tseg[2]
@@ -169,14 +153,7 @@ class Stars3D : ControlsSurface()
                 }
                 PathIterator.SEG_CUBICTO -> {
                     transform.transform(seg, 0, tseg, 0, 3)
-                    if (Line2D.relativeCCW(
-                            x.toDouble(),
-                            y.toDouble(),
-                            tx.toDouble(),
-                            ty.toDouble(),
-                            seg[4].toDouble(),
-                            seg[5].toDouble()) < 0
-                    ) {
+                    if (Line2D.relativeCCW(x, y, tx, ty, seg[4], seg[5]) < 0) {
                         working.moveTo(x, y)
                         working.curveTo(seg[0], seg[1], seg[2], seg[3], seg[4], seg[5])
                         working.lineTo(tseg[4], tseg[5])
@@ -195,14 +172,7 @@ class Stars3D : ControlsSurface()
                     ty = tseg[5]
                 }
                 PathIterator.SEG_CLOSE -> {
-                    if (Line2D.relativeCCW(
-                            x.toDouble(),
-                            y.toDouble(),
-                            tx.toDouble(),
-                            ty.toDouble(),
-                            cx.toDouble(),
-                            cy.toDouble()) < 0
-                    ) {
+                    if (Line2D.relativeCCW(x, y, tx, ty, cx, cy) < 0) {
                         working.moveTo(x, y)
                         working.lineTo(cx, cy)
                         working.lineTo(tcx, tcy)
