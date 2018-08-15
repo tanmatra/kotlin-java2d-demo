@@ -72,7 +72,7 @@ class BezierScroller : AnimatingControlsSurface()
     private var yy: Int = 0
     private var ix: Int = 0
     private var iy: Int = 0
-    private var imgX: Int = 0
+    private var subimageX: Int = 0 // position inside image strip
     private var vector: MutableList<String>? = null
     private var appletVector: MutableList<String>? = null
     private var alpha = 0.2f
@@ -197,25 +197,28 @@ class BezierScroller : AnimatingControlsSurface()
             animate(animpts, deltas, i + 1, height)
             i += 2
         }
-        if (doImage && alphaDirection == UP) {
-            alpha += 0.025f
-            if (alpha > 0.99f) {
-                alphaDirection = DOWN
-                alpha = 1.0f
-            }
-        } else if (doImage && alphaDirection == DOWN) {
-            alpha -= 0.02f
-            if (alpha < 0.01f) {
-                alphaDirection = UP
-                alpha = 0.0f
-                ix = (random() * (width - 80)).toInt()
-                iy = (random() * (height - 80)).toInt()
-            }
-        }
         if (doImage) {
-            imgX += 80
-            if (imgX == 800) {
-                imgX = 0
+            when (alphaDirection) {
+                UP -> {
+                    alpha += 0.025f
+                    if (alpha > 0.99f) {
+                        alphaDirection = DOWN
+                        alpha = 1.0f
+                    }
+                }
+                DOWN -> {
+                    alpha -= 0.025f
+                    if (alpha < 0.01f) {
+                        alphaDirection = UP
+                        alpha = 0.0f
+                        ix = (random() * (width - 80)).toInt()
+                        iy = (random() * (height - 80)).toInt()
+                    }
+                }
+            }
+            subimageX += 80
+            if (subimageX == 800) {
+                subimageX = 0
             }
         }
     }
@@ -282,7 +285,7 @@ class BezierScroller : AnimatingControlsSurface()
 
         if (doImage) {
             g2.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha)
-            g2.drawImage(img.getSubimage(imgX, 0, 80, 80), ix, iy, this)
+            g2.drawImage(img.getSubimage(subimageX, 0, 80, 80), ix, iy, this)
         }
     }
 
