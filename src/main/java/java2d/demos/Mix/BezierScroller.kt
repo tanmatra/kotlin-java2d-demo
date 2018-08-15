@@ -32,18 +32,20 @@
 package java2d.demos.Mix
 
 import java2d.AnimatingControlsSurface
+import java2d.CControl
 import java2d.CustomControls
+import java2d.RepaintingProperty
+import java2d.createBooleanButton
+import java2d.getLogger
+import java2d.use
 import java.awt.AlphaComposite
 import java.awt.BasicStroke
+import java.awt.BorderLayout
 import java.awt.Color
-import java.awt.Color.LIGHT_GRAY
-import java.awt.Color.WHITE
 import java.awt.Dimension
 import java.awt.Font
 import java.awt.Graphics2D
 import java.awt.Image
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
 import java.awt.geom.GeneralPath
 import java.awt.geom.Path2D
 import java.awt.geom.PathIterator
@@ -53,10 +55,7 @@ import java.io.FileReader
 import java.lang.Math.random
 import java.util.ArrayList
 import java.util.logging.Level
-import java.util.logging.Logger
 import javax.swing.AbstractButton
-import javax.swing.JComboBox
-import javax.swing.JToggleButton
 import javax.swing.JToolBar
 
 /**
@@ -78,50 +77,55 @@ class BezierScroller : AnimatingControlsSurface()
     private var appletVector: MutableList<String>? = null
     private var alpha = 0.2f
     private var alphaDirection: Int = 0
-    private var doImage: Boolean = false
-    private var doShape: Boolean = false
-    private var doText: Boolean = false
+    private var doImage: Boolean by RepaintingProperty(false)
+    private var doShape: Boolean by RepaintingProperty(true)
+    private var doText: Boolean by RepaintingProperty(true)
     private var buttonToggle: Boolean = false
 
-    val line: String?
-        get() {
-            var str: String? = null
-            if (reader != null) {
-                try {
-                    str = reader!!.readLine()
-                    if (str != null) {
-                        if (str!!.length == 0) {
-                            str = " "
-                        }
-                        vector!!.add(str)
-                    }
-                } catch (e: Exception) {
-                    Logger.getLogger(BezierScroller::class.java.name).log(Level.SEVERE, null, e)
-                    reader = null
-                }
-            } else {
-                if (!appletVector!!.isEmpty()) {
-                    str = appletVector!!.removeAt(0)
-                    vector!!.add(str)
-                }
-            }
-            return str
-        }
+    private val hotJavaImg: Image = getImage("java-logo.gif")
 
-    init {
-        background = WHITE
-        doText = true
-        doShape = doText
-        hotj_img = getImage("java-logo.gif")
+    private val img: BufferedImage = run {
         val image = getImage("jumptojavastrip.png")
         val iw = image.getWidth(this)
         val ih = image.getHeight(this)
-        img = BufferedImage(iw, ih, BufferedImage.TYPE_INT_RGB)
-        img.createGraphics().drawImage(image, 0, 0, this)
-        controls = arrayOf(DemoControls(this))
+        BufferedImage(iw, ih, BufferedImage.TYPE_INT_RGB).apply {
+            createGraphics().use {
+                it.drawImage(image, 0, 0, this@BezierScroller)
+            }
+        }
     }
 
-    fun animate(pts: FloatArray, deltas: FloatArray, index: Int, limit: Int) {
+    init {
+        background = Color.WHITE
+    }
+
+    private fun getLine(): String? {
+        var str: String? = null
+        if (reader != null) {
+            try {
+                str = reader!!.readLine()
+                if (str != null) {
+                    if (str.isEmpty()) {
+                        str = " "
+                    }
+                    vector!!.add(str)
+                }
+            } catch (e: Exception) {
+                getLogger<BezierScroller>().log(Level.SEVERE, null, e)
+                reader = null
+            }
+        } else {
+            if (!appletVector!!.isEmpty()) {
+                str = appletVector!!.removeAt(0)
+                vector!!.add(str)
+            }
+        }
+        return str
+    }
+
+    override val customControls = listOf<CControl>(DemoControls(this) to BorderLayout.NORTH)
+
+    private fun animate(pts: FloatArray, deltas: FloatArray, index: Int, limit: Int) {
         var newpt = pts[index] + deltas[index]
         if (newpt <= 0) {
             newpt = -newpt
@@ -133,11 +137,11 @@ class BezierScroller : AnimatingControlsSurface()
         pts[index] = newpt
     }
 
-    fun getFile() {
+    private fun getFile() {
         try {
             val fName = "README.txt"
             reader = BufferedReader(FileReader(fName))
-            line
+            getLine()
         } catch (e: Exception) {
             reader = null
         }
@@ -147,65 +151,65 @@ class BezierScroller : AnimatingControlsSurface()
             for (i in 0 .. 99) {
                 appletVector!!.add(appletStrs[i % appletStrs.size])
             }
-            line
+            getLine()
         }
         buttonToggle = true
     }
 
-    override fun reset(w: Int, h: Int) {
+    override fun reset(newWidth: Int, newHeight: Int) {
         var i = 0
         while (i < animpts.size) {
-            animpts[i + 0] = (random() * w).toFloat()
-            animpts[i + 1] = (random() * h).toFloat()
+            animpts[i + 0] = (random() * newWidth).toFloat()
+            animpts[i + 1] = (random() * newHeight).toFloat()
             deltas[i + 0] = (random() * 6.0 + 4.0).toFloat()
             deltas[i + 1] = (random() * 6.0 + 4.0).toFloat()
-            if (animpts[i + 0] > w / 2.0f) {
+            if (animpts[i + 0] > newWidth / 2.0f) {
                 deltas[i + 0] = -deltas[i + 0]
             }
-            if (animpts[i + 1] > h / 2.0f) {
+            if (animpts[i + 1] > newHeight / 2.0f) {
                 deltas[i + 1] = -deltas[i + 1]
             }
             i += 2
         }
         val fm = getFontMetrics(FONT)
         strH = fm.ascent + fm.descent
-        nStrs = h / strH + 2
+        nStrs = newHeight / strH + 2
         vector = ArrayList(nStrs)
-        ix = (random() * (w - 80)).toInt()
-        iy = (random() * (h - 80)).toInt()
+        ix = (random() * (newWidth - 80)).toInt()
+        iy = (random() * (newHeight - 80)).toInt()
     }
 
-    override fun step(w: Int, h: Int) {
+    override fun step(width: Int, height: Int) {
         if (doText && vector!!.isEmpty()) {
             getFile()
         }
         if (doText) {
-            val s = line
+            val s = getLine()
             if (s == null || vector!!.size == nStrs && !vector!!.isEmpty()) {
                 vector!!.removeAt(0)
             }
-            yy = if (s == null) 0 else h - vector!!.size * strH
+            yy = if (s == null) 0 else height - vector!!.size * strH
         }
 
         var i = 0
         while (i < animpts.size && doShape) {
-            animate(animpts, deltas, i + 0, w)
-            animate(animpts, deltas, i + 1, h)
+            animate(animpts, deltas, i + 0, width)
+            animate(animpts, deltas, i + 1, height)
             i += 2
         }
         if (doImage && alphaDirection == UP) {
             alpha += 0.025f
-            if (alpha > .99) {
+            if (alpha > 0.99f) {
                 alphaDirection = DOWN
                 alpha = 1.0f
             }
         } else if (doImage && alphaDirection == DOWN) {
-            alpha -= .02f
-            if (alpha < 0.01) {
+            alpha -= 0.02f
+            if (alpha < 0.01f) {
                 alphaDirection = UP
-                alpha = 0f
-                ix = (random() * (w - 80)).toInt()
-                iy = (random() * (h - 80)).toInt()
+                alpha = 0.0f
+                ix = (random() * (width - 80)).toInt()
+                iy = (random() * (height - 80)).toInt()
             }
         }
         if (doImage) {
@@ -218,10 +222,9 @@ class BezierScroller : AnimatingControlsSurface()
 
     override fun render(w: Int, h: Int, g2: Graphics2D) {
         if (doText) {
-            g2.color = LIGHT_GRAY
+            g2.color = Color.LIGHT_GRAY
             g2.font = FONT
             var y = yy.toFloat()
-            //for (int i = 0; i < vector.size(); i++) {
             for (string in vector!!) {
                 y += strH.toFloat()
                 g2.drawString(string, 1f, y)
@@ -261,71 +264,40 @@ class BezierScroller : AnimatingControlsSurface()
             }
             gp.closePath()
 
-            g2.color = blueBlend
-            g2.stroke = bs
+            g2.color = BLUE_BLEND
+            g2.stroke = STROKE
             g2.draw(gp)
-            g2.color = greenBlend
+            g2.color = GREEN_BLEND
             g2.fill(gp)
 
             val pi = gp.getPathIterator(null)
             val pts = FloatArray(6)
             while (!pi.isDone) {
                 if (pi.currentSegment(pts) == PathIterator.SEG_CUBICTO) {
-                    g2.drawImage(hotj_img, pts[0].toInt(), pts[1].toInt(), this)
+                    g2.drawImage(hotJavaImg, pts[0].toInt(), pts[1].toInt(), this)
                 }
                 pi.next()
             }
         }
 
         if (doImage) {
-            val ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha)
-            g2.composite = ac
+            g2.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha)
             g2.drawImage(img.getSubimage(imgX, 0, 80, 80), ix, iy, this)
         }
     }
 
-    internal class DemoControls(var demo: BezierScroller) : CustomControls(demo.name), ActionListener {
-        var toolbar: JToolBar
-        var combo: JComboBox<*>? = null
+    internal class DemoControls(private val demo: BezierScroller) : CustomControls(demo.name)
+    {
+        private val toolbar = JToolBar().apply { isFloatable = false }
 
         init {
-            toolbar = JToolBar()
             add(toolbar)
-            toolbar.isFloatable = false
-            addTool("Image", false)
-            addTool("Shape", true)
-            addTool("Text", true)
+            toolbar.add(createBooleanButton(demo::doImage, "Image"))
+            toolbar.add(createBooleanButton(demo::doShape, "Shape"))
+            toolbar.add(createBooleanButton(demo::doText, "Text"))
         }
 
-        fun addTool(str: String, state: Boolean) {
-            val b = toolbar.add(JToggleButton(str)) as JToggleButton
-            b.isFocusPainted = false
-            b.isSelected = state
-            b.addActionListener(this)
-            val width = b.preferredSize.width
-            val prefSize = Dimension(width, 21)
-            b.preferredSize = prefSize
-            b.maximumSize = prefSize
-            b.minimumSize = prefSize
-        }
-
-        override fun actionPerformed(e: ActionEvent) {
-            val b = e.source as JToggleButton
-            if (b.text == "Image") {
-                demo.doImage = b.isSelected
-            } else if (b.text == "Shape") {
-                demo.doShape = b.isSelected
-            } else {
-                demo.doText = b.isSelected
-            }
-            if (!demo.animating!!.isRunning) {
-                demo.repaint()
-            }
-        }
-
-        override fun getPreferredSize(): Dimension {
-            return Dimension(200, 40)
-        }
+        override fun getPreferredSize() = Dimension(200, 40)
 
         override fun run() {
             val me = Thread.currentThread()
@@ -355,15 +327,13 @@ class BezierScroller : AnimatingControlsSurface()
             "For README.txt file scrolling run in application mode",
             " ")
 
-        private val NUMPTS = 6
-        private val greenBlend = Color(0, 255, 0, 100)
-        private val blueBlend = Color(0, 0, 255, 100)
-        private val FONT = Font("serif", Font.PLAIN, 12)
-        private val bs = BasicStroke(3.0f)
-        private lateinit var hotj_img: Image
-        private lateinit var img: BufferedImage
-        private val UP = 0
-        private val DOWN = 1
+        private const val NUMPTS = 6
+        private val GREEN_BLEND = Color(0, 255, 0, 100)
+        private val BLUE_BLEND = Color(0, 0, 255, 100)
+        private val FONT = Font(Font.SERIF, Font.PLAIN, 12)
+        private val STROKE = BasicStroke(3.0f)
+        private const val UP = 0
+        private const val DOWN = 1
 
         @JvmStatic
         fun main(argv: Array<String>) {
