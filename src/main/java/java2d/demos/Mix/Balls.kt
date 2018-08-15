@@ -99,11 +99,10 @@ class Balls private constructor() : AnimatingControlsSurface()
     }
 
     override fun render(w: Int, h: Int, g2: Graphics2D) {
-        for (b in balls) {
-            if (b.imgs[b.index] == null || !b.isSelected) {
-                continue
+        for (ball in balls) {
+            if (ball.isSelected) {
+                g2.drawImage(ball.imgs[ball.index], ball.x.toInt(), ball.y.toInt(), this)
             }
-            g2.drawImage(b.imgs[b.index], b.x.toInt(), b.y.toInt(), this)
         }
         lasttime = now
     }
@@ -120,20 +119,16 @@ class Balls private constructor() : AnimatingControlsSurface()
         internal var vx = 0.1f
         internal var vy = 0.05f
 
-        internal lateinit var imgs: Array<BufferedImage?>
+        internal var imgs: Array<BufferedImage> = createImages(size)
 
         // Pick a random starting image index, but not the last: we're going UP
         // and that would throw us off the end.
-        var index = (random() * (nImgs - 1)).toInt()
+        var index = (random() * (IMAGES_COUNT - 1)).toInt()
 
         private var indexDirection = UP
         private var jitter: Float = 0.0f
 
-        init {
-            makeImages(size)
-        }
-
-        internal fun makeImages(size: Int) {
+        private fun createImages(size: Int): Array<BufferedImage> {
             this.size = size * 2
             val R = size
             val data = ByteArray(R * 2 * R * 2)
@@ -153,8 +148,6 @@ class Balls private constructor() : AnimatingControlsSurface()
                 }
             }
 
-            imgs = arrayOfNulls<BufferedImage>(nImgs)
-
             val bg = 255
             val red = ByteArray(256)
             red[0] = bg.toByte()
@@ -163,8 +156,8 @@ class Balls private constructor() : AnimatingControlsSurface()
             val blue = ByteArray(256)
             blue[0] = bg.toByte()
 
-            for (r in imgs.indices) {
-                val b = 0.5f + (r + 1f) / imgs.size.toFloat() / 2f
+            return Array(IMAGES_COUNT) { r ->
+                val b = 0.5f + (r + 1f) / IMAGES_COUNT.toFloat() / 2f
                 for (i in maxr downTo 1) {
                     val d = i.toFloat() / maxr
                     red[i] = blend(blend(color.red, 255, d), bg, b).toByte()
@@ -175,12 +168,12 @@ class Balls private constructor() : AnimatingControlsSurface()
                 val dbb = DataBufferByte(data, data.size)
                 val bandOffsets = intArrayOf(0)
                 val wr = Raster.createInterleavedRaster(dbb, R * 2, R * 2, R * 2, 1, bandOffsets, null)
-                imgs[r] = BufferedImage(icm, wr, icm.isAlphaPremultiplied, null)
+                BufferedImage(icm, wr, icm.isAlphaPremultiplied, null)
             }
         }
 
-        private fun blend(fg: Int, bg: Int, fgfactor: Float): Int {
-            return (bg + (fg - bg) * fgfactor).toInt()
+        internal fun makeImages(size: Int) {
+            imgs = createImages(size)
         }
 
         fun step(deltaT: Long, w: Int, h: Int) {
@@ -217,19 +210,23 @@ class Balls private constructor() : AnimatingControlsSurface()
                 DOWN -> index--
             }
             when {
-                index + 1 == nImgs -> indexDirection = DOWN
+                index + 1 == IMAGES_COUNT -> indexDirection = DOWN
                 index == 0 -> indexDirection = UP
             }
         }
 
         companion object
         {
-            internal const val nImgs = 5
+            private const val IMAGES_COUNT = 5
             private const val inelasticity = 0.96f
             private const val Ax = 0.0f
             private const val Ay = 0.0002f
             private const val UP = 0
             private const val DOWN = 1
+
+            private fun blend(fg: Int, bg: Int, fgfactor: Float): Int {
+                return (bg + (fg - bg) * fgfactor).toInt()
+            }
         }
     }
 
