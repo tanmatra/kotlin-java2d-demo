@@ -52,8 +52,8 @@ import java.awt.geom.PathIterator
 import java.awt.image.BufferedImage
 import java.io.BufferedReader
 import java.io.FileReader
-import java.lang.Math.random
 import java.util.ArrayList
+import java.util.Random
 import java.util.logging.Level
 import javax.swing.AbstractButton
 import javax.swing.JToolBar
@@ -67,11 +67,11 @@ class BezierScroller : AnimatingControlsSurface()
     private val animpts = FloatArray(NUMPTS * 2)
     private val deltas = FloatArray(NUMPTS * 2)
     private var reader: BufferedReader? = null
-    private var nStrs: Int = 0
-    private var strH: Int = 0
-    private var yy: Int = 0
-    private var ix: Int = 0
-    private var iy: Int = 0
+    private var stringsCount: Int = 0
+    private var lineHeight: Int = 0
+    private var textStartY: Int = 0
+    private var imageX: Int = 0
+    private var imageY: Int = 0
     private var subimageX: Int = 0 // position inside image strip
     private var vector: MutableList<String>? = null
     private var appletVector: MutableList<String>? = null
@@ -81,8 +81,8 @@ class BezierScroller : AnimatingControlsSurface()
     private var doShape: Boolean by RepaintingProperty(true)
     private var doText: Boolean by RepaintingProperty(true)
     private var buttonToggle: Boolean = false
-
     private val hotJavaImg: Image = getImage("java-logo.gif")
+    private val random = Random()
 
     private val img: BufferedImage = run {
         val image = getImage("jumptojavastrip.png")
@@ -129,54 +129,54 @@ class BezierScroller : AnimatingControlsSurface()
         var newpt = pts[index] + deltas[index]
         if (newpt <= 0) {
             newpt = -newpt
-            deltas[index] = (random() * 4.0 + 2.0).toFloat()
+            deltas[index] = random.nextFloat() * 4.0f + 2.0f
         } else if (newpt >= limit) {
             newpt = 2.0f * limit - newpt
-            deltas[index] = -(random() * 4.0 + 2.0).toFloat()
+            deltas[index] = - (random.nextFloat() * 4.0f + 2.0f)
         }
         pts[index] = newpt
     }
 
     private fun getFile() {
         try {
-            val fName = "README.txt"
-            reader = BufferedReader(FileReader(fName))
+            reader = BufferedReader(FileReader(FILE_NAME))
             getLine()
         } catch (e: Exception) {
             reader = null
         }
-
         if (reader == null) {
             appletVector = ArrayList(100)
             for (i in 0 .. 99) {
-                appletVector!!.add(appletStrs[i % appletStrs.size])
+                appletVector!!.add(FALLBACK_TEXT[i % FALLBACK_TEXT.size])
             }
             getLine()
         }
         buttonToggle = true
     }
 
+    private fun randomizeImagePosition(width: Int, height: Int) {
+        imageX = random.nextInt(width - STRIP_CELL_WIDTH)
+        imageY = random.nextInt(height - STRIP_CELL_HEIGHT)
+    }
+
     override fun reset(newWidth: Int, newHeight: Int) {
-        var i = 0
-        while (i < animpts.size) {
-            animpts[i + 0] = (random() * newWidth).toFloat()
-            animpts[i + 1] = (random() * newHeight).toFloat()
-            deltas[i + 0] = (random() * 6.0 + 4.0).toFloat()
-            deltas[i + 1] = (random() * 6.0 + 4.0).toFloat()
+        for (i in 0 until animpts.size step 2) {
+            animpts[i + 0] = random.nextInt(newWidth).toFloat()
+            animpts[i + 1] = random.nextInt(newHeight).toFloat()
+            deltas[i + 0] = random.nextFloat() * 6.0f + 4.0f
+            deltas[i + 1] = random.nextFloat() * 6.0f + 4.0f
             if (animpts[i + 0] > newWidth / 2.0f) {
                 deltas[i + 0] = -deltas[i + 0]
             }
             if (animpts[i + 1] > newHeight / 2.0f) {
                 deltas[i + 1] = -deltas[i + 1]
             }
-            i += 2
         }
-        val fm = getFontMetrics(FONT)
-        strH = fm.ascent + fm.descent
-        nStrs = newHeight / strH + 2
-        vector = ArrayList(nStrs)
-        ix = (random() * (newWidth - 80)).toInt()
-        iy = (random() * (newHeight - 80)).toInt()
+        val fontMetrics = getFontMetrics(FONT)
+        lineHeight = fontMetrics.ascent + fontMetrics.descent
+        stringsCount = newHeight / lineHeight + 2
+        vector = ArrayList(stringsCount)
+        randomizeImagePosition(newWidth, newHeight)
     }
 
     override fun step(width: Int, height: Int) {
@@ -185,10 +185,10 @@ class BezierScroller : AnimatingControlsSurface()
         }
         if (doText) {
             val s = getLine()
-            if (s == null || vector!!.size == nStrs && !vector!!.isEmpty()) {
+            if (s == null || vector!!.size == stringsCount && !vector!!.isEmpty()) {
                 vector!!.removeAt(0)
             }
-            yy = if (s == null) 0 else height - vector!!.size * strH
+            textStartY = if (s == null) 0 else height - vector!!.size * lineHeight
         }
 
         var i = 0
@@ -211,13 +211,12 @@ class BezierScroller : AnimatingControlsSurface()
                     if (alpha < 0.01f) {
                         alphaDirection = UP
                         alpha = 0.0f
-                        ix = (random() * (width - 80)).toInt()
-                        iy = (random() * (height - 80)).toInt()
+                        randomizeImagePosition(width, height)
                     }
                 }
             }
-            subimageX += 80
-            if (subimageX == 800) {
+            subimageX += STRIP_CELL_WIDTH
+            if (subimageX >= STRIP_WIDTH) {
                 subimageX = 0
             }
         }
@@ -227,9 +226,9 @@ class BezierScroller : AnimatingControlsSurface()
         if (doText) {
             g2.color = Color.LIGHT_GRAY
             g2.font = FONT
-            var y = yy.toFloat()
+            var y = textStartY.toFloat()
             for (string in vector!!) {
-                y += strH.toFloat()
+                y += lineHeight.toFloat()
                 g2.drawString(string, 1f, y)
             }
         }
@@ -285,7 +284,7 @@ class BezierScroller : AnimatingControlsSurface()
 
         if (doImage) {
             g2.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha)
-            g2.drawImage(img.getSubimage(subimageX, 0, 80, 80), ix, iy, this)
+            g2.drawImage(img.getSubimage(subimageX, 0, STRIP_CELL_WIDTH, STRIP_CELL_HEIGHT), imageX, imageY, this)
         }
     }
 
@@ -323,7 +322,7 @@ class BezierScroller : AnimatingControlsSurface()
 
     companion object
     {
-        private val appletStrs = arrayOf(
+        private val FALLBACK_TEXT = arrayOf(
             " ",
             "Java2Demo",
             "BezierScroller - Animated Bezier Curve shape with images",
@@ -337,6 +336,10 @@ class BezierScroller : AnimatingControlsSurface()
         private val STROKE = BasicStroke(3.0f)
         private const val UP = 0
         private const val DOWN = 1
+        private const val STRIP_WIDTH = 800
+        private const val STRIP_CELL_WIDTH = 80
+        private const val STRIP_CELL_HEIGHT = 80
+        private const val FILE_NAME = "README.txt"
 
         @JvmStatic
         fun main(argv: Array<String>) {
