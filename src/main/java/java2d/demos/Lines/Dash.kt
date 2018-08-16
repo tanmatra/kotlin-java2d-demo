@@ -33,8 +33,7 @@ package java2d.demos.Lines
 
 import java2d.Surface
 import java.awt.BasicStroke
-import java.awt.Color.BLACK
-import java.awt.Color.WHITE
+import java.awt.Color
 import java.awt.Graphics2D
 import java.awt.Shape
 import java.awt.font.TextLayout
@@ -51,60 +50,44 @@ import java.awt.geom.RoundRectangle2D
 class Dash : Surface()
 {
     init {
-        background = WHITE
+        background = Color.WHITE
     }
 
     override fun render(w: Int, h: Int, g2: Graphics2D) {
-        val frc = g2.fontRenderContext
-        val font = g2.font
-        val tl = TextLayout("Dashes", font, frc)
-        val sw = tl.bounds.width.toFloat()
-        val sh = tl.ascent + tl.descent
-        g2.color = BLACK
-        tl.draw(g2, w / 2f - sw / 2, sh + 5)
+        val textLayout = TextLayout("Dashes", g2.font, g2.fontRenderContext)
+        val textWidth = textLayout.bounds.width.toFloat()
+        val textHeight = textLayout.ascent + textLayout.descent
+        g2.color = Color.BLACK
+        textLayout.draw(g2, w / 2f - textWidth / 2, textHeight + 5)
 
-        val dotted = BasicStroke(3f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0f,
-                                 floatArrayOf(0f, 6f, 0f, 6f), 0f)
-        g2.stroke = dotted
+        g2.stroke = DOTTED
         g2.drawRect(3, 3, w - 6, h - 6)
 
-        var x = 0
-        var y = h - 34
-
-        val bs = arrayOfNulls<BasicStroke>(6)
-
-        var j = 1.1f
         run {
-            var i = 0
-            while (i < bs.size) {
-                val dash = floatArrayOf(j)
-                val b = BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f)
-                g2.stroke = b
+            var y = h - 34
+            for (stroke in THIN_STROKES) {
+                g2.stroke = stroke
                 g2.drawLine(20, y, w - 20, y)
-                bs[i] = BasicStroke(3.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f)
                 y += 5
-                i++
-                j += 1.0f
             }
         }
 
-        var shape: Shape? = null
-        // y = 0;
+        var x = 0
         for (i in 0 .. 5) {
             x = if (i == 0 || i == 3) (w / 3 - w / 5) / 2 else x + w / 3
-            y = if (i <= 2) sh.toInt() + h / 12 else h / 2
+            val y = if (i <= 2) textHeight.toInt() + h / 12 else h / 2
 
-            g2.stroke = bs[i]
+            g2.stroke = THICK_STROKES[i]
             g2.translate(x, y)
-            when (i) {
-                0 -> shape = Arc2D.Float(0.0f, 0.0f, w / 5f, h / 4f, 45f, 270f, Arc2D.PIE)
-                1 -> shape = Ellipse2D.Float(0.0f, 0.0f, w / 5f, h / 4f)
-                2 -> shape = RoundRectangle2D.Float(0.0f, 0.0f, w / 5f, h / 4f, 10.0f, 10.0f)
-                3 -> shape = Rectangle2D.Float(0.0f, 0.0f, w / 5f, h / 4f)
-                4 -> shape = QuadCurve2D.Float(0.0f, 0.0f, w / 10f, h / 2f, w / 5f, 0.0f)
-                5 -> shape = CubicCurve2D.Float(0.0f, 0.0f, w / 15f, h / 2f, w / 10f, h / 4f, w / 5f, 0.0f)
+            val shape: Shape = when (i) {
+                0 -> Arc2D.Float(0.0f, 0.0f, w / 5f, h / 4f, 45f, 270f, Arc2D.PIE)
+                1 -> Ellipse2D.Float(0.0f, 0.0f, w / 5f, h / 4f)
+                2 -> RoundRectangle2D.Float(0.0f, 0.0f, w / 5f, h / 4f, 10.0f, 10.0f)
+                3 -> Rectangle2D.Float(0.0f, 0.0f, w / 5f, h / 4f)
+                4 -> QuadCurve2D.Float(0.0f, 0.0f, w / 10f, h / 2f, w / 5f, 0.0f)
+                5 -> CubicCurve2D.Float(0.0f, 0.0f, w / 15f, h / 2f, w / 10f, h / 4f, w / 5f, 0.0f)
+                else -> error(6)
             }
-
             g2.draw(shape)
             g2.translate(-x, -y)
         }
@@ -112,6 +95,19 @@ class Dash : Surface()
 
     companion object
     {
+        private val DOTTED = BasicStroke(3f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0f,
+                                         floatArrayOf(0f, 6f, 0f, 6f), 0f)
+
+        private val THIN_STROKES = Array(6) { i ->
+            val dash = floatArrayOf(1.1f + i)
+            BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f)
+        }
+
+        private val THICK_STROKES = Array(6) { i ->
+            val dash = floatArrayOf(1.1f + i)
+            BasicStroke(3.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f)
+        }
+
         @JvmStatic
         fun main(argv: Array<String>) {
             createDemoFrame(Dash())
