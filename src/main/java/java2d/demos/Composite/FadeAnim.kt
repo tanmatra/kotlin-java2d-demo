@@ -239,19 +239,20 @@ class FadeAnim : AnimatingControlsSurface()
             }
         }
 
-        fun reset(w: Int, h: Int) {
-            getRandomXY(w, h)
-            val ww = 20 + Math.random() * ((if (w == 0) 400 else w) / 4)
-            val hh = 20 + Math.random() * ((if (h == 0) 300 else h) / 4)
+        fun reset(width: Int, height: Int) {
+            getRandomXY(width, height)
+            val ww = 20 + Math.random() * ((if (width == 0) 400 else width) / 4)
+            val hh = 20 + Math.random() * ((if (height == 0) 300 else height) / 4)
             val item = item
             when (item) {
                 is Ellipse2D -> item.setFrame(0.0, 0.0, ww, hh)
                 is Rectangle2D -> item.setRect(0.0, 0.0, ww, ww)
                 is RoundRectangle2D -> item.setRoundRect(0.0, 0.0, hh, hh, 20.0, 20.0)
                 is Arc2D -> item.setArc(0.0, 0.0, hh, hh, 45.0, 270.0, Arc2D.PIE)
-                is QuadCurve2D -> item.setCurve(0.0, 0.0, w * 0.2, h * 0.4, w * 0.4, 0.0)
+                is QuadCurve2D -> item.setCurve(0.0, 0.0, width * 0.2, height * 0.4, width * 0.4, 0.0)
                 is CubicCurve2D -> item.setCurve(0.0, 0.0, 30.0, -60.0, 60.0, 60.0, 90.0, 0.0)
-                is GeneralPath -> this.item = GeneralPath().apply { // TODO: reset()
+                is GeneralPath -> item.run {
+                    reset()
                     val size = ww.toFloat()
                     moveTo(-size / 2.0f, -size / 8.0f)
                     lineTo(+size / 2.0f, -size / 8.0f)
