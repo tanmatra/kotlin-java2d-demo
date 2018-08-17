@@ -195,120 +195,7 @@ class FadeAnim : AnimatingControlsSurface()
         }
     }
 
-    internal class TextData(val string: String, val font: Font, cmp: Component)
-    {
-        val width: Int
-        val height: Int
-
-        init {
-            val fontMetrics = cmp.getFontMetrics(font)
-            width = fontMetrics.stringWidth(string)
-            height = fontMetrics.height
-        }
-    }
-
-    internal class ObjectData(item: Any, val paint: Paint)
-    {
-        var item: Any
-        var bufferedImage: BufferedImage?
-        var x: Double = 0.0
-        var y: Double = 0.0
-        var alpha: Float = 0.0f
-        var alphaDirection: Int = 0
-        var imgX: Int = 0
-
-        init {
-            this.item = item
-            if (item is BufferedImage) {
-                bufferedImage = item
-                this.item = item.getSubimage(0, 0, 80, 80)
-            } else {
-                bufferedImage = null
-            }
-            getRandomXY(300, 250)
-            alpha = Math.random().toFloat()
-            alphaDirection = if (Math.random() > 0.5) UP else DOWN
-        }
-
-        private fun getRandomXY(w: Int, h: Int) {
-            val item = item
-            when (item) {
-                is TextData -> {
-                    x = Math.random() * (w - item.width)
-                    y = Math.random() * h
-                    y = if (y < item.height) item.height.toDouble() else y
-                }
-                is Image -> {
-                    x = Math.random() * (w - item.getWidth(null))
-                    y = Math.random() * (h - item.getHeight(null))
-                }
-                is Shape -> {
-                    val bounds = item.bounds
-                    x = Math.random() * (w - bounds.width)
-                    y = Math.random() * (h - bounds.height)
-                }
-            }
-        }
-
-        fun reset(width: Int, height: Int) {
-            getRandomXY(width, height)
-            val ww = 20 + Math.random() * ((if (width == 0) 400 else width) / 4)
-            val hh = 20 + Math.random() * ((if (height == 0) 300 else height) / 4)
-            val item = item
-            when (item) {
-                is Ellipse2D -> item.setFrame(0.0, 0.0, ww, hh)
-                is Rectangle2D -> item.setRect(0.0, 0.0, ww, ww)
-                is RoundRectangle2D -> item.setRoundRect(0.0, 0.0, hh, hh, 20.0, 20.0)
-                is Arc2D -> item.setArc(0.0, 0.0, hh, hh, 45.0, 270.0, Arc2D.PIE)
-                is QuadCurve2D -> item.setCurve(0.0, 0.0, width * 0.2, height * 0.4, width * 0.4, 0.0)
-                is CubicCurve2D -> item.setCurve(0.0, 0.0, 30.0, -60.0, 60.0, 60.0, 90.0, 0.0)
-                is GeneralPath -> item.run {
-                    reset()
-                    val size = ww.toFloat()
-                    moveTo(-size / 2.0f, -size / 8.0f)
-                    lineTo(+size / 2.0f, -size / 8.0f)
-                    lineTo(-size / 4.0f, +size / 2.0f)
-                    lineTo(+0.0f, -size / 2.0f)
-                    lineTo(+size / 4.0f, +size / 2.0f)
-                    closePath()
-                }
-            }
-        }
-
-        fun step(w: Int, h: Int) {
-            if (item is BufferedImage) {
-                imgX += 80
-                if (imgX == 800) {
-                    imgX = 0
-                }
-                item = bufferedImage!!.getSubimage(imgX, 0, 80, 80)
-            }
-            when (alphaDirection) {
-                UP -> {
-                    alpha += 0.05f
-                    if (alpha > 0.99f) {
-                        alphaDirection = DOWN
-                        alpha = 1.0f
-                    }
-                }
-                DOWN -> {
-                    alpha -= 0.05f
-                    if (alpha < 0.01) {
-                        alphaDirection = UP
-                        alpha = 0.0f
-                        getRandomXY(w, h)
-                    }
-                }
-            }
-        }
-
-        companion object {
-            const val UP = 0
-            const val DOWN = 1
-        }
-    }
-
-    internal class DemoControls(var demo: FadeAnim) : CustomControls(demo.name)
+    internal class DemoControls(demo: FadeAnim) : CustomControls(demo.name)
     {
         private val shapeSlider = createTitledSlider("Shapes", 20, demo::shapesCount)
         private val stringSlider = createTitledSlider("Strings", 10, demo::stringsCount)
@@ -384,5 +271,119 @@ class FadeAnim : AnimatingControlsSurface()
         fun main(argv: Array<String>) {
             createDemoFrame(FadeAnim())
         }
+    }
+}
+
+internal class TextData(val string: String, val font: Font, component: Component)
+{
+    val width: Int
+    val height: Int
+
+    init {
+        val fontMetrics = component.getFontMetrics(font)
+        width = fontMetrics.stringWidth(string)
+        height = fontMetrics.height
+    }
+}
+
+internal class ObjectData(item: Any, val paint: Paint)
+{
+    var item: Any
+    private var bufferedImage: BufferedImage?
+    var x: Double = 0.0
+    var y: Double = 0.0
+    var alpha: Float = 0.0f
+    private var alphaDirection: Int = 0
+    private var imgX: Int = 0
+
+    init {
+        this.item = item
+        if (item is BufferedImage) {
+            bufferedImage = item
+            this.item = item.getSubimage(0, 0, 80, 80)
+        } else {
+            bufferedImage = null
+        }
+        getRandomXY(300, 250)
+        alpha = Math.random().toFloat()
+        alphaDirection = if (Math.random() > 0.5) UP else DOWN
+    }
+
+    private fun getRandomXY(w: Int, h: Int) {
+        val item = item
+        when (item) {
+            is TextData -> {
+                x = Math.random() * (w - item.width)
+                y = Math.random() * h
+                y = if (y < item.height) item.height.toDouble() else y
+            }
+            is Image -> {
+                x = Math.random() * (w - item.getWidth(null))
+                y = Math.random() * (h - item.getHeight(null))
+            }
+            is Shape -> {
+                val bounds = item.bounds
+                x = Math.random() * (w - bounds.width)
+                y = Math.random() * (h - bounds.height)
+            }
+        }
+    }
+
+    fun reset(width: Int, height: Int) {
+        getRandomXY(width, height)
+        val ww = 20 + Math.random() * ((if (width == 0) 400 else width) / 4)
+        val hh = 20 + Math.random() * ((if (height == 0) 300 else height) / 4)
+        val item = item
+        when (item) {
+            is Ellipse2D -> item.setFrame(0.0, 0.0, ww, hh)
+            is Rectangle2D -> item.setRect(0.0, 0.0, ww, ww)
+            is RoundRectangle2D -> item.setRoundRect(0.0, 0.0, hh, hh, 20.0, 20.0)
+            is Arc2D -> item.setArc(0.0, 0.0, hh, hh, 45.0, 270.0, Arc2D.PIE)
+            is QuadCurve2D -> item.setCurve(0.0, 0.0, width * 0.2, height * 0.4, width * 0.4, 0.0)
+            is CubicCurve2D -> item.setCurve(0.0, 0.0, 30.0, -60.0, 60.0, 60.0, 90.0, 0.0)
+            is GeneralPath -> item.run {
+                reset()
+                val size = ww.toFloat()
+                moveTo(-size / 2.0f, -size / 8.0f)
+                lineTo(+size / 2.0f, -size / 8.0f)
+                lineTo(-size / 4.0f, +size / 2.0f)
+                lineTo(+0.0f, -size / 2.0f)
+                lineTo(+size / 4.0f, +size / 2.0f)
+                closePath()
+            }
+        }
+    }
+
+    fun step(w: Int, h: Int) {
+        if (item is BufferedImage) {
+            imgX += 80
+            if (imgX == 800) {
+                imgX = 0
+            }
+            item = bufferedImage!!.getSubimage(imgX, 0, 80, 80)
+        }
+        when (alphaDirection) {
+            UP -> {
+                alpha += 0.05f
+                if (alpha > 0.99f) {
+                    alphaDirection = DOWN
+                    alpha = 1.0f
+                }
+            }
+            DOWN -> {
+                alpha -= 0.05f
+                if (alpha < 0.01) {
+                    alphaDirection = UP
+                    alpha = 0.0f
+                    getRandomXY(w, h)
+                }
+            }
+        }
+    }
+
+    companion object
+    {
+        const val UP = 0
+        const val DOWN = 1
     }
 }
