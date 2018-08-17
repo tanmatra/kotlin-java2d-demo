@@ -78,24 +78,28 @@ class FadeAnim : AnimatingControlsSurface()
                 objects.removeAll(shapes.subList(value, shapes.size))
             } else {
                 for (i in field until value) {
-                    val item: Any = when (i % 7) {
-                        0 -> GeneralPath()
-                        1 -> Rectangle2D.Double()
-                        2 -> Ellipse2D.Double()
-                        3 -> Arc2D.Double()
-                        4 -> RoundRectangle2D.Double()
-                        5 -> CubicCurve2D.Double()
-                        6 -> QuadCurve2D.Double()
-                        else -> error(7)
-                    }
-                    val objectData = ObjectData(item, PAINTS[i % PAINTS.size])
-                    objectData.reset(width, height)
-                    objects.add(objectData)
+                    objects.add(createShapeObject(i))
                 }
             }
             field = value
             checkRepaint()
         }
+
+    private fun createShapeObject(index: Int): ObjectData {
+        val item: Shape = when (index % 7) {
+            0 -> GeneralPath()
+            1 -> Rectangle2D.Double()
+            2 -> Ellipse2D.Double()
+            3 -> Arc2D.Double()
+            4 -> RoundRectangle2D.Double()
+            5 -> CubicCurve2D.Double()
+            6 -> QuadCurve2D.Double()
+            else -> error(7)
+        }
+        val objectData = ObjectData(item, PAINTS[index % PAINTS.size])
+        objectData.reset(width, height)
+        return objectData
+    }
 
     private var stringsCount: Int = 0
         set(value) {
@@ -104,17 +108,19 @@ class FadeAnim : AnimatingControlsSurface()
                 objects.removeAll(textDatas.subList(value, textDatas.size))
             } else {
                 for (i in field until value) {
-                    val j = i % FONTS.size
-                    val k = i % STRINGS.size
-                    val obj = TextData(STRINGS[k], FONTS[j], this)
-                    val od = ObjectData(obj, PAINTS[i % PAINTS.size])
-                    od.reset(width, height)
-                    objects.add(od)
+                    objects.add(createStringObject(i))
                 }
             }
             field = value
             checkRepaint()
         }
+
+    private fun createStringObject(index: Int): ObjectData {
+        val textData = TextData(STRINGS[index % STRINGS.size], FONTS[index % FONTS.size], this)
+        val objectData = ObjectData(textData, PAINTS[index % PAINTS.size])
+        objectData.reset(width, height)
+        return objectData
+    }
 
     private var imagesCount: Int = 0
         set(value) {
@@ -123,22 +129,27 @@ class FadeAnim : AnimatingControlsSurface()
                 objects.removeAll(images.subList(value, images.size))
             } else {
                 for (i in field until value) {
-                    var image = getImage(IMAGE_NAMES[i % IMAGE_NAMES.size])
-                    if (IMAGE_NAMES[i % IMAGE_NAMES.size] == "jumptojavastrip.png") {
-                        val iw = image.getWidth(null)
-                        val ih = image.getHeight(null)
-                        image = BufferedImage(iw, ih, BufferedImage.TYPE_INT_RGB).apply {
-                            createGraphics().use { gr -> gr.drawImage(image, 0, 0, null) }
-                        }
-                    }
-                    val od = ObjectData(image, Color.BLACK)
-                    od.reset(width, height)
-                    objects.add(od)
+                    objects.add(createImageObeject(i))
                 }
             }
             field = value
             checkRepaint()
         }
+
+    private fun createImageObeject(index: Int): ObjectData {
+        val name = IMAGE_NAMES[index % IMAGE_NAMES.size]
+        var image = getImage(name)
+        if (name == "jumptojavastrip.png") {
+            val iw = image.getWidth(null)
+            val ih = image.getHeight(null)
+            image = BufferedImage(iw, ih, BufferedImage.TYPE_INT_RGB).apply {
+                createGraphics().use { gr -> gr.drawImage(image, 0, 0, null) }
+            }
+        }
+        val objectData = ObjectData(image, Color.BLACK)
+        objectData.reset(width, height)
+        return objectData
+    }
 
     init {
         background = Color.BLACK
