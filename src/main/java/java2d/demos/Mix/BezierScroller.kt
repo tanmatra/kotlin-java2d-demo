@@ -39,7 +39,7 @@ import java2d.createBooleanButton
 import java2d.getLogger
 import java2d.systemTextAntialiasing
 import java2d.textAntialiasing
-import java2d.use
+import java2d.toBufferedImage
 import java.awt.AlphaComposite
 import java.awt.BasicStroke
 import java.awt.BorderLayout
@@ -82,16 +82,7 @@ class BezierScroller : AnimatingControlsSurface()
     private val hotJavaImg: Image = getImage("java-logo.gif")
     private val random = Random()
 
-    private val img: BufferedImage = run {
-        val image = getImage("jumptojavastrip.png")
-        val iw = image.getWidth(this)
-        val ih = image.getHeight(this)
-        BufferedImage(iw, ih, BufferedImage.TYPE_INT_RGB).apply {
-            createGraphics().use {
-                it.drawImage(image, 0, 0, this@BezierScroller)
-            }
-        }
-    }
+    private val image: BufferedImage = getImage("jumptojavastrip.png").toBufferedImage()
 
     private val lines: List<String> = try {
         FileInputStream(FILE_NAME).use {
@@ -260,7 +251,7 @@ class BezierScroller : AnimatingControlsSurface()
 
         if (doImage) {
             g2.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha)
-            g2.drawImage(img.getSubimage(subimageX, 0, STRIP_CELL_WIDTH, STRIP_CELL_HEIGHT), imageX, imageY, this)
+            g2.drawImage(image.getSubimage(subimageX, 0, STRIP_CELL_WIDTH, STRIP_CELL_HEIGHT), imageX, imageY, this)
         }
     }
 

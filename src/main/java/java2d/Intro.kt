@@ -281,45 +281,39 @@ class Intro : JPanel(BorderLayout())
             director = Director()
         }
 
-        override fun paint(g: Graphics?) {
-            val d = size
-            if (d.width <= 0 || d.height <= 0) {
+        override fun paint(g: Graphics) {
+            if (width <= 0 || height <= 0) {
                 return
             }
-            if (bimg == null || bimg!!.width != d.width || bimg!!.height != d.height) {
-                bimg = graphicsConfiguration.createCompatibleImage(
-                    d.width,
-                    d.height
-                                                                  )
+            val image = bufferedImage?.takeIf { it.width == width && it.height == height } ?: run {
+                val newImage = graphicsConfiguration.createCompatibleImage(width, height)
+                bufferedImage = newImage
                 // reset future scenes
                 for (i in index + 1 until director.size) {
-                    director[i].reset(d.width, d.height)
+                    director[i].reset(width, height)
                 }
+                newImage
             }
 
             val scene = director[index]
             if (scene.index <= scene.length) {
                 if (thread != null) {
-                    scene.step(d.width, d.height)
+                    scene.step(width, height)
                 }
+                image.createGraphics().use { g2 ->
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+                    g2.background = background
+                    g2.clearRect(0, 0, width, height)
 
-                val g2 = bimg!!.createGraphics()
-                g2.setRenderingHint(
-                    RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON
-                                   )
-                g2.background = background
-                g2.clearRect(0, 0, d.width, d.height)
+                    scene.render(width, height, g2)
 
-                scene.render(d.width, d.height, g2)
-
-                if (thread != null) {
-                    // increment scene.index after scene.render
-                    scene.index++
+                    if (thread != null) {
+                        // increment scene.index after scene.render
+                        scene.index++
+                    }
                 }
-                g2.dispose()
             }
-            g!!.drawImage(bimg, 0, 0, this)
+            g.drawImage(image, 0, 0, this)
         }
 
         fun start() {
@@ -1006,26 +1000,19 @@ class Intro : JPanel(BorderLayout())
 
             override fun step(w: Int, h: Int) {
                 if (bimg == null) {
-                    val biw = Surface.bimg!!.width
-                    val bih = Surface.bimg!!.height
-                    bimg = BufferedImage(biw, bih, BufferedImage.TYPE_INT_RGB)
-                    val big = bimg!!.createGraphics()
-                    big.drawImage(Surface.bimg, 0, 0, null)
+                    bimg = Surface.bufferedImage!!.copy()
                 }
                 val z = Math.min(w, h) * zoom
-                when {
-                    type and OVAL != 0 -> shape = Ellipse2D.Double(w / 2 - z / 2, h / 2 - z / 2, z, z)
-                    type and ARC != 0 -> {
-                        shape = Arc2D.Double(
-                            -100.0, -100.0, (w + 200).toDouble(), (h + 200).toDouble(), 90.0,
-                            extent, Arc2D.PIE)
-                        extent -= eIncr
-                    }
-                    type and RECT != 0 -> shape = when {
-                        type and WID != 0 -> Rectangle2D.Double(w / 2 - z / 2, 0.0, z, h.toDouble())
-                        type and HEI != 0 -> Rectangle2D.Double(0.0, h / 2 - z / 2, w.toDouble(), z)
+                shape = when {
+                    type hasBits OVAL -> Ellipse2D.Double(w / 2 - z / 2, h / 2 - z / 2, z, z)
+                    type hasBits ARC -> Arc2D.Double(-100.0, -100.0, w + 200.0, h + 200.0, 90.0, extent, Arc2D.PIE)
+                        .also { extent -= eIncr }
+                    type hasBits RECT -> when {
+                        type hasBits WID -> Rectangle2D.Double(w / 2 - z / 2, 0.0, z, h.toDouble())
+                        type hasBits HEI -> Rectangle2D.Double(0.0, h / 2 - z / 2, w.toDouble(), z)
                         else -> Rectangle2D.Double(w / 2 - z / 2, h / 2 - z / 2, z, z)
                     }
+                    else -> shape // ?
                 }
                 zoom += zIncr
             }
@@ -1064,9 +1051,9 @@ class Intro : JPanel(BorderLayout())
         {
             private var bimg: BufferedImage? = null
             private var big: Graphics2D? = null
-            private var list: MutableList<Int>? = null
-            private var xlist: MutableList<Int>? = null
-            private var ylist: MutableList<Int>? = null
+            private lateinit var list: List<Int>
+            private lateinit var xlist: List<Int>
+            private lateinit var ylist: List<Int>
             private var xeNum: Int = 0
             private var yeNum: Int = 0    // element number
             private var xcSize: Int = 0
@@ -1074,23 +1061,9 @@ class Intro : JPanel(BorderLayout())
             private var inc: Int = 0
 
             private fun createShuffledLists() {
-                val width = bimg!!.width
-                val height = bimg!!.height
-                xlist = ArrayList(width)
-                ylist = ArrayList(height)
-                list = ArrayList(end - begin + 1)
-                for (i in 0 until width) {
-                    xlist!!.add(i, i)
-                }
-                for (i in 0 until height) {
-                    ylist!!.add(i, i)
-                }
-                for (i in 0 until end - begin + 1) {
-                    list!!.add(i, i)
-                }
-                xlist!!.shuffle()
-                ylist!!.shuffle()
-                list!!.shuffle()
+                xlist = MutableList(bimg!!.width) { i -> i }.apply { shuffle() }
+                ylist = MutableList(bimg!!.height) { i -> i }.apply { shuffle() }
+                list = MutableList(end - begin + 1) { i -> i }.apply { shuffle() }
             }
 
             override fun reset(newWidth: Int, newHeight: Int) {
@@ -1102,21 +1075,18 @@ class Intro : JPanel(BorderLayout())
                     bimg = null
                 }
                 if (bimg == null) {
-                    val biw = Surface.bimg!!.width
-                    val bih = Surface.bimg!!.height
-                    bimg = BufferedImage(
-                        biw, bih,
-                        BufferedImage.TYPE_INT_RGB
-                                        )
+                    bimg = Surface.bufferedImage!!.createSimilar().also { bimg ->
+                        big = bimg.createGraphics().also { g ->
+                            g.drawImage(Surface.bufferedImage, 0, 0, null)
+                        }
+                    }
                     createShuffledLists()
-                    big = bimg!!.createGraphics()
-                    big!!.drawImage(Surface.bimg, 0, 0, null)
-                    xcSize = xlist!!.size / (end - begin) + 1
-                    ycSize = ylist!!.size / (end - begin) + 1
+                    xcSize = xlist.size / (end - begin) + 1
+                    ycSize = ylist.size / (end - begin) + 1
                     xeNum = 0
                     inc = 0
                 }
-                xeNum = xcSize * list!![inc]
+                xeNum = xcSize * list[inc]
                 yeNum = -ycSize
                 inc++
             }
@@ -1125,7 +1095,7 @@ class Intro : JPanel(BorderLayout())
                 big!!.color = myBlack
 
                 for (k in 0..end - begin) {
-                    if (xeNum + xcSize > xlist!!.size) {
+                    if (xeNum + xcSize > xlist.size) {
                         xeNum = 0
                     } else {
                         xeNum += xcSize
@@ -1133,11 +1103,11 @@ class Intro : JPanel(BorderLayout())
                     yeNum += ycSize
 
                     var i = xeNum
-                    while (i < xeNum + xcSize && i < xlist!!.size) {
+                    while (i < xeNum + xcSize && i < xlist.size) {
                         var j = yeNum
-                        while (j < yeNum + ycSize && j < ylist!!.size) {
-                            val xval = xlist!![i]
-                            val yval = ylist!![j]
+                        while (j < yeNum + ycSize && j < ylist.size) {
+                            val xval = xlist[i]
+                            val yval = ylist[j]
                             if (xval % blocksize == 0 && yval % blocksize == 0) {
                                 big!!.fillRect(xval, yval, blocksize, blocksize)
                             }
@@ -1180,25 +1150,25 @@ class Intro : JPanel(BorderLayout())
 
             override fun step(w: Int, h: Int) {
                 if (bimg == null) {
-                    val biw = Surface.bimg!!.width
-                    val bih = Surface.bimg!!.height
-                    bimg = BufferedImage(biw, bih, BufferedImage.TYPE_INT_RGB)
-                    val big = bimg!!.createGraphics()
-                    big.drawImage(Surface.bimg, 0, 0, null)
-                    run {
-                        var x = 0
-                        while (x < w && scale > 0.0) {
-                            val ww = if (x + siw < w) siw else w - x
+                    bimg = Surface.bufferedImage!!.createSimilar().also { bimg ->
+                        bimg.createGraphics().use { big ->
+                            big.drawImage(Surface.bufferedImage, 0, 0, null)
                             run {
-                                var y = 0
-                                while (y < h) {
-                                    val hh = if (y + sih < h) sih else h - y
-                                    subs.add(bimg!!.getSubimage(x, y, ww, hh))
-                                    pts.add(Point(x, y))
-                                    y += sih
+                                var x = 0
+                                while (x < w && scale > 0.0) {
+                                    val ww = if (x + siw < w) siw else w - x
+                                    run {
+                                        var y = 0
+                                        while (y < h) {
+                                            val hh = if (y + sih < h) sih else h - y
+                                            subs.add(bimg.getSubimage(x, y, ww, hh))
+                                            pts.add(Point(x, y))
+                                            y += sih
+                                        }
+                                    }
+                                    x += siw
                                 }
                             }
-                            x += siw
                         }
                     }
                 }
@@ -1645,7 +1615,7 @@ class Intro : JPanel(BorderLayout())
             lateinit var surf: Surface
             lateinit var cupanim: Image
             lateinit var java_logo: Image
-            var bimg: BufferedImage? = null
+            var bufferedImage: BufferedImage? = null
 
             fun getMetrics(font: Font): FontMetrics {
                 return surf.getFontMetrics(font)

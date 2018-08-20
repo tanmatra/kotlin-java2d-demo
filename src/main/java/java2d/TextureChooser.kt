@@ -62,19 +62,13 @@ import javax.swing.border.TitledBorder
  */
 class TextureChooser(
     private val globalControls: GlobalControls?,
-    var num: Int)
-: JPanel(GridLayout(0, 2, 5, 5))
+    var num: Int
+) : JPanel(GridLayout(0, 2, 5, 5))
 {
     val imageTexture: TexturePaint
         get() {
-            val img = DemoImages.getImage("java-logo.gif", this)
-            val imgWidth = img.getWidth(this)
-            val imgHeight = img.getHeight(this)
-            val bufferedImage = BufferedImage(imgWidth, imgHeight, BufferedImage.TYPE_INT_RGB)
-            bufferedImage.createGraphics().use { imgGr ->
-                imgGr.drawImage(img, 0, 0, this)
-            }
-            return TexturePaint(bufferedImage, Rectangle(0, 0, imgWidth, imgHeight))
+            val image = DemoImages.getImage("java-logo.gif", this).toBufferedImage()
+            return TexturePaint(image, Rectangle(0, 0, image.width, image.height))
         }
 
     val textTexture: TexturePaint
@@ -107,8 +101,8 @@ class TextureChooser(
     inner class Surface(
         private val paint: Paint,
         private val textureChooser: TextureChooser,
-        private val num: Int)
-    : JPanel()
+        private val num: Int
+    ) : JPanel()
     {
         var clickedFrame: Boolean = false
         private var enterExitFrame = false
@@ -183,14 +177,15 @@ class TextureChooser(
         val geomTexture: TexturePaint
             get() {
                 val SIZE = 12
-                val bufferedImage = BufferedImage(SIZE, SIZE, BufferedImage.TYPE_INT_RGB)
-                bufferedImage.createGraphics().use { imgGr ->
-                    imgGr.antialiasing = true
-                    imgGr.background = Color.WHITE
-                    imgGr.clearRect(0, 0, SIZE, SIZE)
-                    imgGr.color = Color(211, 211, 211, 200)
-                    val ellipseSize = (SIZE - 1).toFloat()
-                    imgGr.fill(Ellipse2D.Float(1f, 1f, ellipseSize, ellipseSize))
+                val bufferedImage = BufferedImage(SIZE, SIZE, BufferedImage.TYPE_INT_RGB).apply {
+                    createGraphics().use { imgGr ->
+                        imgGr.antialiasing = true
+                        imgGr.background = Color.WHITE
+                        imgGr.clearRect(0, 0, SIZE, SIZE)
+                        imgGr.color = Color(211, 211, 211, 200)
+                        val ellipseSize = (SIZE - 1).toFloat()
+                        imgGr.fill(Ellipse2D.Float(1f, 1f, ellipseSize, ellipseSize))
+                    }
                 }
                 return TexturePaint(bufferedImage, Rectangle(0, 0, SIZE, SIZE))
             }

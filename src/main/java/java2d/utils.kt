@@ -224,3 +224,11 @@ fun Image.toBufferedImage(): BufferedImage {
         }
     }
 }
+
+fun BufferedImage.createSimilar() = BufferedImage(width, height, type)
+
+fun BufferedImage.copy(): BufferedImage = createSimilar().also {
+    it.createGraphics().use { g ->
+        g.drawImage(this, 0, 0, null)
+    }
+}

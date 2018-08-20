@@ -34,7 +34,7 @@ package java2d.demos.Images
 import java2d.CControl
 import java2d.ControlsSurface
 import java2d.CustomControls
-import java2d.use
+import java2d.toBufferedImage
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Dimension
@@ -68,12 +68,7 @@ class ImageOps : ControlsSurface()
         EDGE_5_X_5)
 
     private val images: List<BufferedImage> = IMAGE_NAMES.map { name ->
-        val image = getImage(name)
-        val iw = image.getWidth(this)
-        val ih = image.getHeight(this)
-        BufferedImage(iw, ih, BufferedImage.TYPE_INT_RGB).apply {
-            createGraphics().use { g2 -> g2.drawImage(image, 0, 0, null) }
-        }
+        getImage(name).toBufferedImage()
     }
 
     private val sliderChangeListener = ChangeListener {
@@ -119,8 +114,8 @@ class ImageOps : ControlsSurface()
     }
 
     override fun render(w: Int, h: Int, g2: Graphics2D) {
-        val iw = images[imageIndex].getWidth(null)
-        val ih = images[imageIndex].getHeight(null)
+        val iw = images[imageIndex].width
+        val ih = images[imageIndex].height
         val oldXform = g2.transform
         g2.scale(w.toDouble() / iw, h.toDouble() / ih)
         g2.drawImage(images[imageIndex], imageOperations[operationIndex], 0, 0)
