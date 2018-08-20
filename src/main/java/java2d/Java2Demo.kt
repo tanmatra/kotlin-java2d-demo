@@ -31,6 +31,7 @@
  */
 package java2d
 
+import java2d.intro.Intro
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Component

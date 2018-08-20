@@ -29,8 +29,13 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package java2d
+package java2d.intro
 
+import java2d.DemoImages
+import java2d.copy
+import java2d.createSimilar
+import java2d.hasBits
+import java2d.use
 import java.awt.AlphaComposite
 import java.awt.BorderLayout
 import java.awt.Color
@@ -405,7 +410,10 @@ class Intro : JPanel(BorderLayout())
          */
         internal class Director : ArrayList<Scene>()
         {
-            private var gp = GradientPaint(0f, 40f, myBlue, 38f, 2f, myBlack)
+            private var gp = GradientPaint(0f, 40f,
+                                           myBlue, 38f, 2f,
+                                           myBlack
+                                          )
             private var f1 = Font("serif", Font.PLAIN, 200)
             private var f2 = Font("serif", Font.PLAIN, 120)
             private var f3 = Font("serif", Font.PLAIN, 72)
@@ -413,67 +421,281 @@ class Intro : JPanel(BorderLayout())
             private var partsInfo = arrayOf(
                 arrayOf(
                     arrayOf<Any>("J  -  scale text on gradient", "0"),
-                    arrayOf<Any>(GpE(GpE.BURI, myBlack, myBlue, 0, 20), TxE("J", f1, TxE.SCI, myYellow, 2, 20))),
+                    arrayOf<Any>(
+                        GpE(
+                            GpE.BURI,
+                            myBlack,
+                            myBlue,
+                            0,
+                            20
+                                                      ),
+                        TxE(
+                            "J",
+                            f1,
+                            TxE.SCI,
+                            myYellow,
+                            2,
+                            20
+                                                      )
+                                )),
                 arrayOf(
                     arrayOf<Any>("2  -  scale & rotate text on gradient", "0"),
                     arrayOf<Any>(
-                        GpE(GpE.BURI, myBlue, myBlack, 0, 22),
-                        TxE("2", f1, TxE.RI or TxE.SCI, myYellow, 2, 22))),
+                        GpE(
+                            GpE.BURI,
+                            myBlue,
+                            myBlack,
+                            0,
+                            22
+                                                      ),
+                        TxE(
+                            "2",
+                            f1,
+                            TxE.RI or TxE.SCI,
+                            myYellow,
+                            2,
+                            22
+                                                      )
+                                )),
                 arrayOf(
                     arrayOf<Any>("D  -  scale text on gradient", "0"),
-                    arrayOf<Any>(GpE(GpE.BURI, myBlack, myBlue, 0, 20), TxE("D", f1, TxE.SCI, myYellow, 2, 20))),
+                    arrayOf<Any>(
+                        GpE(
+                            GpE.BURI,
+                            myBlack,
+                            myBlue,
+                            0,
+                            20
+                                                      ),
+                        TxE(
+                            "D",
+                            f1,
+                            TxE.SCI,
+                            myYellow,
+                            2,
+                            20
+                                                      )
+                                )),
                 arrayOf(
                     arrayOf<Any>("Java2D  -  scale & rotate text on gradient", "1000"),
                     arrayOf<Any>(
-                        GpE(GpE.SIH, myBlue, myBlack, 0, 40),
-                        TxE("Java2D", f2, TxE.RI or TxE.SCI, myYellow, 0, 40))),
-                arrayOf(arrayOf<Any>("Previous scene dither dissolve out", "0"), arrayOf<Any>(DdE(0, 20, 1))),
+                        GpE(
+                            GpE.SIH,
+                            myBlue,
+                            myBlack,
+                            0,
+                            40
+                                                      ),
+                        TxE(
+                            "Java2D",
+                            f2,
+                            TxE.RI or TxE.SCI,
+                            myYellow,
+                            0,
+                            40
+                                                      )
+                                )),
+                arrayOf(arrayOf<Any>("Previous scene dither dissolve out", "0"), arrayOf<Any>(
+                    DdE(
+                        0,
+                        20,
+                        1
+                                                  )
+                                                                                             )),
                 arrayOf(
                     arrayOf<Any>("Graphics Features", "999"),
                     arrayOf<Any>(
                         Temp(Temp.RECT, null, 0, 15),
-                        Temp(Temp.IMG, java_logo, 2, 15),
-                        Temp(Temp.RNA or Temp.INA, java_logo, 16, 130),
-                        Features(Features.GRAPHICS, 16, 130))),
+                        Temp(
+                            Temp.IMG,
+                            java_logo,
+                            2,
+                            15
+                                                       ),
+                        Temp(
+                            Temp.RNA or Temp.INA,
+                            java_logo,
+                            16,
+                            130
+                                                       ),
+                        Features(
+                            Features.GRAPHICS,
+                            16,
+                            130
+                                                           )
+                                )),
                 arrayOf(
                     arrayOf<Any>("Java2D  -  texture text on gradient", "1000"), arrayOf<Any>(
-                        GpE(GpE.WI, myBlue, myBlack, 0, 20),
-                        GpE(GpE.WD, myBlue, myBlack, 21, 40),
-                        TpE(TpE.OI or TpE.NF, myBlack, myYellow, 4, 0, 10),
-                        TpE(TpE.OD or TpE.NF, myBlack, myYellow, 4, 11, 20),
-                        TpE(TpE.OI or TpE.NF or TpE.HAF, myBlack, myYellow, 5, 21, 40),
-                        TxE("Java2D", f2, 0, null, 0, 40))),
-                arrayOf(arrayOf<Any>("Previous scene random close out", "0"), arrayOf<Any>(CoE(CoE.RAND, 0, 20))),
+                        GpE(
+                            GpE.WI,
+                            myBlue,
+                            myBlack,
+                            0,
+                            20
+                                                      ),
+                        GpE(
+                            GpE.WD,
+                            myBlue,
+                            myBlack,
+                            21,
+                            40
+                                                      ),
+                        TpE(
+                            TpE.OI or TpE.NF,
+                            myBlack,
+                            myYellow,
+                            4,
+                            0,
+                            10
+                                                      ),
+                        TpE(
+                            TpE.OD or TpE.NF,
+                            myBlack,
+                            myYellow,
+                            4,
+                            11,
+                            20
+                                                      ),
+                        TpE(
+                            TpE.OI or TpE.NF or TpE.HAF,
+                            myBlack,
+                            myYellow,
+                            5,
+                            21,
+                            40
+                                                      ),
+                        TxE("Java2D", f2, 0, null, 0, 40)
+                                                                                             )),
+                arrayOf(arrayOf<Any>("Previous scene random close out", "0"), arrayOf<Any>(
+                    CoE(
+                        CoE.RAND,
+                        0,
+                        20
+                                                  )
+                                                                                          )),
                 arrayOf(
                     arrayOf<Any>("Text Features", "999"),
                     arrayOf<Any>(
                         Temp(Temp.RECT, null, 0, 15),
-                        Temp(Temp.IMG, java_logo, 2, 15),
-                        Temp(Temp.RNA or Temp.INA, java_logo, 16, 130),
-                        Features(Features.TEXT, 16, 130))),
+                        Temp(
+                            Temp.IMG,
+                            java_logo,
+                            2,
+                            15
+                                                       ),
+                        Temp(
+                            Temp.RNA or Temp.INA,
+                            java_logo,
+                            16,
+                            130
+                                                       ),
+                        Features(Features.TEXT, 16, 130)
+                                )),
                 arrayOf(
                     arrayOf<Any>("Java2D  -  composite text on texture", "1000"),
                     arrayOf<Any>(
-                        TpE(TpE.RI, myBlack, gp, 40, 0, 20),
-                        TpE(TpE.RD, myBlack, gp, 40, 21, 40),
-                        TpE(TpE.RI, myBlack, gp, 40, 41, 60),
-                        TxE("Java2D", f2, TxE.AC, myYellow, 0, 60))),
-                arrayOf(arrayOf<Any>("Previous scene dither dissolve out", "0"), arrayOf<Any>(DdE(0, 20, 4))),
+                        TpE(
+                            TpE.RI,
+                            myBlack,
+                            gp,
+                            40,
+                            0,
+                            20
+                                                      ),
+                        TpE(
+                            TpE.RD,
+                            myBlack,
+                            gp,
+                            40,
+                            21,
+                            40
+                                                      ),
+                        TpE(
+                            TpE.RI,
+                            myBlack,
+                            gp,
+                            40,
+                            41,
+                            60
+                                                      ),
+                        TxE(
+                            "Java2D",
+                            f2,
+                            TxE.AC,
+                            myYellow,
+                            0,
+                            60
+                                                      )
+                                )),
+                arrayOf(arrayOf<Any>("Previous scene dither dissolve out", "0"), arrayOf<Any>(
+                    DdE(
+                        0,
+                        20,
+                        4
+                                                  )
+                                                                                             )),
                 arrayOf(
                     arrayOf<Any>("Imaging Features", "999"),
                     arrayOf<Any>(
                         Temp(Temp.RECT, null, 0, 15),
-                        Temp(Temp.IMG, java_logo, 2, 15),
-                        Temp(Temp.RNA or Temp.INA, java_logo, 16, 130),
-                        Features(Features.IMAGES, 16, 130))),
+                        Temp(
+                            Temp.IMG,
+                            java_logo,
+                            2,
+                            15
+                                                       ),
+                        Temp(
+                            Temp.RNA or Temp.INA,
+                            java_logo,
+                            16,
+                            130
+                                                       ),
+                        Features(
+                            Features.IMAGES,
+                            16,
+                            130
+                                                           )
+                                )),
                 arrayOf(
                     arrayOf<Any>("Java2D  -  text on gradient", "1000"),
                     arrayOf<Any>(
-                        GpE(GpE.SDH, myBlue, myBlack, 0, 20),
-                        GpE(GpE.SIH, myBlue, myBlack, 21, 40),
-                        GpE(GpE.SDH, myBlue, myBlack, 41, 50),
-                        GpE(GpE.INC or GpE.NF, myRed, myYellow, 0, 50),
-                        TxE("Java2D", f2, TxE.NOP, null, 0, 50))),
+                        GpE(
+                            GpE.SDH,
+                            myBlue,
+                            myBlack,
+                            0,
+                            20
+                                                      ),
+                        GpE(
+                            GpE.SIH,
+                            myBlue,
+                            myBlack,
+                            21,
+                            40
+                                                      ),
+                        GpE(
+                            GpE.SDH,
+                            myBlue,
+                            myBlack,
+                            41,
+                            50
+                                                      ),
+                        GpE(
+                            GpE.INC or GpE.NF,
+                            myRed,
+                            myYellow,
+                            0,
+                            50
+                                                      ),
+                        TxE(
+                            "Java2D",
+                            f2,
+                            TxE.NOP,
+                            null,
+                            0,
+                            50
+                                                      )
+                                )),
                 arrayOf(
                     arrayOf<Any>("Previous scene ellipse close out", "0"),
                     arrayOf<Any>(CoE(CoE.OVAL, 0, 20))),
@@ -481,41 +703,142 @@ class Intro : JPanel(BorderLayout())
                     arrayOf<Any>("Color Features", "999"),
                     arrayOf<Any>(
                         Temp(Temp.RECT, null, 0, 15),
-                        Temp(Temp.IMG, java_logo, 2, 15),
-                        Temp(Temp.RNA or Temp.INA, java_logo, 16, 99),
-                        Features(Features.COLOR, 16, 99))),
+                        Temp(
+                            Temp.IMG,
+                            java_logo,
+                            2,
+                            15
+                                                       ),
+                        Temp(
+                            Temp.RNA or Temp.INA,
+                            java_logo,
+                            16,
+                            99
+                                                       ),
+                        Features(Features.COLOR, 16, 99)
+                                )),
                 arrayOf(
                     arrayOf<Any>("Java2D  -  composite and rotate text on paints", "2000"),
                     arrayOf<Any>(
-                        GpE(GpE.BURI, myBlack, myBlue, 0, 20),
-                        GpE(GpE.BURD, myBlack, myBlue, 21, 30),
-                        TpE(TpE.OI or TpE.HAF, myBlack, myBlue, 10, 31, 40),
-                        TxE("Java2D", f2, TxE.AC or TxE.RI, myYellow, 0, 40))),
+                        GpE(
+                            GpE.BURI,
+                            myBlack,
+                            myBlue,
+                            0,
+                            20
+                                                      ),
+                        GpE(
+                            GpE.BURD,
+                            myBlack,
+                            myBlue,
+                            21,
+                            30
+                                                      ),
+                        TpE(
+                            TpE.OI or TpE.HAF,
+                            myBlack,
+                            myBlue,
+                            10,
+                            31,
+                            40
+                                                      ),
+                        TxE(
+                            "Java2D",
+                            f2,
+                            TxE.AC or TxE.RI,
+                            myYellow,
+                            0,
+                            40
+                                                      )
+                                )),
                 arrayOf(
                     arrayOf<Any>("Previous scene subimage transform out", "0"),
                     arrayOf<Any>(SiE(60, 60, 0, 40))),
                 arrayOf(
                     arrayOf<Any>("CREDITS  -  transform in", "1000"),
                     arrayOf<Any>(
-                        LnE(LnE.ACI or LnE.ZOOMI or LnE.RI, 0, 60),
-                        TxE("CREDITS", f3, TxE.AC or TxE.SCI, RED, 20, 30),
-                        TxE("CREDITS", f3, TxE.SCXD, RED, 31, 38),
-                        TxE("CREDITS", f3, TxE.SCXI, RED, 39, 48),
-                        TxE("CREDITS", f3, TxE.SCXD, RED, 49, 54),
-                        TxE("CREDITS", f3, TxE.SCXI, RED, 55, 60))),
+                        LnE(
+                            LnE.ACI or LnE.ZOOMI or LnE.RI,
+                            0,
+                            60
+                                                      ),
+                        TxE(
+                            "CREDITS",
+                            f3,
+                            TxE.AC or TxE.SCI,
+                            RED,
+                            20,
+                            30
+                                                      ),
+                        TxE(
+                            "CREDITS",
+                            f3,
+                            TxE.SCXD,
+                            RED,
+                            31,
+                            38
+                                                      ),
+                        TxE(
+                            "CREDITS",
+                            f3,
+                            TxE.SCXI,
+                            RED,
+                            39,
+                            48
+                                                      ),
+                        TxE(
+                            "CREDITS",
+                            f3,
+                            TxE.SCXD,
+                            RED,
+                            49,
+                            54
+                                                      ),
+                        TxE(
+                            "CREDITS",
+                            f3,
+                            TxE.SCXI,
+                            RED,
+                            55,
+                            60
+                                                      )
+                                )),
                 arrayOf(
                     arrayOf<Any>("CREDITS  -  transform out", "0"),
                     arrayOf<Any>(
-                        LnE(LnE.ACD or LnE.ZOOMD or LnE.RD, 0, 45),
+                        LnE(
+                            LnE.ACD or LnE.ZOOMD or LnE.RD,
+                            0,
+                            45
+                                                      ),
                         TxE("CREDITS", f3, 0, RED, 0, 9),
-                        TxE("CREDITS", f3, TxE.SCD or TxE.RD, RED, 10, 30))),
+                        TxE(
+                            "CREDITS",
+                            f3,
+                            TxE.SCD or TxE.RD,
+                            RED,
+                            10,
+                            30
+                                                      )
+                                )),
                 arrayOf(
                     arrayOf<Any>("Contributors", "1000"),
                     arrayOf<Any>(
                         Temp(Temp.RECT, null, 0, 30),
-                        Temp(Temp.IMG, cupanim, 4, 30),
-                        Temp(Temp.RNA or Temp.INA, cupanim, 31, 200),
-                        Contributors(34, 200))))
+                        Temp(
+                            Temp.IMG,
+                            cupanim,
+                            4,
+                            30
+                                                       ),
+                        Temp(
+                            Temp.RNA or Temp.INA,
+                            cupanim,
+                            31,
+                            200
+                                                       ),
+                        Contributors(34, 200)
+                                )))
 
             init {
                 for (partInfo in partsInfo) {
@@ -1000,7 +1323,7 @@ class Intro : JPanel(BorderLayout())
 
             override fun step(w: Int, h: Int) {
                 if (bimg == null) {
-                    bimg = Surface.bufferedImage!!.copy()
+                    bimg = bufferedImage!!.copy()
                 }
                 val z = Math.min(w, h) * zoom
                 shape = when {
@@ -1075,9 +1398,9 @@ class Intro : JPanel(BorderLayout())
                     bimg = null
                 }
                 if (bimg == null) {
-                    bimg = Surface.bufferedImage!!.createSimilar().also { bimg ->
+                    bimg = bufferedImage!!.createSimilar().also { bimg ->
                         big = bimg.createGraphics().also { g ->
-                            g.drawImage(Surface.bufferedImage, 0, 0, null)
+                            g.drawImage(bufferedImage, 0, 0, null)
                         }
                     }
                     createShuffledLists()
@@ -1150,9 +1473,9 @@ class Intro : JPanel(BorderLayout())
 
             override fun step(w: Int, h: Int) {
                 if (bimg == null) {
-                    bimg = Surface.bufferedImage!!.createSimilar().also { bimg ->
+                    bimg = bufferedImage!!.createSimilar().also { bimg ->
                         bimg.createGraphics().use { big ->
-                            big.drawImage(Surface.bufferedImage, 0, 0, null)
+                            big.drawImage(bufferedImage, 0, 0, null)
                             run {
                                 var x = 0
                                 while (x < w && scale > 0.0) {
@@ -1214,7 +1537,8 @@ class Intro : JPanel(BorderLayout())
          * to the edge.  Expand or collapse the ellipse.  Fade in or out
          * the lines.
          */
-        internal class LnE(private val type: Int, override val begin: Int, override val end: Int) : Part
+        internal class LnE(private val type: Int, override val begin: Int, override val end: Int) :
+            Part
         {
             private var rIncr: Double = 0.0
             private var rotate: Double = 0.0
@@ -1407,7 +1731,8 @@ class Intro : JPanel(BorderLayout())
         /**
          * Features of Java2D.  Single character advancement effect.
          */
-        internal class Features(type: Int, override val begin: Int, override val end: Int) : Part
+        internal class Features(type: Int, override val begin: Int, override val end: Int) :
+            Part
         {
             private val list: Array<String>
             private var strH: Int = 0
@@ -1467,7 +1792,7 @@ class Intro : JPanel(BorderLayout())
                 val font2 = Font("serif", Font.PLAIN, 24)
 
                 // var fm1 = Surface.getMetrics(font1)
-                var fm2 = Surface.getMetrics(font2)
+                var fm2 = getMetrics(font2)
 
                 var table = arrayOf(
                     arrayOf(
@@ -1606,7 +1931,7 @@ class Intro : JPanel(BorderLayout())
                     "Rakesh Menon"
                                      )
                 val font = Font("serif", Font.PLAIN, 26)
-                var fm = Surface.getMetrics(font)
+                var fm = getMetrics(font)
             }
         } // End Contributors class
 
