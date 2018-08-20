@@ -7,9 +7,11 @@ import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
+import java.awt.Image
 import java.awt.Insets
 import java.awt.RenderingHints
 import java.awt.Toolkit
+import java.awt.image.BufferedImage
 import java.lang.reflect.InvocationTargetException
 import java.util.logging.Logger
 import javax.swing.AbstractButton
@@ -209,4 +211,16 @@ inline fun DoubleArray.replaceAll(transform: (Double) -> Double) {
 fun DoubleArray.normalize() {
     val distance = distance()
     replaceAll { it / distance }
+}
+
+fun Image.toBufferedImage(): BufferedImage {
+    return if (this is BufferedImage) {
+        this
+    } else {
+        BufferedImage(getWidth(null), getHeight(null), BufferedImage.TYPE_INT_RGB).also {
+            it.createGraphics().use { g ->
+                g.drawImage(this, 0, 0, null)
+            }
+        }
+    }
 }

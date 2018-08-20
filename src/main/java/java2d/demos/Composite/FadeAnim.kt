@@ -34,7 +34,9 @@ package java2d.demos.Composite
 import java2d.AnimatingControlsSurface
 import java2d.CControl
 import java2d.CustomControls
+import java2d.DemoImages
 import java2d.createTitledSlider
+import java2d.toBufferedImage
 import java2d.use
 import java.awt.AlphaComposite
 import java.awt.BasicStroke
@@ -69,12 +71,12 @@ import javax.swing.SwingConstants
  */
 class FadeAnim : AnimatingControlsSurface()
 {
-    private val objects = ArrayList<ObjectData>(20)
+    private val objects = ArrayList<GraphicObject>(20)
 
     private var shapesCount: Int = 0
         set(value) {
             if (value < field) {
-                val shapes = objects.filter { it.item is Shape }
+                val shapes = objects.filterIsInstance<ShapeObject>()
                 objects.removeAll(shapes.subList(value, shapes.size))
             } else {
                 for (i in field until value) {
@@ -85,8 +87,8 @@ class FadeAnim : AnimatingControlsSurface()
             checkRepaint()
         }
 
-    private fun createShapeObject(index: Int): ObjectData {
-        val item: Shape = when (index % 7) {
+    private fun createShapeObject(index: Int): GraphicObject {
+        val shape: Shape = when (index % 7) {
             0 -> GeneralPath()
             1 -> Rectangle2D.Double()
             2 -> Ellipse2D.Double()
@@ -96,16 +98,16 @@ class FadeAnim : AnimatingControlsSurface()
             6 -> QuadCurve2D.Double()
             else -> error(7)
         }
-        val objectData = ObjectData(item, PAINTS[index % PAINTS.size])
-        objectData.reset(width, height)
-        return objectData
+        return ShapeObject(shape, PAINTS[index % PAINTS.size]).apply {
+            reset(width, height)
+        }
     }
 
     private var stringsCount: Int = 0
         set(value) {
             if (value < field) {
-                val textDatas = objects.filter { it.item is TextData }
-                objects.removeAll(textDatas.subList(value, textDatas.size))
+                val texts = objects.filterIsInstance<TextObject>()
+                objects.removeAll(texts.subList(value, texts.size))
             } else {
                 for (i in field until value) {
                     objects.add(createStringObject(i))
@@ -115,17 +117,19 @@ class FadeAnim : AnimatingControlsSurface()
             checkRepaint()
         }
 
-    private fun createStringObject(index: Int): ObjectData {
-        val textData = TextData(STRINGS[index % STRINGS.size], FONTS[index % FONTS.size], this)
-        val objectData = ObjectData(textData, PAINTS[index % PAINTS.size])
-        objectData.reset(width, height)
-        return objectData
+    private fun createStringObject(index: Int): GraphicObject {
+        val string = STRINGS[index % STRINGS.size]
+        val font = FONTS[index % FONTS.size]
+        val paint = PAINTS[index % PAINTS.size]
+        return TextObject(string, font, paint, this).apply {
+            reset(width, height)
+        }
     }
 
     private var imagesCount: Int = 0
         set(value) {
             if (value < field) {
-                val images = objects.filter { it.item is Image }
+                val images = objects.filter { (it is ImageObject) or (it is AnimatedImageObject) }
                 objects.removeAll(images.subList(value, images.size))
             } else {
                 for (i in field until value) {
@@ -136,19 +140,11 @@ class FadeAnim : AnimatingControlsSurface()
             checkRepaint()
         }
 
-    private fun createImageObeject(index: Int): ObjectData {
-        val name = IMAGE_NAMES[index % IMAGE_NAMES.size]
-        var image = getImage(name)
-        if (name == "jumptojavastrip.png") {
-            val iw = image.getWidth(null)
-            val ih = image.getHeight(null)
-            image = BufferedImage(iw, ih, BufferedImage.TYPE_INT_RGB).apply {
-                createGraphics().use { gr -> gr.drawImage(image, 0, 0, null) }
-            }
+    private fun createImageObeject(index: Int): GraphicObject {
+        val imageInfo = IMAGE_INFOS[index % IMAGE_INFOS.size]
+        return imageInfo.createGraphicObject(this).apply {
+            reset(width, height)
         }
-        val objectData = ObjectData(image, Color.BLACK)
-        objectData.reset(width, height)
-        return objectData
     }
 
     init {
@@ -173,25 +169,8 @@ class FadeAnim : AnimatingControlsSurface()
     }
 
     override fun render(w: Int, h: Int, g2: Graphics2D) {
-        for (objectData in objects) {
-            g2.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, objectData.alpha)
-            g2.paint = objectData.paint
-            g2.translate(objectData.x, objectData.y)
-
-            val item = objectData.item
-            when (item) {
-                is Image -> g2.drawImage(item, 0, 0, this)
-                is TextData -> {
-                    g2.font = item.font
-                    g2.drawString(item.string, 0, 0)
-                }
-                is QuadCurve2D, is CubicCurve2D -> {
-                    g2.stroke = BASIC_STROKE
-                    g2.draw(item as Shape)
-                }
-                is Shape -> g2.fill(item)
-            }
-            g2.translate(-objectData.x, -objectData.y)
+        for (graphicObject in objects) {
+            graphicObject.paint(g2)
         }
     }
 
@@ -249,8 +228,6 @@ class FadeAnim : AnimatingControlsSurface()
             TexturePaint(bufferedImage, Rectangle(0, 0, w, h))
         }
 
-        private val BASIC_STROKE = BasicStroke(6f)
-
         private val FONTS = arrayOf(
             Font("Times New Roman", Font.PLAIN, 64),
             Font(Font.SERIF, Font.BOLD + Font.ITALIC, 24),
@@ -261,7 +238,10 @@ class FadeAnim : AnimatingControlsSurface()
         private val STRINGS = arrayOf(
             "Alpha", "Composite", "Src", "SrcOver", "SrcIn", "SrcOut", "Clear", "DstOver", "DstIn")
 
-        private val IMAGE_NAMES = arrayOf("jumptojavastrip.png", "duke.gif", "star7.gif")
+        private val IMAGE_INFOS = arrayOf(
+            ImageInfo.Strip("jumptojavastrip.png", 80),
+            ImageInfo.Basic("duke.gif"),
+            ImageInfo.Basic("star7.gif"))
 
         private val PAINTS = arrayOf(
             Color.RED, Color.BLUE, Color.GREEN, Color.MAGENTA, Color.ORANGE, Color.PINK, Color.CYAN, TEXTURE_PAINT,
@@ -274,94 +254,34 @@ class FadeAnim : AnimatingControlsSurface()
     }
 }
 
-internal class TextData(val string: String, val font: Font, component: Component)
+sealed class ImageInfo(val name: String)
 {
-    val width: Int
-    val height: Int
+    abstract fun createGraphicObject(component: Component): GraphicObject
 
-    init {
-        val fontMetrics = component.getFontMetrics(font)
-        width = fontMetrics.stringWidth(string)
-        height = fontMetrics.height
+    class Basic(name: String) : ImageInfo(name) {
+        override fun createGraphicObject(component: Component): GraphicObject =
+            ImageObject(DemoImages.getImage(name, component))
+    }
+    class Strip(name: String, private val cellWidth: Int) : ImageInfo(name) {
+        override fun createGraphicObject(component: Component): GraphicObject =
+            AnimatedImageObject(DemoImages.getImage(name, component), cellWidth)
     }
 }
 
-internal class ObjectData(item: Any, val paint: Paint)
+abstract class GraphicObject
 {
-    var item: Any
-    private var bufferedImage: BufferedImage?
-    var x: Double = 0.0
-    var y: Double = 0.0
-    var alpha: Float = 0.0f
-    private var alphaDirection: Int = 0
-    private var imgX: Int = 0
+    protected var x: Double = 0.0
+    protected var y: Double = 0.0
+    private var alpha: Float = Math.random().toFloat()
+    private var alphaDirection: Int = if (Math.random() > 0.5) UP else DOWN
 
-    init {
-        this.item = item
-        if (item is BufferedImage) {
-            bufferedImage = item
-            this.item = item.getSubimage(0, 0, 80, 80)
-        } else {
-            bufferedImage = null
-        }
-        getRandomXY(300, 250)
-        alpha = Math.random().toFloat()
-        alphaDirection = if (Math.random() > 0.5) UP else DOWN
+    protected abstract fun randomizePosition(width: Int, height: Int)
+
+    open fun reset(width: Int, height: Int) {
+        randomizePosition(width, height)
     }
 
-    private fun getRandomXY(w: Int, h: Int) {
-        val item = item
-        when (item) {
-            is TextData -> {
-                x = Math.random() * (w - item.width)
-                y = Math.random() * h
-                y = if (y < item.height) item.height.toDouble() else y
-            }
-            is Image -> {
-                x = Math.random() * (w - item.getWidth(null))
-                y = Math.random() * (h - item.getHeight(null))
-            }
-            is Shape -> {
-                val bounds = item.bounds
-                x = Math.random() * (w - bounds.width)
-                y = Math.random() * (h - bounds.height)
-            }
-        }
-    }
-
-    fun reset(width: Int, height: Int) {
-        getRandomXY(width, height)
-        val ww = 20 + Math.random() * ((if (width == 0) 400 else width) / 4)
-        val hh = 20 + Math.random() * ((if (height == 0) 300 else height) / 4)
-        val item = item
-        when (item) {
-            is Ellipse2D -> item.setFrame(0.0, 0.0, ww, hh)
-            is Rectangle2D -> item.setRect(0.0, 0.0, ww, ww)
-            is RoundRectangle2D -> item.setRoundRect(0.0, 0.0, hh, hh, 20.0, 20.0)
-            is Arc2D -> item.setArc(0.0, 0.0, hh, hh, 45.0, 270.0, Arc2D.PIE)
-            is QuadCurve2D -> item.setCurve(0.0, 0.0, width * 0.2, height * 0.4, width * 0.4, 0.0)
-            is CubicCurve2D -> item.setCurve(0.0, 0.0, 30.0, -60.0, 60.0, 60.0, 90.0, 0.0)
-            is GeneralPath -> item.run {
-                reset()
-                val size = ww.toFloat()
-                moveTo(-size / 2.0f, -size / 8.0f)
-                lineTo(+size / 2.0f, -size / 8.0f)
-                lineTo(-size / 4.0f, +size / 2.0f)
-                lineTo(+0.0f, -size / 2.0f)
-                lineTo(+size / 4.0f, +size / 2.0f)
-                closePath()
-            }
-        }
-    }
-
-    fun step(w: Int, h: Int) {
-        if (item is BufferedImage) {
-            imgX += 80
-            if (imgX == 800) {
-                imgX = 0
-            }
-            item = bufferedImage!!.getSubimage(imgX, 0, 80, 80)
-        }
+    open fun step(w: Int, h: Int) {
         when (alphaDirection) {
             UP -> {
                 alpha += 0.05f
@@ -375,15 +295,141 @@ internal class ObjectData(item: Any, val paint: Paint)
                 if (alpha < 0.01) {
                     alphaDirection = UP
                     alpha = 0.0f
-                    getRandomXY(w, h)
+                    randomizePosition(w, h)
                 }
             }
         }
     }
 
+    fun paint(g2: Graphics2D) {
+        g2.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha)
+        g2.translate(x, y)
+        render(g2)
+        g2.translate(-x, -y)
+    }
+
+    protected abstract fun render(g2: Graphics2D)
+
     companion object
     {
         const val UP = 0
         const val DOWN = 1
+    }
+}
+
+class TextObject(
+    private val string: String,
+    private val font: Font,
+    private val paint: Paint,
+    component: Component
+) : GraphicObject()
+{
+    private val textWidth: Int
+    private val textHeight: Int
+
+    init {
+        val fontMetrics = component.getFontMetrics(font)
+        textWidth = fontMetrics.stringWidth(string)
+        textHeight = fontMetrics.height
+    }
+
+    override fun randomizePosition(width: Int, height: Int) {
+        x = Math.random() * (width - textWidth)
+        y = (Math.random() * height).coerceAtLeast(textHeight.toDouble())
+    }
+
+    override fun render(g2: Graphics2D) {
+        g2.font = font
+        g2.paint = paint
+        g2.drawString(string, 0, 0)
+    }
+}
+
+class ImageObject(private val image: Image) : GraphicObject()
+{
+    override fun randomizePosition(width: Int, height: Int) {
+        x = Math.random() * (width - image.getWidth(null))
+        y = Math.random() * (height - image.getHeight(null))
+    }
+
+    override fun render(g2: Graphics2D) {
+        g2.drawImage(image, 0, 0, null) // need observer?
+    }
+}
+
+class AnimatedImageObject(image: Image, private val cellWidth: Int) : GraphicObject()
+{
+    private val imageWidth = image.getWidth(null)
+    private val imageHeight = image.getHeight(null)
+    private val bufferedImage: BufferedImage = image.toBufferedImage()
+    private var subimageX: Int = 0
+    private var subimage: Image = createSubimage()
+
+    private fun createSubimage(): Image = bufferedImage.getSubimage(subimageX, 0, cellWidth, imageHeight)
+
+    override fun randomizePosition(width: Int, height: Int) {
+        x = Math.random() * (width - subimage.getWidth(null))
+        y = Math.random() * (height - subimage.getHeight(null))
+    }
+
+    override fun step(w: Int, h: Int) {
+        subimageX += cellWidth
+        if (subimageX >= imageWidth) {
+            subimageX = 0
+        }
+        subimage = createSubimage()
+        super.step(w, h)
+    }
+
+    override fun render(g2: Graphics2D) {
+        g2.drawImage(subimage, 0, 0, null)
+    }
+}
+
+class ShapeObject(private val shape: Shape, private val paint: Paint) : GraphicObject()
+{
+    override fun randomizePosition(width: Int, height: Int) {
+        val bounds = shape.bounds
+        x = Math.random() * (width - bounds.width)
+        y = Math.random() * (height - bounds.height)
+    }
+
+    override fun reset(width: Int, height: Int) {
+        super.reset(width, height)
+        val frameWidth = 20 + Math.random() * ((if (width == 0) 400 else width) / 4)
+        val frameHeight = 20 + Math.random() * ((if (height == 0) 300 else height) / 4)
+        when (shape) {
+            is Ellipse2D -> shape.setFrame(0.0, 0.0, frameWidth, frameHeight)
+            is Rectangle2D -> shape.setRect(0.0, 0.0, frameWidth, frameWidth)
+            is RoundRectangle2D -> shape.setRoundRect(0.0, 0.0, frameHeight, frameHeight, 20.0, 20.0)
+            is Arc2D -> shape.setArc(0.0, 0.0, frameHeight, frameHeight, 45.0, 270.0, Arc2D.PIE)
+            is QuadCurve2D -> shape.setCurve(0.0, 0.0, width * 0.2, height * 0.4, width * 0.4, 0.0)
+            is CubicCurve2D -> shape.setCurve(0.0, 0.0, 30.0, -60.0, 60.0, 60.0, 90.0, 0.0)
+            is GeneralPath -> shape.run {
+                reset()
+                val size = frameWidth.toFloat()
+                moveTo(-size / 2.0f, -size / 8.0f)
+                lineTo(+size / 2.0f, -size / 8.0f)
+                lineTo(-size / 4.0f, +size / 2.0f)
+                lineTo(+0.0f, -size / 2.0f)
+                lineTo(+size / 4.0f, +size / 2.0f)
+                closePath()
+            }
+        }
+    }
+
+    override fun render(g2: Graphics2D) {
+        g2.paint = paint
+        when (shape) {
+            is QuadCurve2D, is CubicCurve2D -> {
+                g2.stroke = STROKE
+                g2.draw(shape)
+            }
+            else -> g2.fill(shape)
+        }
+    }
+
+    companion object {
+        private val STROKE = BasicStroke(6f)
     }
 }
