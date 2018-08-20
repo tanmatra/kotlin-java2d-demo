@@ -64,9 +64,9 @@ import java.awt.image.BufferedImage
 class ACrules : AnimatingSurface()
 {
     private var fadeIndex: Int = 0
-    private var srcAlpha = FADE_VALUES[fadeIndex][0]
-    private var dstAlpha = FADE_VALUES[fadeIndex][3]
-    private var fadeLabel = FADE_NAMES[0]
+    private var srcAlpha = FADES[fadeIndex].srcStart
+    private var dstAlpha = FADES[fadeIndex].dstStart
+    private var fadeLabel = FADES[fadeIndex].label
     private lateinit var staticBufImg: BufferedImage
     private lateinit var animatedBufImg: BufferedImage
     private var padLeft: Int = 0
@@ -149,14 +149,15 @@ class ACrules : AnimatingSurface()
         if (sleepAmount == 5000L) {
             sleepAmount = 200
         }
-        srcAlpha += FADE_VALUES[fadeIndex][1]
-        dstAlpha += FADE_VALUES[fadeIndex][4]
-        fadeLabel = FADE_NAMES[fadeIndex]
+        val fade = FADES[fadeIndex]
+        srcAlpha += fade.srcChange
+        dstAlpha += fade.dstChange
+        fadeLabel = fade.label
         if (srcAlpha < 0 || srcAlpha > 1.0 || dstAlpha < 0 || dstAlpha > 1.0) {
             sleepAmount = 5000
-            srcAlpha = FADE_VALUES[fadeIndex][2]
-            dstAlpha = FADE_VALUES[fadeIndex][5]
-            if (fadeIndex++ == FADE_VALUES.size - 1) {
+            srcAlpha = fade.srcEnd
+            dstAlpha = fade.dstEnd
+            if (fadeIndex++ == FADES.lastIndex) {
                 fadeIndex = 0
             }
         }
@@ -241,6 +242,15 @@ class ACrules : AnimatingSurface()
         }
     }
 
+    internal class Fade(
+        val label: String,
+        val srcStart: Float,
+        val srcChange: Float,
+        val srcEnd: Float,
+        val dstStart: Float,
+        val dstChange: Float,
+        val dstEnd: Float)
+
     companion object
     {
         private val COMPOSITE_NAMES = arrayOf(
@@ -263,15 +273,10 @@ class ACrules : AnimatingSurface()
         private val NUM_RULES = COMPOSITES.size
         private val HALF_NUM_RULES = NUM_RULES / 2
 
-        private val FADE_VALUES = arrayOf(
-            floatArrayOf(1.0f, -0.1f, 0.0f, 1.0f, 0.0f, 1.0f),
-            floatArrayOf(0.0f, 0.1f, 1.0f, 1.0f, -0.1f, 0.0f),
-            floatArrayOf(1.0f, 0.0f, 1.0f, 0.0f, 0.1f, 1.0f))
-
-        private val FADE_NAMES = arrayOf(
-            "Src => transparent, Dest opaque",
-            "Src => opaque, Dest => transparent",
-            "Src opaque, Dest => opaque")
+        private val FADES = arrayOf(
+            Fade("Src => transparent, Dest opaque",     1.0f, -0.1f, 0.0f,  1.0f,  0.0f, 1.0f),
+            Fade("Src => opaque, Dest => transparent",  0.0f,  0.1f, 1.0f,  1.0f, -0.1f, 0.0f),
+            Fade("Src opaque, Dest => opaque",          1.0f,  0.0f, 1.0f,  0.0f,  0.1f, 1.0f))
 
         private val FONT = Font(Font.SERIF, Font.PLAIN, 10)
 
