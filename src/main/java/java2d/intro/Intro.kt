@@ -173,7 +173,8 @@ class Intro : JPanel(BorderLayout())
                     return when (col) {
                         0 -> scene.participate
                         1 -> scene.name
-                        else -> scene.pauseAmt
+                        2 -> scene.pauseAmt
+                        else -> null
                     }
                 }
 
@@ -193,8 +194,8 @@ class Intro : JPanel(BorderLayout())
                     val scene = surface.director[row]
                     when (col) {
                         0 -> scene.participate = aValue
-                        1 -> scene.name = aValue
-                        else -> scene.pauseAmt = aValue
+                        1 -> scene.name = aValue as String
+                        2 -> scene.pauseAmt = aValue as Long
                     }
                 }
             }
@@ -407,9 +408,9 @@ class Intro : JPanel(BorderLayout())
          * Scene is the manager of the parts.
          */
         internal class Scene(
-            private var parts: List<Part>,
-            var name: Any?,
-            var pauseAmt: Any?
+            var name: String,
+            var pauseAmt: Long,
+            private val parts: Array<out Part>
         ) {
             var participate: Any? = java.lang.Boolean.TRUE
             var index: Int = 0
