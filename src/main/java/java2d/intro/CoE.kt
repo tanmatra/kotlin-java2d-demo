@@ -8,6 +8,7 @@ import java.awt.geom.Arc2D
 import java.awt.geom.Ellipse2D
 import java.awt.geom.Rectangle2D
 import java.awt.image.BufferedImage
+import java.util.concurrent.ThreadLocalRandom
 
 /**
  * Close out effect.  Close out the buffered image with different geometry shapes.
@@ -20,22 +21,23 @@ internal class CoE(
 {
     private var bimg: BufferedImage? = null
     private var shape: Shape? = null
-    private var zoom: Double = 0.toDouble()
-    private var extent: Double = 0.toDouble()
+    private var zoom: Double = 0.0
+    private var extent: Double = 0.0
     private val zIncr: Double = - (2.0 / (end - begin))
     private val eIncr: Double = 360.0 / (end - begin)
-    private val doRandom: Boolean = type and RAND != 0
+    private val doRandom: Boolean = type hasBits RAND
 
     override fun reset(newWidth: Int, newHeight: Int) {
         if (doRandom) {
-            val num = (Math.random() * 5.0).toInt()
+            val num = ThreadLocalRandom.current().nextInt(6)
             type = when (num) {
                 0 -> OVAL
                 1 -> RECT
                 2 -> RECT or WID
                 3 -> RECT or HEI
                 4 -> ARC
-                else -> OVAL
+                5 -> OVAL
+                else -> error(6)
             }
         }
         shape = null
@@ -70,11 +72,11 @@ internal class CoE(
 
     companion object
     {
-        const val WID = 1
-        const val HEI = 2
-        const val OVAL = 4
-        const val RECT = 8
+        const val WID  =  1
+        const val HEI  =  2
+        const val OVAL =  4
+        const val RECT =  8
         const val RAND = 16
-        const val ARC = 32
+        const val ARC  = 32
     }
 }
