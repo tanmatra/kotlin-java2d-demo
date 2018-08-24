@@ -2,7 +2,6 @@ package java2d.intro
 
 import java2d.intro.Intro.Surface.GpE
 import java2d.intro.Intro.Surface.Scene
-import java2d.intro.Intro.Surface.TpE
 import java2d.intro.Intro.Surface.TxE
 import java.awt.Color
 import java.awt.Font
