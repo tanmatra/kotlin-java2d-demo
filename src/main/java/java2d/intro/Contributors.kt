@@ -11,8 +11,8 @@ import java.util.ArrayList
  */
 internal class Contributors(override val begin: Int, override val end: Int) : Part
 {
-    private var nStrs: Int = 0
-    private var strH: Int = 0
+    private var linesCount: Int = 0
+    private var lineHeight: Int = 0
     private var index: Int = 0
     private var yh: Int = 0
     private var height: Int = 0
@@ -20,7 +20,7 @@ internal class Contributors(override val begin: Int, override val end: Int) : Pa
     private val cast = ArrayList<String>(members.size + 3)
     private var counter: Int = 0
     private val cntMod: Int
-    private var gp: GradientPaint? = null
+    private lateinit var paint: GradientPaint
 
     init {
         members.sort()
@@ -29,23 +29,17 @@ internal class Contributors(override val begin: Int, override val end: Int) : Pa
         cast.addAll(members)
         cast.add(" ")
         cast.add(" ")
-        cntMod = (this.end - begin) / cast.size - 1
+        cntMod = (end - begin) / cast.size - 1
     }
 
     override fun reset(newWidth: Int, newHeight: Int) {
         v.clear()
-        strH = fm.ascent + fm.descent
-        nStrs = (newHeight - 40) / strH + 1
-        height = strH * (nStrs - 1) + 48
+        lineHeight = fm.ascent + fm.descent
+        linesCount = (newHeight - 40) / lineHeight + 1
+        height = lineHeight * (linesCount - 1) + 48
         index = 0
-        gp = GradientPaint(
-            0f,
-            (newHeight / 2).toFloat(),
-            Color.WHITE,
-            0f,
-            (newHeight + 20).toFloat(),
-            Color.BLACK
-                                   )
+        paint = GradientPaint(0f, (newHeight / 2).toFloat(), Color.WHITE,
+                              0f, (newHeight + 20).toFloat(), Color.BLACK)
         counter = 0
     }
 
@@ -54,7 +48,7 @@ internal class Contributors(override val begin: Int, override val end: Int) : Pa
             if (index < cast.size) {
                 v.add(cast[index])
             }
-            if ((v.size == nStrs || index >= cast.size) && !v.isEmpty()) {
+            if ((v.size == linesCount || index >= cast.size) && !v.isEmpty()) {
                 v.removeAt(0)
             }
             ++index
@@ -62,28 +56,28 @@ internal class Contributors(override val begin: Int, override val end: Int) : Pa
     }
 
     override fun render(w: Int, h: Int, g2: Graphics2D) {
-        g2.paint = gp
+        g2.paint = paint
         g2.font = font
         val remainder = (counter % cntMod).toDouble()
         var incr = 1.0 - remainder / cntMod
         incr = if (incr == 1.0) 0.0 else incr
-        var y = (incr * strH).toInt()
+        var y = (incr * lineHeight).toInt()
 
         if (index >= cast.size) {
             y += yh
         } else {
-            yh = height - v.size * strH + y
+            yh = height - v.size * lineHeight + y
             y = yh
         }
         for (s in v) {
-            y += strH
+            y += lineHeight
             g2.drawString(s, w / 2 - fm.stringWidth(s) / 2, y)
         }
     }
 
     companion object
     {
-        var members = arrayOf(
+        private val members = arrayOf(
             "Brian Lichtenwalter",
             "Jeannette Hung",
             "Thanh Nguyen",
@@ -122,7 +116,7 @@ internal class Contributors(override val begin: Int, override val end: Int) : Pa
             "Praveen Mohan",
             "Rakesh Menon")
 
-        val font = Font("serif", Font.PLAIN, 26)
-        var fm = Intro.Surface.getMetrics(font)
+        private val font = Font(Font.SERIF, Font.PLAIN, 26)
+        private val fm = Intro.Surface.getMetrics(font)
     }
 }
