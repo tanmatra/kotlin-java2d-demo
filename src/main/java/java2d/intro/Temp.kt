@@ -1,5 +1,6 @@
 package java2d.intro
 
+import java2d.hasBits
 import java.awt.AlphaComposite
 import java.awt.Graphics2D
 import java.awt.Image
@@ -16,20 +17,14 @@ internal class Temp(
     override val begin: Int,
     override val end: Int
 ) : Part {
-    private var alpha: Float = 0.toFloat()
+    private var alpha: Float = if (type hasBits NOANIM) 1.0f else 0.0f
     private val aIncr: Float = 0.9f / (end - begin)
-    private var rect1: Rectangle? = null
-    private var rect2: Rectangle? = null
+    private lateinit var rect1: Rectangle
+    private lateinit var rect2: Rectangle
     private var x: Int = 0
     private var y: Int = 0
     private var xIncr: Int = 0
     private var yIncr: Int = 0
-
-    init {
-        if (type and NOANIM != 0) {
-            alpha = 1.0f
-        }
-    }
 
     override fun reset(newWidth: Int, newHeight: Int) {
         rect1 = Rectangle(8, 20, newWidth - 20, 30)
@@ -44,28 +39,28 @@ internal class Temp(
     }
 
     override fun step(w: Int, h: Int) {
-        if (type and NOANIM != 0) {
+        if (type hasBits NOANIM) {
             return
         }
-        if (type and RECT != 0) {
+        if (type hasBits RECT) {
             x -= xIncr
-            rect1!!.setLocation(x, 20)
+            rect1.setLocation(x, 20)
             y -= yIncr
-            rect2!!.setLocation(20, y)
+            rect2.setLocation(20, y)
         }
-        if (type and IMG != 0) {
+        if (type hasBits IMG) {
             alpha += aIncr
         }
     }
 
     override fun render(w: Int, h: Int, g2: Graphics2D) {
-        if (type and RECT != 0) {
+        if (type hasBits RECT) {
             g2.color = Intro.myBlue
             g2.fill(rect1)
             g2.color = Intro.myRed
             g2.fill(rect2)
         }
-        if (type and IMG != 0) {
+        if (type hasBits IMG) {
             val saveAC = g2.composite
             if (alpha in 0.0 .. 1.0) {
                 g2.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha)
