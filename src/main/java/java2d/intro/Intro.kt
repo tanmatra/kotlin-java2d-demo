@@ -56,8 +56,6 @@ import java.awt.Rectangle
 import java.awt.RenderingHints
 import java.awt.Shape
 import java.awt.TexturePaint
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.awt.event.WindowAdapter
@@ -80,16 +78,13 @@ import javax.swing.JPanel
 import javax.swing.JScrollPane
 import javax.swing.JSlider
 import javax.swing.JTable
+import javax.swing.SwingConstants
 import javax.swing.border.BevelBorder
 import javax.swing.border.CompoundBorder
 import javax.swing.border.EmptyBorder
 import javax.swing.border.EtchedBorder
 import javax.swing.border.TitledBorder
-import javax.swing.event.ChangeEvent
-import javax.swing.event.ChangeListener
-import javax.swing.event.TableModelEvent
 import javax.swing.table.AbstractTableModel
-import javax.swing.table.TableModel
 
 /**
  * Introduction to the Java2Demo.
@@ -148,115 +143,95 @@ class Intro : JPanel(BorderLayout())
      * Scene participation, scene name and scene pause amount columns.
      * Global animation delay for scene's steps.
      */
-    internal inner class ScenesTable : JPanel(), ActionListener, ChangeListener
+    internal inner class ScenesTable : JPanel(BorderLayout())
     {
-        private val table: JTable
-        private val dataModel: TableModel
+        private val dataModel = object : AbstractTableModel()
+        {
+            private val columnNames = arrayOf("", "Scenes", "Pause")
+
+            override fun getColumnCount(): Int = columnNames.size
+
+            override fun getRowCount(): Int = surface.director.size
+
+            override fun getValueAt(row: Int, col: Int): Any? {
+                val scene = surface.director[row]
+                return when (col) {
+                    0 -> scene.participate
+                    1 -> scene.name
+                    2 -> scene.pauseAmt
+                    else -> null
+                }
+            }
+
+            override fun getColumnName(col: Int): String = columnNames[col]
+
+            override fun getColumnClass(c: Int): Class<*> = getValueAt(0, c)!!.javaClass
+
+            override fun isCellEditable(row: Int, col: Int): Boolean {
+                return col != 1
+            }
+
+            override fun setValueAt(value: Any?, row: Int, col: Int) {
+                val scene = surface.director[row]
+                when (col) {
+                    0 -> scene.participate = value as Boolean
+                    1 -> scene.name = value as String
+                    2 -> scene.pauseAmt = value as Long
+                }
+            }
+        }
 
         init {
             background = WHITE
-            layout = BorderLayout()
-            val names = arrayOf("", "Scenes", "Pause")
 
-            dataModel = object : AbstractTableModel()
-            {
-                override fun getColumnCount(): Int {
-                    return names.size
-                }
-
-                override fun getRowCount(): Int {
-                    return surface.director.size
-                }
-
-                override fun getValueAt(row: Int, col: Int): Any? {
-                    val scene = surface.director[row]
-                    return when (col) {
-                        0 -> scene.participate
-                        1 -> scene.name
-                        2 -> scene.pauseAmt
-                        else -> null
-                    }
-                }
-
-                override fun getColumnName(col: Int): String {
-                    return names[col]
-                }
-
-                override fun getColumnClass(c: Int): Class<*> {
-                    return getValueAt(0, c)!!.javaClass
-                }
-
-                override fun isCellEditable(row: Int, col: Int): Boolean {
-                    return col != 1
-                }
-
-                override fun setValueAt(aValue: Any?, row: Int, col: Int) {
-                    val scene = surface.director[row]
-                    when (col) {
-                        0 -> scene.participate = aValue
-                        1 -> scene.name = aValue as String
-                        2 -> scene.pauseAmt = aValue as Long
-                    }
-                }
+            val table = JTable(dataModel)
+            table.getColumn("").apply {
+                width = 16
+                minWidth = 16
+                maxWidth = 20
             }
-
-            table = JTable(dataModel)
-            var col = table.getColumn("")
-            col.width = 16
-            col.minWidth = 16
-            col.maxWidth = 20
-            col = table.getColumn("Pause")
-            col.width = 60
-            col.minWidth = 60
-            col.maxWidth = 60
+            table.getColumn("Pause").apply {
+                width = 60
+                minWidth = 60
+                maxWidth = 60
+            }
             table.sizeColumnsToFit(0)
 
-            val scrollpane = JScrollPane(table)
-            add(scrollpane)
+            add(JScrollPane(table), BorderLayout.CENTER)
 
             val panel = JPanel(BorderLayout())
-            val b = JButton("Unselect All")
-            b.horizontalAlignment = JButton.LEFT
-            val font = Font("serif", Font.PLAIN, 10)
-            b.font = font
-            b.addActionListener(this)
-            panel.add("West", b)
-
-            val slider = JSlider(JSlider.HORIZONTAL, 0, 200, surface.sleepAmt.toInt())
-            slider.addChangeListener(this)
-            val tb = TitledBorder(EtchedBorder())
-            tb.titleFont = font
-            tb.title = ("Anim delay = " + surface.sleepAmt.toString()
-                    + " ms")
-            slider.border = tb
-            slider.preferredSize = Dimension(140, 40)
-            slider.minimumSize = Dimension(100, 40)
-            slider.maximumSize = Dimension(180, 40)
-            panel.add("East", slider)
-
-            add("South", panel)
-        }
-
-        override fun actionPerformed(e: ActionEvent) {
-            val b = e.source as JButton
-            b.isSelected = !b.isSelected
-            b.text = if (b.isSelected) "Select All" else "Unselect All"
-            for (i in surface.director.indices) {
-                val scene = surface.director[i]
-                scene.participate = java.lang.Boolean.valueOf(!b.isSelected)
+            val button = JButton("Unselect All").apply {
+                horizontalAlignment = SwingConstants.LEFT
+                addActionListener {
+                    isSelected = !isSelected
+                    text = if (isSelected) "Select All" else "Unselect All"
+                    for (scene in surface.director) {
+                        scene.participate = !isSelected
+                    }
+                    dataModel.fireTableDataChanged()
+                }
             }
-            table.tableChanged(TableModelEvent(dataModel))
-        }
+            panel.add(button, BorderLayout.WEST)
 
-        override fun stateChanged(e: ChangeEvent) {
-            val slider = e.source as JSlider
-            val value = slider.value
-            val tb = slider.border as TitledBorder
-            tb.title = "Anim delay = " + value.toString() + " ms"
-            surface.sleepAmt = value.toLong()
-            slider.repaint()
+            val slider = JSlider(JSlider.HORIZONTAL, 0, 200, surface.sleepAmt.toInt()).apply {
+                fun formatTitle(value: Int) = "Anim delay = $value ms"
+                border = TitledBorder(EtchedBorder()).apply {
+                    title = formatTitle(surface.sleepAmt.toInt())
+                }
+                addChangeListener {
+                    (border as TitledBorder).title = formatTitle(value)
+                    surface.sleepAmt = value.toLong()
+                    repaint()
+                }
+                preferredSize = Dimension(140, 40)
+                minimumSize = Dimension(100, 40)
+                maximumSize = Dimension(180, 40)
+            }
+            panel.add(slider, BorderLayout.EAST)
+
+            add(panel, BorderLayout.SOUTH)
         }
-    }  // End ScenesTable class
+    }
 
     /**
      * Surface is the stage where the Director plays its scenes.
@@ -332,9 +307,7 @@ class Intro : JPanel(BorderLayout())
 
         @Synchronized
         fun stop() {
-            if (thread != null) {
-                thread!!.interrupt()
-            }
+            thread?.interrupt()
             thread = null
             @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
             (this as java.lang.Object).notifyAll()
@@ -364,7 +337,7 @@ class Intro : JPanel(BorderLayout())
 
             while (thread === me) {
                 val scene = director[index]
-                if (scene.participate as Boolean) {
+                if (scene.participate) {
                     repaint()
                     try {
                         Thread.sleep(sleepAmt)
@@ -412,7 +385,7 @@ class Intro : JPanel(BorderLayout())
             var pauseAmt: Long,
             private val parts: Array<out Part>
         ) {
-            var participate: Any? = java.lang.Boolean.TRUE
+            var participate: Boolean = true
             var index: Int = 0
             var length: Int = 0
 
@@ -427,24 +400,20 @@ class Intro : JPanel(BorderLayout())
 
             fun reset(w: Int, h: Int) {
                 index = 0
-                for (i in parts.indices) {
-                    parts[i].reset(w, h)
-                }
+                parts.forEach { it.reset(w, h) }
             }
 
             fun step(w: Int, h: Int) {
-                for (i in parts.indices) {
-                    val part = parts[i]
-                    if (index >= part.begin && index <= part.end) {
+                for (part in parts) {
+                    if (index in part.begin .. part.end) {
                         part.step(w, h)
                     }
                 }
             }
 
             fun render(w: Int, h: Int, g2: Graphics2D) {
-                for (i in parts.indices) {
-                    val part = parts[i]
-                    if (index >= part.begin && index <= part.end) {
+                for (part in parts) {
+                    if (index in part.begin .. part.end) {
                         part.render(w, h, g2)
                     }
                 }
@@ -452,10 +421,10 @@ class Intro : JPanel(BorderLayout())
 
             fun pause() {
                 try {
-                    Thread.sleep(java.lang.Long.parseLong((pauseAmt as String?)!!))
+                    Thread.sleep(pauseAmt)
                 } catch (ignored: Exception) {
                 }
-                System.gc()
+                // System.gc()
             }
         } // End Scene class
 
