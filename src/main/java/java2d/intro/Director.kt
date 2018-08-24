@@ -1,7 +1,6 @@
 package java2d.intro
 
 import java2d.intro.Intro.Surface.CoE
-import java2d.intro.Intro.Surface.DdE
 import java2d.intro.Intro.Surface.GpE
 import java2d.intro.Intro.Surface.Scene
 import java2d.intro.Intro.Surface.TpE
