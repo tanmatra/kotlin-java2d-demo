@@ -4,7 +4,6 @@ import java2d.intro.Intro.Surface.CoE
 import java2d.intro.Intro.Surface.DdE
 import java2d.intro.Intro.Surface.GpE
 import java2d.intro.Intro.Surface.Scene
-import java2d.intro.Intro.Surface.SiE
 import java2d.intro.Intro.Surface.TpE
 import java2d.intro.Intro.Surface.TxE
 import java.awt.Color
