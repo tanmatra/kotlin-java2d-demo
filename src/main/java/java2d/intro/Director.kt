@@ -2,7 +2,6 @@ package java2d.intro
 
 import java2d.intro.Intro.Surface.CoE
 import java2d.intro.Intro.Surface.DdE
-import java2d.intro.Intro.Surface.Features
 import java2d.intro.Intro.Surface.GpE
 import java2d.intro.Intro.Surface.LnE
 import java2d.intro.Intro.Surface.Scene
@@ -127,8 +126,7 @@ internal class Director : ArrayList<Scene>()
                 Temp(Temp.RECT, null, 0, 30),
                 Temp(Temp.IMG, Intro.Surface.cupanim, 4, 30),
                 Temp(Temp.RNA or Temp.INA, Intro.Surface.cupanim, 31, 200),
-                Contributors(34, 200)
-                   )))
+                Contributors(34, 200))))
 
     init {
         addAll(partsInfo.asList()) //TODO
