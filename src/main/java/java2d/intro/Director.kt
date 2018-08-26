@@ -1,7 +1,6 @@
 package java2d.intro
 
 import java2d.intro.Intro.Surface.Scene
-import java2d.intro.Intro.Surface.TxE
 import java.awt.Color
 import java.awt.Font
 import java.awt.GradientPaint
