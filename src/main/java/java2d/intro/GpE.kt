@@ -1,5 +1,7 @@
 package java2d.intro
 
+import java2d.hasBits
+import java2d.hasNoBits
 import java.awt.Color
 import java.awt.GradientPaint
 import java.awt.Graphics2D
@@ -21,31 +23,30 @@ internal class GpE(
 {
     private var incr: Float = 0.0f
     private var index: Float = 0.0f
-    private val rect = ArrayList<Rectangle2D>()
-    private val grad = ArrayList<GradientPaint>()
+    private val rectangles = ArrayList<Rectangle2D>()
+    private val gradients = ArrayList<GradientPaint>()
 
     override fun reset(newWidth: Int, newHeight: Int) {
         incr = 1.0f / (end - begin)
-        if (type and CNT != 0) {
+        if (type hasBits CNT) {
             incr /= 2.3f
         }
-        if (type and CNT != 0 && type and INC != 0) {
-            index = 0.5f
-        } else if (type and DEC != 0) {
-            index = 1.0f
-            incr = -incr
-        } else {
-            index = 0.0f
+        when {
+            (type hasBits CNT) && (type hasBits INC) -> index = 0.5f
+            type hasBits DEC -> {
+                index = 1.0f
+                incr = -incr
+            }
+            else -> index = 0.0f
         }
         index += incr
     }
 
     override fun step(w: Int, h: Int) {
-        rect.clear()
-        grad.clear()
-
+        rectangles.clear()
+        gradients.clear()
         when {
-            type and WID != 0 -> {
+            type hasBits WID -> {
                 val w2: Float
                 val x1: Float
                 val x2: Float
@@ -58,12 +59,12 @@ internal class GpE(
                     x2 = w2
                     x1 = x2
                 }
-                rect.add(Rectangle2D.Float(0f, 0f, w2, h.toFloat()))
-                rect.add(Rectangle2D.Float(w2, 0f, w - w2, h.toFloat()))
-                grad.add(GradientPaint(0f, 0f, c1, x1, 0f, c2))
-                grad.add(GradientPaint(x2, 0f, c2, w.toFloat(), 0f, c1))
+                rectangles.add(Rectangle2D.Float(0f, 0f, w2, h.toFloat()))
+                rectangles.add(Rectangle2D.Float(w2, 0f, w - w2, h.toFloat()))
+                gradients.add(GradientPaint(0f, 0f, c1, x1, 0f, c2))
+                gradients.add(GradientPaint(x2, 0f, c2, w.toFloat(), 0f, c1))
             }
-            type and HEI != 0 -> {
+            type hasBits HEI -> {
                 val h2: Float
                 val y1: Float
                 val y2: Float
@@ -76,47 +77,46 @@ internal class GpE(
                     y2 = h2
                     y1 = y2
                 }
-                rect.add(Rectangle2D.Float(0f, 0f, w.toFloat(), h2))
-                rect.add(Rectangle2D.Float(0f, h2, w.toFloat(), h - h2))
-                grad.add(GradientPaint(0f, 0f, c1, 0f, y1, c2))
-                grad.add(GradientPaint(0f, y2, c2, 0f, h.toFloat(), c1))
+                rectangles.add(Rectangle2D.Float(0f, 0f, w.toFloat(), h2))
+                rectangles.add(Rectangle2D.Float(0f, h2, w.toFloat(), h - h2))
+                gradients.add(GradientPaint(0f, 0f, c1, 0f, y1, c2))
+                gradients.add(GradientPaint(0f, y2, c2, 0f, h.toFloat(), c1))
             }
-            type and BUR != 0 -> {
+            type hasBits BUR -> {
                 val w2 = (w / 2).toFloat()
                 val h2 = (h / 2).toFloat()
 
-                rect.add(Rectangle2D.Float(0f, 0f, w2, h2))
-                rect.add(Rectangle2D.Float(w2, 0f, w2, h2))
-                rect.add(Rectangle2D.Float(0f, h2, w2, h2))
-                rect.add(Rectangle2D.Float(w2, h2, w2, h2))
+                rectangles.add(Rectangle2D.Float(0f, 0f, w2, h2))
+                rectangles.add(Rectangle2D.Float(w2, 0f, w2, h2))
+                rectangles.add(Rectangle2D.Float(0f, h2, w2, h2))
+                rectangles.add(Rectangle2D.Float(w2, h2, w2, h2))
 
                 val x1 = w * (1.0f - index)
                 val x2 = w * index
                 val y1 = h * (1.0f - index)
                 val y2 = h * index
 
-                grad.add(GradientPaint(0f, 0f, c1, x1, y1, c2))
-                grad.add(GradientPaint(w.toFloat(), 0f, c1, x2, y1, c2))
-                grad.add(GradientPaint(0f, h.toFloat(), c1, x1, y2, c2))
-                grad.add(GradientPaint(w.toFloat(), h.toFloat(), c1, x2, y2, c2))
+                gradients.add(GradientPaint(0f, 0f, c1, x1, y1, c2))
+                gradients.add(GradientPaint(w.toFloat(), 0f, c1, x2, y1, c2))
+                gradients.add(GradientPaint(0f, h.toFloat(), c1, x1, y2, c2))
+                gradients.add(GradientPaint(w.toFloat(), h.toFloat(), c1, x2, y2, c2))
             }
-            type and NF != 0 -> {
+            type hasBits NF -> {
                 val y = h * index
-                grad.add(GradientPaint(0f, 0f, c1, 0f, y, c2))
+                gradients.add(GradientPaint(0f, 0f, c1, 0f, y, c2))
             }
         }
-
-        if (type and INC != 0 || type and DEC != 0) {
+        if (type hasBits INC || type hasBits DEC) {
             index += incr
         }
     }
 
     override fun render(w: Int, h: Int, g2: Graphics2D) {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF)
-        for (i in grad.indices) {
-            g2.paint = grad[i]
-            if (type and NF == 0) {
-                g2.fill(rect[i])
+        for (i in gradients.indices) {
+            g2.paint = gradients[i]
+            if (type hasNoBits NF) {
+                g2.fill(rectangles[i])
             }
         }
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
