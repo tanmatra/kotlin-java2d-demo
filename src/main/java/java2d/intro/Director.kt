@@ -10,7 +10,7 @@ import java.util.ArrayList
  * Director is the holder of the scenes, their names & pause amounts
  * between scenes.
  */
-internal class Director : ArrayList<Scene>()
+internal class Director(surface: Intro.Surface) : ArrayList<Scene>()
 {
     private var gp = GradientPaint(0f, 40f, Intro.BLUE, 38f, 2f, Intro.BLACK)
     private var f1 = Font("serif", Font.PLAIN, 200)
@@ -40,8 +40,8 @@ internal class Director : ArrayList<Scene>()
         Scene("Graphics Features", 999,
             arrayOf(
                 Temp(Temp.RECT, null, 0, 15),
-                Temp(Temp.IMG, Intro.Surface.java_logo, 2, 15),
-                Temp(Temp.RNA or Temp.INA, Intro.Surface.java_logo, 16, 130),
+                Temp(Temp.IMG, surface.javaLogo, 2, 15),
+                Temp(Temp.RNA or Temp.INA, surface.javaLogo, 16, 130),
                 Features(Features.GRAPHICS, 16, 130))),
         Scene("Java2D  -  texture text on gradient", 1000,
             arrayOf(
@@ -57,8 +57,8 @@ internal class Director : ArrayList<Scene>()
         Scene("Text Features", 999,
             arrayOf(
                 Temp(Temp.RECT, null, 0, 15),
-                Temp(Temp.IMG, Intro.Surface.java_logo, 2, 15),
-                Temp(Temp.RNA or Temp.INA, Intro.Surface.java_logo, 16, 130),
+                Temp(Temp.IMG, surface.javaLogo, 2, 15),
+                Temp(Temp.RNA or Temp.INA, surface.javaLogo, 16, 130),
                 Features(Features.TEXT, 16, 130))),
         Scene("Java2D  -  composite text on texture", 1000,
             arrayOf(
@@ -72,8 +72,8 @@ internal class Director : ArrayList<Scene>()
         Scene("Imaging Features", 999,
             arrayOf(
                 Temp(Temp.RECT, null, 0, 15),
-                Temp(Temp.IMG, Intro.Surface.java_logo, 2, 15),
-                Temp(Temp.RNA or Temp.INA, Intro.Surface.java_logo, 16, 130),
+                Temp(Temp.IMG, surface.javaLogo, 2, 15),
+                Temp(Temp.RNA or Temp.INA, surface.javaLogo, 16, 130),
                 Features(Features.IMAGES, 16, 130))),
         Scene("Java2D  -  text on gradient", 1000,
             arrayOf(
@@ -88,8 +88,8 @@ internal class Director : ArrayList<Scene>()
         Scene("Color Features", 999,
             arrayOf(
                 Temp(Temp.RECT, null, 0, 15),
-                Temp(Temp.IMG, Intro.Surface.java_logo, 2, 15),
-                Temp(Temp.RNA or Temp.INA, Intro.Surface.java_logo, 16, 99),
+                Temp(Temp.IMG, surface.javaLogo, 2, 15),
+                Temp(Temp.RNA or Temp.INA, surface.javaLogo, 16, 99),
                 Features(Features.COLOR, 16, 99))),
         Scene("Java2D  -  composite and rotate text on paints", 2000,
             arrayOf(
@@ -116,8 +116,8 @@ internal class Director : ArrayList<Scene>()
         Scene("Contributors", 1000,
             arrayOf(
                 Temp(Temp.RECT, null, 0, 30),
-                Temp(Temp.IMG, Intro.Surface.cupanim, 4, 30),
-                Temp(Temp.RNA or Temp.INA, Intro.Surface.cupanim, 31, 200),
+                Temp(Temp.IMG, surface.cupAnimation, 4, 30),
+                Temp(Temp.RNA or Temp.INA, surface.cupAnimation, 31, 200),
                 Contributors(34, 200))))
 
     init {

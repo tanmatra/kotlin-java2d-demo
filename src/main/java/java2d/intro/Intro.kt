@@ -109,6 +109,8 @@ class Intro : JPanel(BorderLayout())
         var index: Int = 0
         var sleepAmt: Long = 30
         @Volatile private var thread: Thread? = null
+        val cupAnimation: Image = DemoImages.getImage("cupanim.gif", this)
+        val javaLogo: Image = DemoImages.getImage("java_logo.png", this)
 
         init {
             background = BLACK
@@ -121,9 +123,7 @@ class Intro : JPanel(BorderLayout())
                     }
                 }
             })
-            cupanim = DemoImages.getImage("cupanim.gif", this)
-            java_logo = DemoImages.getImage("java_logo.png", this)
-            director = Director()
+            director = Director(this)
         }
 
         override fun paint(g: Graphics) {
@@ -274,8 +274,6 @@ class Intro : JPanel(BorderLayout())
 
         companion object
         {
-            lateinit var cupanim: Image
-            lateinit var java_logo: Image
             var bufferedImage: BufferedImage? = null
         }
     } // End Surface class
