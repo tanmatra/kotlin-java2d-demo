@@ -13,20 +13,13 @@ internal class Scene(
 ) {
     var participate: Boolean = true
     var index: Int = 0
-    var length: Int = 0
-
-    init {
-        for (part in parts) {
-            val partLength = part.end
-            if (partLength > length) {
-                length = partLength
-            }
-        }
-    }
+    val length: Int = parts.asSequence().map { it.end }.max() ?: 0
 
     fun reset(surface: Intro.Surface, w: Int, h: Int) {
         index = 0
-        parts.forEach { it.reset(surface, w, h) }
+        for (part in parts) {
+            part.reset(surface, w, h)
+        }
     }
 
     fun step(image: BufferedImage, w: Int, h: Int) {
