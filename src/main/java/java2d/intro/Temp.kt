@@ -55,9 +55,9 @@ internal class Temp(
 
     override fun render(w: Int, h: Int, g2: Graphics2D) {
         if (type hasBits RECT) {
-            g2.color = Intro.myBlue
+            g2.color = Intro.BLUE
             g2.fill(rect1)
-            g2.color = Intro.myRed
+            g2.color = Intro.RED
             g2.fill(rect2)
         }
         if (type hasBits IMG) {

@@ -63,7 +63,7 @@ internal class DdE(
     }
 
     override fun render(w: Int, h: Int, g2: Graphics2D) {
-        big!!.color = Intro.myBlack
+        big!!.color = Intro.BLACK
 
         for (k in 0..end - begin) {
             if (xeNum + xcSize > xlist.size) {

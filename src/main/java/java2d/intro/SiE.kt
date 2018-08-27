@@ -59,7 +59,7 @@ internal class SiE(
 
     override fun render(w: Int, h: Int, g2: Graphics2D) {
         val saveTx = g2.transform
-        g2.color = Intro.myBlue
+        g2.color = Intro.BLUE
         for (i in subimages.indices) {
             if (scale <= 0.0) break
             val bi = subimages[i]

@@ -12,7 +12,7 @@ import java.util.ArrayList
  */
 internal class Director : ArrayList<Scene>()
 {
-    private var gp = GradientPaint(0f, 40f, Intro.myBlue, 38f, 2f, Intro.myBlack)
+    private var gp = GradientPaint(0f, 40f, Intro.BLUE, 38f, 2f, Intro.BLACK)
     private var f1 = Font("serif", Font.PLAIN, 200)
     private var f2 = Font("serif", Font.PLAIN, 120)
     private var f3 = Font("serif", Font.PLAIN, 72)
@@ -20,20 +20,20 @@ internal class Director : ArrayList<Scene>()
     private var partsInfo = arrayOf(
         Scene("J  -  scale text on gradient", 0,
             arrayOf(
-                GpE(GpE.BURI, Intro.myBlack, Intro.myBlue, 0, 20),
-                TxE("J", f1, TxE.SCI, Intro.myYellow, 2, 20))),
+                GpE(GpE.BURI, Intro.BLACK, Intro.BLUE, 0, 20),
+                TxE("J", f1, TxE.SCI, Intro.YELLOW, 2, 20))),
         Scene("2  -  scale & rotate text on gradient", 0,
             arrayOf(
-                GpE(GpE.BURI, Intro.myBlue, Intro.myBlack, 0, 22),
-                TxE("2", f1, TxE.RI or TxE.SCI, Intro.myYellow, 2, 22))),
+                GpE(GpE.BURI, Intro.BLUE, Intro.BLACK, 0, 22),
+                TxE("2", f1, TxE.RI or TxE.SCI, Intro.YELLOW, 2, 22))),
         Scene("D  -  scale text on gradient", 0,
             arrayOf(
-                GpE(GpE.BURI, Intro.myBlack, Intro.myBlue, 0, 20),
-                TxE("D", f1, TxE.SCI, Intro.myYellow, 2, 20))),
+                GpE(GpE.BURI, Intro.BLACK, Intro.BLUE, 0, 20),
+                TxE("D", f1, TxE.SCI, Intro.YELLOW, 2, 20))),
         Scene("Java2D  -  scale & rotate text on gradient", 1000,
             arrayOf(
-                GpE(GpE.SIH, Intro.myBlue, Intro.myBlack, 0, 40),
-                TxE("Java2D", f2, TxE.RI or TxE.SCI, Intro.myYellow, 0, 40))),
+                GpE(GpE.SIH, Intro.BLUE, Intro.BLACK, 0, 40),
+                TxE("Java2D", f2, TxE.RI or TxE.SCI, Intro.YELLOW, 0, 40))),
         Scene("Previous scene dither dissolve out", 0,
             arrayOf(
                 DdE(0, 20, 1))),
@@ -45,11 +45,11 @@ internal class Director : ArrayList<Scene>()
                 Features(Features.GRAPHICS, 16, 130))),
         Scene("Java2D  -  texture text on gradient", 1000,
             arrayOf(
-                GpE(GpE.WI, Intro.myBlue, Intro.myBlack, 0, 20),
-                GpE(GpE.WD, Intro.myBlue, Intro.myBlack, 21, 40),
-                TpE(TpE.OI or TpE.NF, Intro.myBlack, Intro.myYellow, 4, 0, 10),
-                TpE(TpE.OD or TpE.NF, Intro.myBlack, Intro.myYellow, 4, 11, 20),
-                TpE(TpE.OI or TpE.NF or TpE.HAF, Intro.myBlack, Intro.myYellow, 5, 21, 40),
+                GpE(GpE.WI, Intro.BLUE, Intro.BLACK, 0, 20),
+                GpE(GpE.WD, Intro.BLUE, Intro.BLACK, 21, 40),
+                TpE(TpE.OI or TpE.NF, Intro.BLACK, Intro.YELLOW, 4, 0, 10),
+                TpE(TpE.OD or TpE.NF, Intro.BLACK, Intro.YELLOW, 4, 11, 20),
+                TpE(TpE.OI or TpE.NF or TpE.HAF, Intro.BLACK, Intro.YELLOW, 5, 21, 40),
                 TxE("Java2D", f2, 0, null, 0, 40))),
         Scene("Previous scene random close out", 0,
             arrayOf(
@@ -62,10 +62,10 @@ internal class Director : ArrayList<Scene>()
                 Features(Features.TEXT, 16, 130))),
         Scene("Java2D  -  composite text on texture", 1000,
             arrayOf(
-                TpE(TpE.RI, Intro.myBlack, gp, 40, 0, 20),
-                TpE(TpE.RD, Intro.myBlack, gp, 40, 21, 40),
-                TpE(TpE.RI, Intro.myBlack, gp, 40, 41, 60),
-                TxE("Java2D", f2, TxE.AC, Intro.myYellow, 0, 60))),
+                TpE(TpE.RI, Intro.BLACK, gp, 40, 0, 20),
+                TpE(TpE.RD, Intro.BLACK, gp, 40, 21, 40),
+                TpE(TpE.RI, Intro.BLACK, gp, 40, 41, 60),
+                TxE("Java2D", f2, TxE.AC, Intro.YELLOW, 0, 60))),
         Scene("Previous scene dither dissolve out", 0,
             arrayOf(
                 DdE(0, 20, 4))),
@@ -77,10 +77,10 @@ internal class Director : ArrayList<Scene>()
                 Features(Features.IMAGES, 16, 130))),
         Scene("Java2D  -  text on gradient", 1000,
             arrayOf(
-                GpE(GpE.SDH, Intro.myBlue, Intro.myBlack, 0, 20),
-                GpE(GpE.SIH, Intro.myBlue, Intro.myBlack, 21, 40),
-                GpE(GpE.SDH, Intro.myBlue, Intro.myBlack, 41, 50),
-                GpE(GpE.INC or GpE.NF, Intro.myRed, Intro.myYellow, 0, 50),
+                GpE(GpE.SDH, Intro.BLUE, Intro.BLACK, 0, 20),
+                GpE(GpE.SIH, Intro.BLUE, Intro.BLACK, 21, 40),
+                GpE(GpE.SDH, Intro.BLUE, Intro.BLACK, 41, 50),
+                GpE(GpE.INC or GpE.NF, Intro.RED, Intro.YELLOW, 0, 50),
                 TxE("Java2D", f2, TxE.NOP, null, 0, 50))),
         Scene("Previous scene ellipse close out", 0,
             arrayOf(
@@ -93,10 +93,10 @@ internal class Director : ArrayList<Scene>()
                 Features(Features.COLOR, 16, 99))),
         Scene("Java2D  -  composite and rotate text on paints", 2000,
             arrayOf(
-                GpE(GpE.BURI, Intro.myBlack, Intro.myBlue, 0, 20),
-                GpE(GpE.BURD, Intro.myBlack, Intro.myBlue, 21, 30),
-                TpE(TpE.OI or TpE.HAF, Intro.myBlack, Intro.myBlue, 10, 31, 40),
-                TxE("Java2D", f2, TxE.AC or TxE.RI, Intro.myYellow, 0, 40))),
+                GpE(GpE.BURI, Intro.BLACK, Intro.BLUE, 0, 20),
+                GpE(GpE.BURD, Intro.BLACK, Intro.BLUE, 21, 30),
+                TpE(TpE.OI or TpE.HAF, Intro.BLACK, Intro.BLUE, 10, 31, 40),
+                TxE("Java2D", f2, TxE.AC or TxE.RI, Intro.YELLOW, 0, 40))),
         Scene("Previous scene subimage transform out", 0,
             arrayOf(
                 SiE(60, 60, 0, 40))),

@@ -235,3 +235,7 @@ fun BufferedImage.copy(): BufferedImage = createSimilar().also {
         g.drawImage(this, 0, 0, null)
     }
 }
+
+fun <T> unsafeLazy(initializer: () -> T): Lazy<T> {
+    return lazy(LazyThreadSafetyMode.NONE, initializer)
+}

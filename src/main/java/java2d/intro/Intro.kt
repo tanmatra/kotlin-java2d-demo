@@ -32,9 +32,11 @@
 package java2d.intro
 
 import java2d.DemoImages
+import java2d.unsafeLazy
 import java2d.use
 import java.awt.BorderLayout
 import java.awt.Color
+import java.awt.EventQueue
 import java.awt.Font
 import java.awt.FontMetrics
 import java.awt.Graphics
@@ -60,26 +62,22 @@ import javax.swing.border.EmptyBorder
  */
 class Intro : JPanel(BorderLayout())
 {
-    private var scenesTable: ScenesTable? = null
-    private var doTable: Boolean = false
-    internal var surface: Surface
+    private val surface = Surface()
+    private val scenesTable by unsafeLazy { ScenesTable(surface) }
+    private var showTable = false
 
     init {
         border = CompoundBorder(EmptyBorder(80, 110, 80, 110), BevelBorder(BevelBorder.LOWERED))
         background = Color.GRAY
         toolTipText = "click for scene table"
-        surface = Surface()
         add(surface)
         addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
                 removeAll()
-                doTable = !doTable
-                if (doTable) {
+                showTable = !showTable
+                if (showTable) {
                     toolTipText = "click for animation"
                     surface.stop()
-                    if (scenesTable == null) {
-                        scenesTable = ScenesTable(surface)
-                    }
                     add(scenesTable)
                 } else {
                     toolTipText = "click for scene table"
@@ -93,13 +91,13 @@ class Intro : JPanel(BorderLayout())
     }
 
     fun start() {
-        if (!doTable) {
+        if (!showTable) {
             surface.start()
         }
     }
 
     fun stop() {
-        if (!doTable) {
+        if (!showTable) {
             surface.stop()
         }
     }
@@ -107,17 +105,16 @@ class Intro : JPanel(BorderLayout())
     /**
      * Surface is the stage where the Director plays its scenes.
      */
-    internal class Surface : JPanel(), Runnable
+    internal class Surface : JPanel(BorderLayout()), Runnable
     {
         var director: Director
         var index: Int = 0
         var sleepAmt: Long = 30
-        private var thread: Thread? = null
+        @Volatile private var thread: Thread? = null
 
         init {
             surf = this
-            background = myBlack
-            layout = BorderLayout()
+            background = BLACK
             addMouseListener(object : MouseAdapter() {
                 override fun mouseClicked(e: MouseEvent?) {
                     if (thread == null) {
@@ -136,15 +133,14 @@ class Intro : JPanel(BorderLayout())
             if (width <= 0 || height <= 0) {
                 return
             }
-            val image = bufferedImage?.takeIf { it.width == width && it.height == height } ?: run {
-                val newImage = graphicsConfiguration.createCompatibleImage(width, height)
-                bufferedImage = newImage
-                // reset future scenes
-                for (i in index + 1 until director.size) {
-                    director[i].reset(width, height)
+            val image = bufferedImage?.takeIf { it.width == width && it.height == height }
+                ?: graphicsConfiguration.createCompatibleImage(width, height).also {
+                    bufferedImage = it
+                    // reset future scenes
+                    for (i in index + 1 until director.size) {
+                        director[i].reset(width, height)
+                    }
                 }
-                newImage
-            }
 
             val scene = director[index]
             if (scene.index <= scene.length) {
@@ -180,15 +176,12 @@ class Intro : JPanel(BorderLayout())
         fun stop() {
             thread?.interrupt()
             thread = null
-            @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
-            (this as java.lang.Object).notifyAll()
         }
 
         fun reset() {
             index = 0
-            val d = size
             for (scene in director) {
-                scene.reset(d.width, d.height)
+                scene.reset(width, height)
             }
         }
 
@@ -297,34 +290,36 @@ class Intro : JPanel(BorderLayout())
 
     companion object
     {
-        internal val myBlack = Color(20, 20, 20)
-        internal val myWhite = Color(240, 240, 255)
-        internal val myRed = Color(149, 43, 42)
-        internal val myBlue = Color(94, 105, 176)
-        internal val myYellow = Color(255, 255, 140)
+        internal val BLACK = Color(20, 20, 20)
+        internal val WHITE = Color(240, 240, 255)
+        internal val RED = Color(149, 43, 42)
+        internal val BLUE = Color(94, 105, 176)
+        internal val YELLOW = Color(255, 255, 140)
 
         @JvmStatic
         fun main(argv: Array<String>) {
-            val intro = Intro()
-            JFrame("Java2D Demo - Intro").apply {
-                addWindowListener(object : WindowAdapter() {
-                    override fun windowClosing(e: WindowEvent?) {
-                        System.exit(0)
-                    }
-                    override fun windowDeiconified(e: WindowEvent?) {
-                        intro.start()
-                    }
-                    override fun windowIconified(e: WindowEvent?) {
-                        intro.stop()
-                    }
-                })
-                contentPane.add("Center", intro)
-                pack()
-                setSize(720, 510)
-                setLocationRelativeTo(null)
-                isVisible = true
+            EventQueue.invokeLater {
+                val intro = Intro()
+                JFrame("Java2D Demo - Intro").apply {
+                    addWindowListener(object : WindowAdapter() {
+                        override fun windowClosing(e: WindowEvent?) {
+                            System.exit(0)
+                        }
+                        override fun windowDeiconified(e: WindowEvent?) {
+                            intro.start()
+                        }
+                        override fun windowIconified(e: WindowEvent?) {
+                            intro.stop()
+                        }
+                    })
+                    contentPane.add(intro, BorderLayout.CENTER)
+                    pack()
+                    setSize(720, 510)
+                    setLocationRelativeTo(null)
+                    isVisible = true
+                }
+                intro.start()
             }
-            intro.start()
         }
     }
 }

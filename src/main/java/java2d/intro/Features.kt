@@ -41,7 +41,7 @@ internal class Features(type: Int, override val begin: Int, override val end: In
     }
 
     override fun render(w: Int, h: Int, g2: Graphics2D) {
-        g2.color = Intro.myWhite
+        g2.color = Intro.WHITE
         g2.font = font1
         g2.drawString(v[0], 90, 85)
         g2.font = font2
