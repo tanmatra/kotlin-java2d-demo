@@ -52,7 +52,7 @@ import javax.swing.JToolBar
 /**
  * Animated color bouncing balls with custom controls.
  */
-class Balls private constructor() : AnimatingControlsSurface()
+class Balls : AnimatingControlsSurface()
 {
     private var now: Long = 0
 
