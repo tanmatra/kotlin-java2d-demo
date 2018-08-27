@@ -2,6 +2,7 @@ package java2d.intro
 
 import java.awt.Color
 import java.awt.Font
+import java.awt.FontMetrics
 import java.awt.GradientPaint
 import java.awt.Graphics2D
 import java.util.ArrayList
@@ -21,6 +22,7 @@ internal class Contributors(override val begin: Int, override val end: Int) : Pa
     private var counter: Int = 0
     private val cntMod: Int
     private lateinit var paint: GradientPaint
+    private lateinit var fontMetrics: FontMetrics
 
     init {
         members.sort()
@@ -32,9 +34,10 @@ internal class Contributors(override val begin: Int, override val end: Int) : Pa
         cntMod = (end - begin) / cast.size - 1
     }
 
-    override fun reset(newWidth: Int, newHeight: Int) {
+    override fun reset(surface: Intro.Surface, newWidth: Int, newHeight: Int) {
+        fontMetrics = surface.getFontMetrics(font)
         v.clear()
-        lineHeight = fm.ascent + fm.descent
+        lineHeight = fontMetrics.ascent + fontMetrics.descent
         linesCount = (newHeight - 40) / lineHeight + 1
         height = lineHeight * (linesCount - 1) + 48
         index = 0
@@ -71,7 +74,7 @@ internal class Contributors(override val begin: Int, override val end: Int) : Pa
         }
         for (s in v) {
             y += lineHeight
-            g2.drawString(s, w / 2 - fm.stringWidth(s) / 2, y)
+            g2.drawString(s, w / 2 - fontMetrics.stringWidth(s) / 2, y)
         }
     }
 
@@ -117,6 +120,5 @@ internal class Contributors(override val begin: Int, override val end: Int) : Pa
             "Rakesh Menon")
 
         private val font = Font(Font.SERIF, Font.PLAIN, 26)
-        private val fm = Intro.Surface.getMetrics(font)
     }
 }

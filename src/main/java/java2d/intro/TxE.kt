@@ -58,7 +58,7 @@ internal class TxE(
         }
     }
 
-    override fun reset(newWidth: Int, newHeight: Int) {
+    override fun reset(surface: Intro.Surface, newWidth: Int, newHeight: Int) {
         when (type) {
             SCXI -> {
                 sx = -1.0

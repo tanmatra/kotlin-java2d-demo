@@ -26,7 +26,7 @@ internal class GpE(
     private val rectangles = ArrayList<Rectangle2D>()
     private val gradients = ArrayList<GradientPaint>()
 
-    override fun reset(newWidth: Int, newHeight: Int) {
+    override fun reset(surface: Intro.Surface, newWidth: Int, newHeight: Int) {
         incr = 1.0f / (end - begin)
         if (type hasBits CNT) {
             incr /= 2.3f

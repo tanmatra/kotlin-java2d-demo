@@ -10,7 +10,7 @@ import java.util.ArrayList
 internal class Features(type: Int, override val begin: Int, override val end: Int) : Part
 {
     private val list: Array<String>
-    private var strH: Int = 0
+    private var stringHeight: Int = 0
     private var endIndex: Int = 0
     private var listIndex: Int = 0
     private val v = ArrayList<String>()
@@ -19,8 +19,9 @@ internal class Features(type: Int, override val begin: Int, override val end: In
         list = table[type]
     }
 
-    override fun reset(newWidth: Int, newHeight: Int) {
-        strH = fm2.ascent + fm2.descent
+    override fun reset(surface: Intro.Surface, newWidth: Int, newHeight: Int) {
+        val fontMetrics2 = surface.getFontMetrics(font2)
+        stringHeight = fontMetrics2.ascent + fontMetrics2.descent
         endIndex = 1
         listIndex = 0
         v.clear()
@@ -49,7 +50,7 @@ internal class Features(type: Int, override val begin: Int, override val end: In
             var i = 1
             var y = 90
             while (i < v.size) {
-                y += strH
+                y += stringHeight
                 g2.drawString(v[i], 120, y)
                 i++
             }
@@ -63,11 +64,8 @@ internal class Features(type: Int, override val begin: Int, override val end: In
         const val IMAGES   = 2
         const val COLOR    = 3
 
-        val font1 = Font("serif", Font.BOLD, 38)
-        val font2 = Font("serif", Font.PLAIN, 24)
-
-        // var fm1 = Surface.getMetrics(font1)
-        var fm2 = Intro.Surface.getMetrics(font2)
+        val font1 = Font(Font.SERIF, Font.BOLD, 38)
+        val font2 = Font(Font.SERIF, Font.PLAIN, 24)
 
         var table = arrayOf(
             arrayOf(

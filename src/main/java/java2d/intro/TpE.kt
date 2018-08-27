@@ -29,7 +29,7 @@ internal class TpE(
     private val buffImg = BufferedImage(size, size, BufferedImage.TYPE_INT_RGB)
     private val rect = Rectangle(0, 0, size, size)
 
-    override fun reset(newWidth: Int, newHeight: Int) {
+    override fun reset(surface: Intro.Surface, newWidth: Int, newHeight: Int) {
         incr = size.toFloat() / (end - begin).toFloat()
         if (type hasBits HAF) {
             incr /= 2f

@@ -26,7 +26,7 @@ internal class Temp(
     private var xIncr: Int = 0
     private var yIncr: Int = 0
 
-    override fun reset(newWidth: Int, newHeight: Int) {
+    override fun reset(surface: Intro.Surface, newWidth: Int, newHeight: Int) {
         rect1 = Rectangle(8, 20, newWidth - 20, 30)
         rect2 = Rectangle(20, 8, 30, newHeight - 20)
         if (type and NOANIM == 0) {

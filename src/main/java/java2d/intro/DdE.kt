@@ -37,7 +37,7 @@ internal class DdE(
         list = MutableList(end - begin + 1) { i -> i }.apply { shuffle() }
     }
 
-    override fun reset(newWidth: Int, newHeight: Int) {
+    override fun reset(surface: Intro.Surface, newWidth: Int, newHeight: Int) {
         bimg = null
     }
 

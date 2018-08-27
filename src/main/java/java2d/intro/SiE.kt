@@ -28,7 +28,7 @@ internal class SiE(
     private val subimages = ArrayList<BufferedImage>(20)
     private val points = ArrayList<Point>(20)
 
-    override fun reset(newWidth: Int, newHeight: Int) {
+    override fun reset(surface: Intro.Surface, newWidth: Int, newHeight: Int) {
         scale = 1.0
         rotate = 0.0
         bufferedImage = null

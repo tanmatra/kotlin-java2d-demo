@@ -56,7 +56,7 @@ internal class LnE(
         }
     }
 
-    override fun reset(newWidth: Int, newHeight: Int) {
+    override fun reset(surface: Intro.Surface, newWidth: Int, newHeight: Int) {
         if (type and DEC != 0) {
             rotate = 360.0
             alpha = 1.0f

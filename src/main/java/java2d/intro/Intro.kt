@@ -37,8 +37,6 @@ import java2d.use
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.EventQueue
-import java.awt.Font
-import java.awt.FontMetrics
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.Image
@@ -113,7 +111,6 @@ class Intro : JPanel(BorderLayout())
         @Volatile private var thread: Thread? = null
 
         init {
-            surf = this
             background = BLACK
             addMouseListener(object : MouseAdapter() {
                 override fun mouseClicked(e: MouseEvent?) {
@@ -138,7 +135,7 @@ class Intro : JPanel(BorderLayout())
                     bufferedImage = it
                     // reset future scenes
                     for (i in index + 1 until director.size) {
-                        director[i].reset(width, height)
+                        director[i].reset(this, width, height)
                     }
                 }
 
@@ -181,7 +178,7 @@ class Intro : JPanel(BorderLayout())
         fun reset() {
             index = 0
             for (scene in director) {
-                scene.reset(width, height)
+                scene.reset(this, width, height)
             }
         }
 
@@ -245,9 +242,9 @@ class Intro : JPanel(BorderLayout())
                 }
             }
 
-            fun reset(w: Int, h: Int) {
+            fun reset(surface: Surface, w: Int, h: Int) {
                 index = 0
-                parts.forEach { it.reset(w, h) }
+                parts.forEach { it.reset(surface, w, h) }
             }
 
             fun step(w: Int, h: Int) {
@@ -277,14 +274,9 @@ class Intro : JPanel(BorderLayout())
 
         companion object
         {
-            lateinit var surf: Surface
             lateinit var cupanim: Image
             lateinit var java_logo: Image
             var bufferedImage: BufferedImage? = null
-
-            fun getMetrics(font: Font): FontMetrics {
-                return surf.getFontMetrics(font)
-            }
         }
     } // End Surface class
 

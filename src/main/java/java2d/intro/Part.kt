@@ -11,7 +11,7 @@ internal interface Part
 
     val end: Int
 
-    fun reset(newWidth: Int, newHeight: Int)
+    fun reset(surface: Intro.Surface, newWidth: Int, newHeight: Int)
 
     fun step(w: Int, h: Int)
 

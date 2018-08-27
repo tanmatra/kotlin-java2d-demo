@@ -27,7 +27,7 @@ internal class CoE(
     private val eIncr: Double = 360.0 / (end - begin)
     private val doRandom: Boolean = type hasBits RAND
 
-    override fun reset(newWidth: Int, newHeight: Int) {
+    override fun reset(surface: Intro.Surface, newWidth: Int, newHeight: Int) {
         if (doRandom) {
             val num = ThreadLocalRandom.current().nextInt(6)
             type = when (num) {
