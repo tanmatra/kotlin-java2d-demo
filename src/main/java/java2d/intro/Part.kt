@@ -13,7 +13,7 @@ internal interface Part
 
     fun reset(surface: Intro.Surface, newWidth: Int, newHeight: Int)
 
-    fun step(w: Int, h: Int)
+    fun step(surface: Intro.Surface, w: Int, h: Int)
 
     fun render(w: Int, h: Int, g2: Graphics2D)
 }

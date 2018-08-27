@@ -42,7 +42,7 @@ internal class GpE(
         index += incr
     }
 
-    override fun step(w: Int, h: Int) {
+    override fun step(surface: Intro.Surface, w: Int, h: Int) {
         rectangles.clear()
         gradients.clear()
         when {

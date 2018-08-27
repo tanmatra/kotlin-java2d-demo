@@ -111,6 +111,7 @@ class Intro : JPanel(BorderLayout())
         @Volatile private var thread: Thread? = null
         val cupAnimation: Image = DemoImages.getImage("cupanim.gif", this)
         val javaLogo: Image = DemoImages.getImage("java_logo.png", this)
+        var bufferedImage: BufferedImage? = null
 
         init {
             background = BLACK
@@ -142,7 +143,7 @@ class Intro : JPanel(BorderLayout())
             val scene = director[index]
             if (scene.index <= scene.length) {
                 if (thread != null) {
-                    scene.step(width, height)
+                    scene.step(this, width, height)
                 }
                 image.createGraphics().use { g2 ->
                     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
@@ -247,10 +248,10 @@ class Intro : JPanel(BorderLayout())
                 parts.forEach { it.reset(surface, w, h) }
             }
 
-            fun step(w: Int, h: Int) {
+            fun step(surface: Surface, w: Int, h: Int) {
                 for (part in parts) {
                     if (index in part.begin .. part.end) {
-                        part.step(w, h)
+                        part.step(surface, w, h)
                     }
                 }
             }
@@ -271,11 +272,6 @@ class Intro : JPanel(BorderLayout())
                 // System.gc()
             }
         } // End Scene class
-
-        companion object
-        {
-            var bufferedImage: BufferedImage? = null
-        }
     } // End Surface class
 
     companion object

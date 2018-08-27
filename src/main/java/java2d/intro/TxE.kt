@@ -76,7 +76,7 @@ internal class TxE(
         rotate = 0.0
     }
 
-    override fun step(w: Int, h: Int) {
+    override fun step(surface: Intro.Surface, w: Int, h: Int) {
         var charX = (w / 2 - textWidth / 2).toFloat()
 
         for (i in shapes.indices) {

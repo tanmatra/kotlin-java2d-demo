@@ -38,7 +38,7 @@ internal class Temp(
         }
     }
 
-    override fun step(w: Int, h: Int) {
+    override fun step(surface: Intro.Surface, w: Int, h: Int) {
         if (type hasBits NOANIM) {
             return
         }

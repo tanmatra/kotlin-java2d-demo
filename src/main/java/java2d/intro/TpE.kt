@@ -46,7 +46,7 @@ internal class TpE(
         index += incr
     }
 
-    override fun step(w: Int, h: Int) {
+    override fun step(surface: Intro.Surface, w: Int, h: Int) {
         buffImg.createGraphics().use { g2 ->
             g2.paint = p1
             g2.fillRect(0, 0, size, size)

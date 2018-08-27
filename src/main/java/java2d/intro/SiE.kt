@@ -36,11 +36,11 @@ internal class SiE(
         points.clear()
     }
 
-    override fun step(w: Int, h: Int) {
+    override fun step(surface: Intro.Surface, w: Int, h: Int) {
         if (bufferedImage == null) {
-            bufferedImage = Intro.Surface.bufferedImage!!.createSimilar().also { image ->
+            bufferedImage = surface.bufferedImage!!.createSimilar().also { image ->
                 image.createGraphics().use { big ->
-                    big.drawImage(Intro.Surface.bufferedImage, 0, 0, null)
+                    big.drawImage(surface.bufferedImage, 0, 0, null)
                     for (x in 0 until w step subimageWidth) {
                         if (scale <= 0.0) break
                         val ww = if (x + subimageWidth < w) subimageWidth else w - x

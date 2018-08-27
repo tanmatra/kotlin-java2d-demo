@@ -71,7 +71,7 @@ internal class LnE(
         }
     }
 
-    override fun step(w: Int, h: Int) {
+    override fun step(surface: Intro.Surface, w: Int, h: Int) {
         if (type and ZOOM != 0) {
             zoom += zIncr
             generatePts(w, h, zoom)

@@ -46,7 +46,7 @@ internal class Contributors(override val begin: Int, override val end: Int) : Pa
         counter = 0
     }
 
-    override fun step(w: Int, h: Int) {
+    override fun step(surface: Intro.Surface, w: Int, h: Int) {
         if (counter++ % cntMod == 0) {
             if (index < cast.size) {
                 v.add(cast[index])
