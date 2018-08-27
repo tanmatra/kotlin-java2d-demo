@@ -179,7 +179,10 @@ val Insets.horizontal get() = left + right
 val Insets.vertical get() = top + bottom
 
 @Suppress("NOTHING_TO_INLINE")
-inline infix fun Int.hasBits(bits: Int) = (this and bits) != 0
+inline infix fun Int.hasBits(bits: Int): Boolean = (this and bits) != 0
+
+@Suppress("NOTHING_TO_INLINE")
+inline infix fun Int.hasNoBits(bits: Int): Boolean = (this and bits) == 0
 
 fun createTitledSlider(suffix: String, max: Int, property: KMutableProperty0<Int>): JSlider {
     fun formatTitle(value: Int) = "$value $suffix"
@@ -231,4 +234,8 @@ fun BufferedImage.copy(): BufferedImage = createSimilar().also {
     it.createGraphics().use { g ->
         g.drawImage(this, 0, 0, null)
     }
+}
+
+fun <T> unsafeLazy(initializer: () -> T): Lazy<T> {
+    return lazy(LazyThreadSafetyMode.NONE, initializer)
 }
