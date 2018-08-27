@@ -29,7 +29,7 @@ internal class Features(type: Int, override val begin: Int, override val end: In
         v.add(list[listIndex].substring(0, endIndex))
     }
 
-    override fun step(surfaceImage: BufferedImage, surface: Intro.Surface, w: Int, h: Int) {
+    override fun step(surfaceImage: BufferedImage, w: Int, h: Int) {
         if (listIndex < list.size) {
             if (++endIndex > list[listIndex].length) {
                 if (++listIndex < list.size) {

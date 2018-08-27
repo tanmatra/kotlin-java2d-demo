@@ -36,7 +36,7 @@ internal class SiE(
         points.clear()
     }
 
-    override fun step(surfaceImage: BufferedImage, surface: Intro.Surface, w: Int, h: Int) {
+    override fun step(surfaceImage: BufferedImage, w: Int, h: Int) {
         if (bufferedImage == null) {
             bufferedImage = surfaceImage.createSimilar().also { image ->
                 image.createGraphics().use { g ->

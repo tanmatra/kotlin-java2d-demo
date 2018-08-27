@@ -46,7 +46,7 @@ internal class CoE(
         zoom = 2.0
     }
 
-    override fun step(surfaceImage: BufferedImage, surface: Intro.Surface, w: Int, h: Int) {
+    override fun step(surfaceImage: BufferedImage, w: Int, h: Int) {
         if (bimg == null) {
             bimg = surfaceImage.copy()
         }

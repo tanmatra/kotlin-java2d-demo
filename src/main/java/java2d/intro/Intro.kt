@@ -140,7 +140,7 @@ class Intro : JPanel(BorderLayout())
             val scene = director[index]
             if (scene.index <= scene.length) {
                 if (thread != null) {
-                    scene.step(image, this, width, height)
+                    scene.step(image, width, height)
                 }
                 image.createGraphics().use { g2 ->
                     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
@@ -251,10 +251,10 @@ class Intro : JPanel(BorderLayout())
                 parts.forEach { it.reset(surface, w, h) }
             }
 
-            fun step(image: BufferedImage, surface: Surface, w: Int, h: Int) {
+            fun step(image: BufferedImage, w: Int, h: Int) {
                 for (part in parts) {
                     if (index in part.begin .. part.end) {
-                        part.step(image, surface, w, h)
+                        part.step(image, w, h)
                     }
                 }
             }
