@@ -7,6 +7,7 @@ import java.awt.GradientPaint
 import java.awt.Graphics2D
 import java.awt.RenderingHints
 import java.awt.geom.Rectangle2D
+import java.awt.image.BufferedImage
 import java.util.ArrayList
 
 /**
@@ -42,7 +43,7 @@ internal class GpE(
         index += incr
     }
 
-    override fun step(surface: Intro.Surface, w: Int, h: Int) {
+    override fun step(surfaceImage: BufferedImage, surface: Intro.Surface, w: Int, h: Int) {
         rectangles.clear()
         gradients.clear()
         when {

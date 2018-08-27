@@ -111,7 +111,7 @@ class Intro : JPanel(BorderLayout())
         @Volatile private var thread: Thread? = null
         val cupAnimation: Image = DemoImages.getImage("cupanim.gif", this)
         val javaLogo: Image = DemoImages.getImage("java_logo.png", this)
-        var bufferedImage: BufferedImage? = null
+        private var bufferedImage: BufferedImage? = null
 
         init {
             background = BLACK
@@ -134,16 +134,13 @@ class Intro : JPanel(BorderLayout())
             val image = bufferedImage?.takeIf { it.width == width && it.height == height }
                 ?: graphicsConfiguration.createCompatibleImage(width, height).also {
                     bufferedImage = it
-                    // reset future scenes
-                    for (i in index + 1 until director.size) {
-                        director[i].reset(this, width, height)
-                    }
+                    resetFutureScenes()
                 }
 
             val scene = director[index]
             if (scene.index <= scene.length) {
                 if (thread != null) {
-                    scene.step(this, width, height)
+                    scene.step(image, this, width, height)
                 }
                 image.createGraphics().use { g2 ->
                     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
@@ -159,6 +156,12 @@ class Intro : JPanel(BorderLayout())
                 }
             }
             g.drawImage(image, 0, 0, this)
+        }
+
+        private fun resetFutureScenes() {
+            for (i in index + 1 until director.size) {
+                director[i].reset(this, width, height)
+            }
         }
 
         fun start() {
@@ -248,10 +251,10 @@ class Intro : JPanel(BorderLayout())
                 parts.forEach { it.reset(surface, w, h) }
             }
 
-            fun step(surface: Surface, w: Int, h: Int) {
+            fun step(image: BufferedImage, surface: Surface, w: Int, h: Int) {
                 for (part in parts) {
                     if (index in part.begin .. part.end) {
-                        part.step(surface, w, h)
+                        part.step(image, surface, w, h)
                     }
                 }
             }

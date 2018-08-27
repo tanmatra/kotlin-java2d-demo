@@ -9,6 +9,7 @@ import java.awt.geom.Ellipse2D
 import java.awt.geom.FlatteningPathIterator
 import java.awt.geom.Line2D
 import java.awt.geom.Point2D
+import java.awt.image.BufferedImage
 import java.util.ArrayList
 
 /**
@@ -71,7 +72,7 @@ internal class LnE(
         }
     }
 
-    override fun step(surface: Intro.Surface, w: Int, h: Int) {
+    override fun step(surfaceImage: BufferedImage, surface: Intro.Surface, w: Int, h: Int) {
         if (type and ZOOM != 0) {
             zoom += zIncr
             generatePts(w, h, zoom)

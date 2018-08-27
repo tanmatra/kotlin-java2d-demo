@@ -11,6 +11,7 @@ import java.awt.font.FontRenderContext
 import java.awt.font.TextLayout
 import java.awt.geom.AffineTransform
 import java.awt.geom.GeneralPath
+import java.awt.image.BufferedImage
 
 /**
  * Text Effect.  Transformation of characters.  Clip or fill.
@@ -76,7 +77,7 @@ internal class TxE(
         rotate = 0.0
     }
 
-    override fun step(surface: Intro.Surface, w: Int, h: Int) {
+    override fun step(surfaceImage: BufferedImage, surface: Intro.Surface, w: Int, h: Int) {
         var charX = (w / 2 - textWidth / 2).toFloat()
 
         for (i in shapes.indices) {

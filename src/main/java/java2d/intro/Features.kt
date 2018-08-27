@@ -2,6 +2,7 @@ package java2d.intro
 
 import java.awt.Font
 import java.awt.Graphics2D
+import java.awt.image.BufferedImage
 import java.util.ArrayList
 
 /**
@@ -28,7 +29,7 @@ internal class Features(type: Int, override val begin: Int, override val end: In
         v.add(list[listIndex].substring(0, endIndex))
     }
 
-    override fun step(surface: Intro.Surface, w: Int, h: Int) {
+    override fun step(surfaceImage: BufferedImage, surface: Intro.Surface, w: Int, h: Int) {
         if (listIndex < list.size) {
             if (++endIndex > list[listIndex].length) {
                 if (++listIndex < list.size) {

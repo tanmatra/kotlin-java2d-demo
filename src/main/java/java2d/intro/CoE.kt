@@ -46,9 +46,9 @@ internal class CoE(
         zoom = 2.0
     }
 
-    override fun step(surface: Intro.Surface, w: Int, h: Int) {
+    override fun step(surfaceImage: BufferedImage, surface: Intro.Surface, w: Int, h: Int) {
         if (bimg == null) {
-            bimg = surface.bufferedImage!!.copy()
+            bimg = surfaceImage.copy()
         }
         val z = Math.min(w, h) * zoom
         shape = when {

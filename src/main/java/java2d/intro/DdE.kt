@@ -41,14 +41,14 @@ internal class DdE(
         bimg = null
     }
 
-    override fun step(surface: Intro.Surface, w: Int, h: Int) {
+    override fun step(surfaceImage: BufferedImage, surface: Intro.Surface, w: Int, h: Int) {
         if (inc > end) {
             bimg = null
         }
         if (bimg == null) {
-            bimg = surface.bufferedImage!!.createSimilar().also { bimg ->
+            bimg = surfaceImage.createSimilar().also { bimg ->
                 big = bimg.createGraphics().also { g ->
-                    g.drawImage(surface.bufferedImage, 0, 0, null)
+                    g.drawImage(surfaceImage, 0, 0, null)
                 }
             }
             createShuffledLists()

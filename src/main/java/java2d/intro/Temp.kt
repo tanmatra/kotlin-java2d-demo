@@ -5,6 +5,7 @@ import java.awt.AlphaComposite
 import java.awt.Graphics2D
 import java.awt.Image
 import java.awt.Rectangle
+import java.awt.image.BufferedImage
 
 /**
  * Template for Features & Contributors consisting of translating
@@ -38,7 +39,7 @@ internal class Temp(
         }
     }
 
-    override fun step(surface: Intro.Surface, w: Int, h: Int) {
+    override fun step(surfaceImage: BufferedImage, surface: Intro.Surface, w: Int, h: Int) {
         if (type hasBits NOANIM) {
             return
         }
