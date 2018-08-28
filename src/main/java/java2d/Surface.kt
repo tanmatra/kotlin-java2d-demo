@@ -414,25 +414,9 @@ abstract class Surface : JPanel(), Printable
     companion object
     {
         // Lookup tables for BYTE_BINARY 1, 2 and 4 bits.
-        internal var lut1Arr = byteArrayOf(0, 255.toByte())
-        internal var lut2Arr = byteArrayOf(0, 85.toByte(), 170.toByte(), 255.toByte())
-        internal var lut4Arr = byteArrayOf(
-            0,
-            17.toByte(),
-            34.toByte(),
-            51.toByte(),
-            68.toByte(),
-            85.toByte(),
-            102.toByte(),
-            119.toByte(),
-            136.toByte(),
-            153.toByte(),
-            170.toByte(),
-            187.toByte(),
-            204.toByte(),
-            221.toByte(),
-            238.toByte(),
-            255.toByte())
+        internal var lut1Arr = byteArrayFrom(0, 255)
+        internal var lut2Arr = byteArrayFrom(0, 85, 170, 255)
+        internal var lut4Arr = byteArrayFrom(0, 17, 34, 51, 68, 85, 102, 119, 136, 153, 170, 187, 204, 221, 238, 255)
 
         const private val REPORTFRAMES = 30
 
