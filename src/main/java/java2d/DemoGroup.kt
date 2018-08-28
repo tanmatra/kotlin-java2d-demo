@@ -31,12 +31,14 @@
  */
 package java2d
 
+import java2d.Java2Demo.GroupInfo
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.Dimension
 import java.awt.Font
 import java.awt.GridBagLayout
 import java.awt.GridLayout
+import java.awt.LayoutManager
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.awt.event.MouseAdapter
@@ -62,11 +64,12 @@ import javax.swing.event.ChangeListener
  * java DemoGroup Fonts
  * Loads all the demos found in the demos/Fonts directory.
  */
-class DemoGroup(
-    private val groupName: String,
-    private val java2Demo: Java2Demo? = null
+class DemoGroup internal constructor(
+    private val java2Demo: Java2Demo? = null,
+    groupInfo: GroupInfo
 ) : JPanel(), ChangeListener, ActionListener
 {
+    private val groupName = groupInfo.groupName
     lateinit var clonePanels: Array<JPanel>
     var tabbedPane: JTabbedPane? = null
     private var index: Int = 0
@@ -83,21 +86,10 @@ class DemoGroup(
     init {
         layout = BorderLayout()
 
-        val p = JPanel(GridLayout(0, 2))
-        p.border = CompoundBorder(emptyB, bevelB)
-
-        // Find the named demo group in Java2Demo.demos[].
-        var ind = -1
-        while (groupName != Java2Demo.demos[++ind][0]) {
-        }
-        val demos = Java2Demo.demos[ind]
-
+        val demos = groupInfo.demos
         // If there are an odd number of demos, use GridBagLayout.
-        // Note that we don't use the first entry.
-        val numDemos = demos.size - 1
-        if (numDemos % 2 == 1) {
-            p.layout = GridBagLayout()
-        }
+        val panelLayout: LayoutManager = if (demos.size % 2 == 1) GridBagLayout() else GridLayout(0, 2)
+        val p = JPanel(panelLayout).apply { border = PANEL_BORDER }
 
         val mouseListener = object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
@@ -106,17 +98,18 @@ class DemoGroup(
         }
 
         // For each demo in the group, prepare a DemoPanel.
-        for (i in 1..numDemos) {
-            val demoPanel = DemoPanel("java2d.demos.${groupName}.${demos[i]}")
+        demos.forEachIndexed { i, demo ->
+            val className = "java2d.demos.$groupName.$demo"
+            val demoPanel = DemoPanel(className)
             demoPanel.setDemoBorder(p)
             demoPanel.surface?.run {
                 addMouseListener(mouseListener)
                 monitor = java2Demo?.performanceMonitor != null
             }
-            if (p.layout is GridBagLayout) {
+            if (panelLayout is GridBagLayout) {
                 val x = p.componentCount % 2
                 val y = p.componentCount / 2
-                val w = if (i == numDemos) 2 else 1
+                val w = if (i == demos.lastIndex) 2 else 1
                 p.addToGridBag(demoPanel, x, y, w, 1, 1.0, 1.0)
             } else {
                 p.add(demoPanel)
@@ -131,8 +124,7 @@ class DemoGroup(
 
         if (tabbedPane == null) {
             shutDown(panel)
-            val p = JPanel(BorderLayout())
-            p.border = CompoundBorder(emptyB, bevelB)
+            val p = JPanel(BorderLayout()).apply { border = PANEL_BORDER }
 
             tabbedPane = JTabbedPane().apply {
                 font = FONT
@@ -319,12 +311,13 @@ class DemoGroup(
     {
         var columns = 2
         private val FONT = Font(Font.SERIF, Font.PLAIN, 10)
-        private val emptyB = EmptyBorder(5, 5, 5, 5)
-        private val bevelB = BevelBorder(BevelBorder.LOWERED)
+        private val PANEL_BORDER = CompoundBorder(EmptyBorder(5, 5, 5, 5), BevelBorder(BevelBorder.LOWERED))
 
         @JvmStatic
         fun main(args: Array<String>) {
-            val group = DemoGroup(args[0], null)
+            val groupName = args.getOrNull(0) ?: return
+            val groupDescriptor = Java2Demo.demos.find { it.groupName.equals(groupName, ignoreCase = true) } ?: return
+            val group = DemoGroup(null, groupDescriptor)
             JFrame("Java2D Demo - DemoGroup").apply {
                 addWindowListener(object : WindowAdapter() {
                     override fun windowClosing(e: WindowEvent?) {
