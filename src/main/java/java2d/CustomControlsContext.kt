@@ -39,14 +39,7 @@ import java.awt.Component
  */
 interface CustomControlsContext
 {
-    @Deprecated("override customControls")
-    var controls: Array<Component>
-
-    @Deprecated("override customControls")
-    var constraints: Array<String>
-
     val customControls: Iterable<CControl>
-        get() = controls.zip(constraints)
 
     enum class State {
         START,

@@ -31,14 +31,7 @@
  */
 package java2d
 
-import java.awt.BorderLayout
-import java.awt.Component
-
 /**
  * Demos that animate and have custom controls extend this class.
  */
 abstract class AnimatingControlsSurface : AnimatingSurface(), CustomControlsContext
-{
-    override var controls: Array<Component> = emptyArray()
-    override var constraints = arrayOf(BorderLayout.NORTH)
-}

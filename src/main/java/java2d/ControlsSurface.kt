@@ -33,14 +33,7 @@
 
 package java2d
 
-import java.awt.BorderLayout
-import java.awt.Component
-
 /**
  * The class to utilize custom controls for a Demo.
  */
 abstract class ControlsSurface : Surface(), CustomControlsContext
-{
-    override var controls: Array<Component> = emptyArray()
-    override var constraints: Array<String> = arrayOf(BorderLayout.NORTH)
-}
