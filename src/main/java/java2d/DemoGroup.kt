@@ -149,7 +149,7 @@ class DemoGroup internal constructor(
                     tools.cloneButton = tools.addTool(cloneImg, "Clone the Surface", this)
                     val d = tools.toolbar.preferredSize
                     tools.toolbar.preferredSize = Dimension(d.width + 27, d.height)
-                    Java2Demo.backgroundColor?.let { backgroundColor ->
+                    java2Demo?.backgroundColor?.let { backgroundColor ->
                         c.surface.background = backgroundColor
                     }
                 }
@@ -234,7 +234,7 @@ class DemoGroup internal constructor(
                     demoPanel.surface.verbose()
                 }
                 demoPanel.surface.sleepAmount = controls.slider.value.toLong()
-                Java2Demo.backgroundColor?.let { backgroundColor ->
+                java2Demo?.backgroundColor?.let { backgroundColor ->
                     demoPanel.surface.background = backgroundColor
                 }
                 tools.issueRepaint = true
@@ -268,7 +268,7 @@ class DemoGroup internal constructor(
         tools.cloneButton = tools.addTool(removeImg, "Remove the Surface", this)
         val d = tools.toolbar.preferredSize
         tools.toolbar.preferredSize = Dimension(d.width + 27, d.height)
-        Java2Demo.backgroundColor?.let { backgroundColor ->
+        java2Demo?.backgroundColor?.let { backgroundColor ->
             clone.surface?.background = backgroundColor
         }
         if (java2Demo?.globalControls != null) {

@@ -92,6 +92,8 @@ class Java2Demo : JPanel(), ActionListener
     lateinit var memoryMonitorCheckBox: JCheckBoxMenuItem
     lateinit var performanceMontiorCheckBox: JCheckBoxMenuItem
 
+    var backgroundColor: Color? = null
+
     /**
      * Construct the Java2D Demo.
      */
@@ -356,7 +358,6 @@ class Java2Demo : JPanel(), ActionListener
         lateinit var verboseCB: JCheckBoxMenuItem
         lateinit var ccthreadCB: JCheckBoxMenuItem
         var printCB = JCheckBoxMenuItem("Default Printer")
-        var backgroundColor: Color? = null
         lateinit var intro: Intro
 
         internal val demos = arrayOf(
