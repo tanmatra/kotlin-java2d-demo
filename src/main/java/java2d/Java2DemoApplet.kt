@@ -91,17 +91,15 @@ class Java2DemoApplet : JApplet()
         progressPanel.add(progressLabel)
         progressPanel.add(Box.createRigidArea(Dimension(1, 20)))
 
-        with(Java2Demo) {
-            progressBar = JProgressBar().apply {
-                isStringPainted = true
-                alignmentX = Component.CENTER_ALIGNMENT
-                maximumSize = compMaxSize
-                minimum = 0
-                value = 0
-            }
-            progressLabel.labelFor = progressBar
+        val progressBar = JProgressBar().apply {
+            isStringPainted = true
+            alignmentX = Component.CENTER_ALIGNMENT
+            maximumSize = compMaxSize
+            minimum = 0
+            value = 0
         }
-        progressPanel.add(Java2Demo.progressBar)
+        progressLabel.labelFor = progressBar
+        progressPanel.add(progressBar)
         progressPanel.add(Box.createGlue())
         progressPanel.add(Box.createGlue())
 
@@ -110,7 +108,7 @@ class Java2DemoApplet : JApplet()
         validate()
         isVisible = true
 
-        val demo = Java2Demo(progressLabel)
+        val demo = Java2Demo(progressLabel, progressBar)
         Java2Demo.demo = demo
         contentPane.remove(panel)
         contentPane.layout = BorderLayout()

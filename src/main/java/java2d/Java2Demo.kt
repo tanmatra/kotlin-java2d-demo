@@ -75,7 +75,10 @@ import javax.swing.border.EtchedBorder
  * @author Jim Graham           (demos)
  * @author Alexander Kouznetsov (code beautification)
  */
-class Java2Demo(private val progressLabel: JLabel) : JPanel(), ActionListener
+class Java2Demo(
+    private val progressLabel: JLabel,
+    private val progressBar: JProgressBar
+) : JPanel(), ActionListener
 {
     private var runMI: JMenuItem? = null
     private var cloneMI: JMenuItem? = null
@@ -359,7 +362,6 @@ class Java2Demo(private val progressLabel: JLabel) : JPanel(), ActionListener
     companion object
     {
         var demo: Java2Demo? = null
-        lateinit var progressBar: JProgressBar
         lateinit var groups: Array<DemoGroup>
         lateinit var verboseCB: JCheckBoxMenuItem
         lateinit var ccthreadCB: JCheckBoxMenuItem
@@ -415,7 +417,7 @@ class Java2Demo(private val progressLabel: JLabel) : JPanel(), ActionListener
             progressPanel.add(progressLabel)
             progressPanel.add(Box.createRigidArea(Dimension(1, 20)))
 
-            progressBar = JProgressBar().apply {
+            val progressBar = JProgressBar().apply {
                 isStringPainted = true
                 alignmentX = Component.CENTER_ALIGNMENT
                 minimum = 0
@@ -427,7 +429,7 @@ class Java2Demo(private val progressLabel: JLabel) : JPanel(), ActionListener
 
             frame.isVisible = true
 
-            val java2Demo = Java2Demo(progressLabel)
+            val java2Demo = Java2Demo(progressLabel, progressBar)
             demo = java2Demo //FIXME
 
             frame.run {
