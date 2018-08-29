@@ -41,6 +41,7 @@ import java.awt.Font
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.Insets
+import java.awt.RenderingHints
 import java.awt.Toolkit
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
@@ -67,6 +68,7 @@ import javax.swing.JTabbedPane
 import javax.swing.SwingUtilities
 import javax.swing.UIManager
 import javax.swing.border.EtchedBorder
+import kotlin.math.roundToInt
 
 /**
  * A demo that shows Java 2D(TM) features.
@@ -130,7 +132,7 @@ class Java2Demo(
 
         tabbedPane = JTabbedPane().apply {
             font = Font("serif", Font.PLAIN, 12)
-            addTab("", J2DIcon(this@Java2Demo), globalPanel)
+            addTab("", J2DIcon(), globalPanel)
             addChangeListener {
                 globalPanel.onDemoTabChanged(tabbedPaneIndex)
             }
@@ -327,30 +329,31 @@ class Java2Demo(
     /**
      * The Icon for the Intro tab.
      */
-    internal class J2DIcon(private val java2Demo: Java2Demo) : Icon
+    internal class J2DIcon : Icon
     {
-        private val textLayout = TextLayout("Java2D", FONT, FontRenderContext(null, true, true))
+        private val fontRenderContext =
+            FontRenderContext(null, systemTextAntialiasing, RenderingHints.VALUE_FRACTIONALMETRICS_DEFAULT)
+        private val textLayout = TextLayout("Java2D", FONT, fontRenderContext)
+        private val iconWidth = textLayout.bounds.width.roundToInt()
+        private val iconHeight = (textLayout.ascent + textLayout.descent).roundToInt()
 
-        override fun paintIcon(c: Component, g: Graphics, x: Int, y: Int) {
+        override fun paintIcon(component: Component, g: Graphics, x: Int, y: Int) {
             val g2 = g as Graphics2D
-            g2.antialiasing = true
+            g2.textAntialiasing = systemTextAntialiasing
             g2.font = FONT
-            if (java2Demo.tabbedPaneIndex == 0) {
-                g2.color = myBlue
-            } else {
-                g2.color = myBlack
-            }
-            textLayout.draw(g2, x.toFloat(), (y + 15).toFloat())
+            val tabbedPane = component as JTabbedPane
+            g2.color = if (tabbedPane.selectedIndex == 0) BLUE else BLACK
+            textLayout.draw(g2, x.toFloat(), (y + textLayout.ascent))
         }
 
-        override fun getIconWidth(): Int = 40
+        override fun getIconWidth(): Int = iconWidth
 
-        override fun getIconHeight(): Int = 22
+        override fun getIconHeight(): Int = iconHeight
 
         companion object
         {
-            private val myBlue = Color(94, 105, 176)
-            private val myBlack = Color(20, 20, 20)
+            private val BLUE = Color(94, 105, 176)
+            private val BLACK = Color(20, 20, 20)
             private val FONT = Font(Font.SERIF, Font.BOLD, 12)
         }
     }
