@@ -69,7 +69,9 @@ import javax.swing.border.EtchedBorder
  * start & stop on animated demos; control for cloning the demo; control for
  * printing the demo.  Expand and collapse the Tools panel with ToggleIcon.
  */
-class Tools(private val surface: Surface) : JPanel(BorderLayout()), ActionListener, Runnable
+class Tools(private val java2Demo: Java2Demo?,
+            private val surface: Surface
+) : JPanel(BorderLayout()), ActionListener, Runnable
 {
     private val stopIcon: ImageIcon
     private val startIcon: ImageIcon
@@ -358,7 +360,7 @@ class Tools(private val surface: Surface) : JPanel(BorderLayout()), ActionListen
             var pDialogState = true
             val aset = HashPrintRequestAttributeSet()
 
-            if (!Java2Demo.printCB.isSelected) {
+            if (java2Demo?.isDefaultPrinter != true) {
                 pDialogState = printJob.printDialog(aset)
             }
             if (pDialogState) {

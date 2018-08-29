@@ -124,7 +124,7 @@ class RunWindow(private val java2Demo: Java2Demo) : JPanel(GridBagLayout()), Run
         p1.add(zoomCheckBox)
         p1.add(printCheckBox)
         printCheckBox.addActionListener {
-            Java2Demo.printCB.isSelected = printCheckBox.isSelected
+            java2Demo.isDefaultPrinter = printCheckBox.isSelected
         }
         addToGridBag(p1, 0, 1, 3, 1, 1.0, 1.0)
     }

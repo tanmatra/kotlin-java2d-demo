@@ -100,7 +100,7 @@ class DemoGroup internal constructor(
         // For each demo in the group, prepare a DemoPanel.
         demos.forEachIndexed { i, demo ->
             val className = "java2d.demos.$groupName.$demo"
-            val demoPanel = DemoPanel(className)
+            val demoPanel = DemoPanel(java2Demo, className)
             demoPanel.setDemoBorder(p)
             demoPanel.surface?.run {
                 addMouseListener(mouseListener)

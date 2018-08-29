@@ -96,6 +96,11 @@ class Java2Demo(
         get() = verboseCheckBox.isSelected
         set(value) { verboseCheckBox.isSelected = value }
 
+    private val defaultPrinterCheckBox = JCheckBoxMenuItem("Default Printer")
+    var isDefaultPrinter: Boolean
+        get() = defaultPrinterCheckBox.isSelected
+        set(value) { defaultPrinterCheckBox.isSelected = value }
+
     val memoryMonitor = MemoryMonitor()
     val performanceMonitor = PerformanceMonitor()
     val globalControls = GlobalControls(this)
@@ -223,7 +228,7 @@ class Java2Demo(
             }
         }) as JCheckBoxMenuItem
 
-        printCB = optionsMenu.add(printCB) as JCheckBoxMenuItem
+        optionsMenu.add(defaultPrinterCheckBox)
         optionsMenu.add(verboseCheckBox)
 
         optionsMenu.add(JSeparator())
@@ -372,7 +377,6 @@ class Java2Demo(
     {
         var demo: Java2Demo? = null
         lateinit var ccthreadCB: JCheckBoxMenuItem
-        var printCB = JCheckBoxMenuItem("Default Printer")
         lateinit var intro: Intro
 
         internal val demos = arrayOf(
@@ -468,7 +472,7 @@ class Java2Demo(
                         java2Demo.globalControls.compositeCheckBox.isSelected = value.endsWith("true")
                     arg.startsWith("-verbose") -> java2Demo.isVerbose = true
                     arg.startsWith("-print") -> {
-                        Java2Demo.printCB.isSelected = true
+                        java2Demo.isDefaultPrinter = true
                         RunWindow.printCheckBox.isSelected = true
                     }
                     arg.startsWith("-columns=") ->
