@@ -232,7 +232,7 @@ class DemoGroup internal constructor(
                         tools.screenCombo.selectedIndex = globalScreenIndex
                     }
                 }
-                if (Java2Demo.verboseCB.isSelected) {
+                if (java2Demo?.isVerbose == true) {
                     demoPanel.surface.verbose(java2Demo)
                 }
                 demoPanel.surface.sleepAmount = controls.slider.value.toLong()

@@ -91,6 +91,11 @@ class Java2Demo(
     private var runFrame: JFrame? = null
     private var cloningFrame: JFrame? = null
 
+    private val verboseCheckBox = JCheckBoxMenuItem("Verbose")
+    var isVerbose: Boolean
+        get() = verboseCheckBox.isSelected
+        set(value) { verboseCheckBox.isSelected = value }
+
     val memoryMonitor = MemoryMonitor()
     val performanceMonitor = PerformanceMonitor()
     val globalControls = GlobalControls(this)
@@ -219,8 +224,7 @@ class Java2Demo(
         }) as JCheckBoxMenuItem
 
         printCB = optionsMenu.add(printCB) as JCheckBoxMenuItem
-
-        verboseCB = optionsMenu.add(JCheckBoxMenuItem("Verbose")) as JCheckBoxMenuItem
+        optionsMenu.add(verboseCheckBox)
 
         optionsMenu.add(JSeparator())
 
@@ -367,7 +371,6 @@ class Java2Demo(
     companion object
     {
         var demo: Java2Demo? = null
-        lateinit var verboseCB: JCheckBoxMenuItem
         lateinit var ccthreadCB: JCheckBoxMenuItem
         var printCB = JCheckBoxMenuItem("Default Printer")
         lateinit var intro: Intro
@@ -463,7 +466,7 @@ class Java2Demo(
                         java2Demo.globalControls.textureCheckBox.isSelected = value.endsWith("true")
                     arg.startsWith("-composite=") ->
                         java2Demo.globalControls.compositeCheckBox.isSelected = value.endsWith("true")
-                    arg.startsWith("-verbose") -> Java2Demo.verboseCB.isSelected = true
+                    arg.startsWith("-verbose") -> java2Demo.isVerbose = true
                     arg.startsWith("-print") -> {
                         Java2Demo.printCB.isSelected = true
                         RunWindow.printCheckBox.isSelected = true

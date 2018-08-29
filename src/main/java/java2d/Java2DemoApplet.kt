@@ -121,7 +121,7 @@ class Java2DemoApplet : JApplet()
         getParameter("rendering")?.let { demo.globalControls.renderCheckBox.isSelected = it.endsWith("true") }
         getParameter("texture")?.let { demo.globalControls.textureCheckBox.isSelected = it.endsWith("true") }
         getParameter("composite")?.let { demo.globalControls.compositeCheckBox.isSelected = it.endsWith("true") }
-        getParameter("verbose")?.let { Java2Demo.verboseCB.isSelected = true }
+        getParameter("verbose")?.let { demo.isVerbose = true }
         getParameter("columns")?.let { DemoGroup.columns = Integer.parseInt(it) }
         getParameter("buffers")?.let {
             // usage -buffers=3,10
