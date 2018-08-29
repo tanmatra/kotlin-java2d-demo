@@ -48,7 +48,7 @@ import javax.swing.border.TitledBorder
  * Global Controls panel for changing graphic attributes of
  * the demo surface.
  */
-class GlobalControls : JPanel(GridBagLayout()), ItemListener
+class GlobalControls(private val java2Demo: Java2Demo) : JPanel(GridBagLayout()), ItemListener
 {
     val textureChooser = TextureChooser(this, 0)
     val antialiasingCheckBox: JCheckBox
@@ -112,7 +112,7 @@ class GlobalControls : JPanel(GridBagLayout()), ItemListener
     private fun onSliderChange() {
         val value = slider.value
         (slider.border as TitledBorder).title = "Anim delay = $value ms"
-        val index = Java2Demo.tabbedPane.selectedIndex - 1
+        val index = java2Demo.tabbedPaneIndex - 1
         val demoGroup = Java2Demo.groups[index]
         val panel = demoGroup.panel
         for (i in 0 until panel.componentCount) {
@@ -123,9 +123,9 @@ class GlobalControls : JPanel(GridBagLayout()), ItemListener
     }
 
     override fun itemStateChanged(event: ItemEvent) {
-        if (Java2Demo.tabbedPane.selectedIndex != 0) {
+        if (java2Demo.tabbedPaneIndex != 0) {
             itemEventSource = event.source
-            val index = Java2Demo.tabbedPane.selectedIndex - 1
+            val index = java2Demo.tabbedPaneIndex - 1
             Java2Demo.groups[index].setup(true)
             itemEventSource = null
         }

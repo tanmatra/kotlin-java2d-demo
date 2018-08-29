@@ -91,9 +91,9 @@ class CloningFeature(private val java2Demo: Java2Demo) : JPanel(), Runnable
 
     @Throws(InterruptedIOException::class)
     private fun runExceptionally() {
-        var index = Java2Demo.tabbedPane.selectedIndex
+        var index = java2Demo.tabbedPaneIndex
         if (index == 0) {
-            Java2Demo.tabbedPane.selectedIndex = 1
+            java2Demo.tabbedPaneIndex = 1
             Thread.sleep(3333)
         }
 
@@ -102,7 +102,7 @@ class CloningFeature(private val java2Demo: Java2Demo) : JPanel(), Runnable
             Thread.sleep(2222)
         }
 
-        index = Java2Demo.tabbedPane.selectedIndex - 1
+        index = java2Demo.tabbedPaneIndex - 1
         val demoGroup: DemoGroup = Java2Demo.groups[index]
         var demoPanel: DemoPanel = demoGroup.panel.getComponent(0) as DemoPanel
         if (demoPanel.surface == null) {

@@ -88,11 +88,18 @@ class Java2Demo : JPanel(), ActionListener
 
     val memoryMonitor = MemoryMonitor()
     val performanceMonitor = PerformanceMonitor()
-    val globalControls = GlobalControls()
+    val globalControls = GlobalControls(this)
     lateinit var memoryMonitorCheckBox: JCheckBoxMenuItem
     lateinit var performanceMontiorCheckBox: JCheckBoxMenuItem
 
     var backgroundColor: Color? = null
+
+    private val tabbedPane: JTabbedPane
+    var tabbedPaneIndex: Int
+        get() = tabbedPane.selectedIndex
+        set(value) { tabbedPane.selectedIndex = value }
+    val tabbedPaneCount: Int
+        get() = tabbedPane.tabCount
 
     /**
      * Construct the Java2D Demo.
@@ -118,11 +125,12 @@ class Java2Demo : JPanel(), ActionListener
 
         val globalPanel = GlobalPanel(this)
 
-        tabbedPane = JTabbedPane()
-        tabbedPane.font = Font("serif", Font.PLAIN, 12)
-        tabbedPane.addTab("", J2DIcon(), globalPanel)
-        tabbedPane.addChangeListener {
-            globalPanel.onDemoTabChanged(tabbedPane.selectedIndex)
+        tabbedPane = JTabbedPane().apply {
+            font = Font("serif", Font.PLAIN, 12)
+            addTab("", J2DIcon(this@Java2Demo), globalPanel)
+            addChangeListener {
+                globalPanel.onDemoTabChanged(tabbedPaneIndex)
+            }
         }
 
         groups = demos.map { groupInfo ->
@@ -193,8 +201,8 @@ class Java2Demo : JPanel(), ActionListener
             addItemListener {
                 val state = if (ccthreadCB.isSelected) CustomControlsContext.State.START
                     else CustomControlsContext.State.STOP
-                if (tabbedPane.selectedIndex != 0) {
-                    val p = groups[tabbedPane.selectedIndex - 1].panel
+                if (tabbedPaneIndex != 0) {
+                    val p = groups[tabbedPaneIndex - 1].panel
                     for (i in 0 until p.componentCount) {
                         val dp = p.getComponent(i) as DemoPanel
                         dp.customControlsContext?.handleThread(state)
@@ -273,7 +281,7 @@ class Java2Demo : JPanel(), ActionListener
             }
             e.source == backgMI -> {
                 backgroundColor = JColorChooser.showDialog(this, "Background Color", Color.WHITE)
-                for (i in 1 until tabbedPane.tabCount) {
+                for (i in 1 until tabbedPaneCount) {
                     val p = groups[i - 1].panel
                     for (j in 0 until p.componentCount) {
                         val dp = p.getComponent(j) as DemoPanel
@@ -287,10 +295,10 @@ class Java2Demo : JPanel(), ActionListener
     }
 
     fun start() {
-        if (tabbedPane.selectedIndex == 0) {
+        if (tabbedPaneIndex == 0) {
             intro.start()
         } else {
-            groups[tabbedPane.selectedIndex - 1].setup(false)
+            groups[tabbedPaneIndex - 1].setup(false)
             if (memoryMonitor.surface.thread == null && memoryMonitorCheckBox.isSelected) {
                 memoryMonitor.surface.start()
             }
@@ -316,7 +324,7 @@ class Java2Demo : JPanel(), ActionListener
     /**
      * The Icon for the Intro tab.
      */
-    internal class J2DIcon : Icon
+    internal class J2DIcon(private val java2Demo: Java2Demo) : Icon
     {
         private val textLayout = TextLayout("Java2D", FONT, FontRenderContext(null, true, true))
 
@@ -324,7 +332,7 @@ class Java2Demo : JPanel(), ActionListener
             val g2 = g as Graphics2D
             g2.antialiasing = true
             g2.font = FONT
-            if (tabbedPane.selectedIndex == 0) {
+            if (java2Demo.tabbedPaneIndex == 0) {
                 g2.color = myBlue
             } else {
                 g2.color = myBlack
@@ -351,7 +359,6 @@ class Java2Demo : JPanel(), ActionListener
     companion object
     {
         var demo: Java2Demo? = null
-        lateinit var tabbedPane: JTabbedPane
         lateinit var progressLabel: JLabel
         lateinit var progressBar: JProgressBar
         lateinit var groups: Array<DemoGroup>

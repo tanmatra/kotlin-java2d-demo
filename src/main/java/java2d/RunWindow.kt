@@ -201,14 +201,14 @@ class RunWindow(private val java2Demo: Java2Demo) : JPanel(GridBagLayout()), Run
             val totalMemory = runtime.totalMemory().toFloat()
             println("${((totalMemory - freeMemory) / 1024)}K used")
 
-            for (mainTabIndex in 0 until Java2Demo.tabbedPane.tabCount) {
+            for (mainTabIndex in 0 until java2Demo.tabbedPaneCount) {
                 if (thread == null) break
                 val demoGroup: DemoGroup? = if (mainTabIndex != 0) Java2Demo.groups[mainTabIndex - 1] else null
                 invokeAndWait {
                     progressBar.value = 0
                     progressBar.maximum = delay
                     demoGroup?.invalidate()
-                    Java2Demo.tabbedPane.selectedIndex = mainTabIndex
+                    java2Demo.tabbedPaneIndex = mainTabIndex
                 }
 
                 if (demoGroup != null && (zoomCheckBox.isSelected || buffersFlag)) {
