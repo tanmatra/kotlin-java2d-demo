@@ -227,11 +227,13 @@ class DemoGroup internal constructor(
                     }
                 }
                 tools.isVisible = true
-                if (GlobalControls.screenComboBox.selectedIndex != tools.screenCombo.selectedIndex) {
-                    tools.screenCombo.selectedIndex = GlobalControls.screenComboBox.selectedIndex
+                java2Demo?.globalControls?.selectedScreenIndex?.let { globalScreenIndex ->
+                    if (globalScreenIndex != tools.screenCombo.selectedIndex) {
+                        tools.screenCombo.selectedIndex = globalScreenIndex
+                    }
                 }
                 if (Java2Demo.verboseCB.isSelected) {
-                    demoPanel.surface.verbose()
+                    demoPanel.surface.verbose(java2Demo)
                 }
                 demoPanel.surface.sleepAmount = controls.slider.value.toLong()
                 java2Demo?.backgroundColor?.let { backgroundColor ->

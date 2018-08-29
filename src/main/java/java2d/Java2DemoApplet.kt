@@ -117,7 +117,7 @@ class Java2DemoApplet : JApplet()
 
         getParameter("delay")?.let { RunWindow.delay = Integer.parseInt(it) }
         getParameter("ccthread")?.let { Java2Demo.ccthreadCB.isSelected = true }
-        getParameter("screen")?.let { GlobalControls.screenComboBox.selectedIndex = Integer.parseInt(it) }
+        getParameter("screen")?.let { demo.globalControls.selectedScreenIndex = it.toInt() }
         getParameter("antialias")?.let { demo.globalControls.antialiasingCheckBox.isSelected = it.endsWith("true") }
         getParameter("rendering")?.let { demo.globalControls.renderCheckBox.isSelected = it.endsWith("true") }
         getParameter("texture")?.let { demo.globalControls.textureCheckBox.isSelected = it.endsWith("true") }

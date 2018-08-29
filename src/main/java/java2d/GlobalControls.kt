@@ -58,6 +58,12 @@ class GlobalControls : JPanel(GridBagLayout()), ItemListener
     val textureCheckBox: JCheckBox
     val slider: JSlider
     var itemEventSource: Any? = null
+    private val screenComboBox: JComboBox<String>
+    var selectedScreenIndex: Int
+        get() = screenComboBox.selectedIndex
+        set(value) { screenComboBox.selectedIndex = value }
+    val selectedScreenItem
+        get() = screenComboBox.selectedItem
 
     init {
         border = TitledBorder(EtchedBorder(), "Global Controls")
@@ -150,8 +156,6 @@ class GlobalControls : JPanel(GridBagLayout()), ItemListener
             "BYTE_BINARY 4 bit",
             "INT_RGBx",
             "USHORT_555x_RGB")
-
-        lateinit var screenComboBox: JComboBox<String>
 
         private val FONT = Font("serif", Font.PLAIN, 12)
     }

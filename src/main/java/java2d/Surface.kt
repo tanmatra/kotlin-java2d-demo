@@ -381,7 +381,7 @@ abstract class Surface : JPanel(), Printable
     }
 
     // System.out graphics state information.
-    fun verbose() {
+    fun verbose(java2Demo: Java2Demo?) {
         val string = buildString {
             append("  $name")
             if (animating != null && animating.isRunning) {
@@ -389,7 +389,9 @@ abstract class Surface : JPanel(), Printable
             } else if (this@Surface is AnimatingSurface) {
                 append(" Stopped")
             }
-            append(" ${GlobalControls.screenComboBox.selectedItem!!}")
+            java2Demo?.globalControls?.selectedScreenItem?.let { screenItem ->
+                append(" $screenItem")
+            }
             append(if (antiAlias === VALUE_ANTIALIAS_ON) " ANTIALIAS_ON " else " ANTIALIAS_OFF ")
             append(if (rendering === VALUE_RENDER_QUALITY) " RENDER_QUALITY " else " RENDER_SPEED ")
             if (texture != null) {

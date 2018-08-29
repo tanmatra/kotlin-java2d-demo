@@ -442,7 +442,7 @@ class Java2Demo : JPanel(), ActionListener
                         java2Demo.createRunWindow()
                     }
                     arg.startsWith("-screen=") ->
-                        GlobalControls.screenComboBox.setSelectedIndex(Integer.parseInt(value))
+                        java2Demo.globalControls.selectedScreenIndex = value.toInt()
                     arg.startsWith("-antialias=") ->
                         java2Demo.globalControls.antialiasingCheckBox.isSelected = value.endsWith("true")
                     arg.startsWith("-rendering=") ->
@@ -456,7 +456,8 @@ class Java2Demo : JPanel(), ActionListener
                         Java2Demo.printCB.isSelected = true
                         RunWindow.printCheckBox.isSelected = true
                     }
-                    arg.startsWith("-columns=") -> DemoGroup.columns = Integer.parseInt(value)
+                    arg.startsWith("-columns=") ->
+                        DemoGroup.columns = Integer.parseInt(value)
                     arg.startsWith("-buffers=") -> {
                         // usage -buffers=3,10
                         RunWindow.buffersFlag = true
