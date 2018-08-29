@@ -75,7 +75,7 @@ import javax.swing.border.EtchedBorder
  * @author Jim Graham           (demos)
  * @author Alexander Kouznetsov (code beautification)
  */
-class Java2Demo : JPanel(), ActionListener
+class Java2Demo(private val progressLabel: JLabel) : JPanel(), ActionListener
 {
     private var runMI: JMenuItem? = null
     private var cloneMI: JMenuItem? = null
@@ -359,7 +359,6 @@ class Java2Demo : JPanel(), ActionListener
     companion object
     {
         var demo: Java2Demo? = null
-        lateinit var progressLabel: JLabel
         lateinit var progressBar: JProgressBar
         lateinit var groups: Array<DemoGroup>
         lateinit var verboseCB: JCheckBoxMenuItem
@@ -407,7 +406,7 @@ class Java2Demo : JPanel(), ActionListener
             }
             frame.contentPane.add(progressPanel, BorderLayout.CENTER)
 
-            progressLabel = JLabel("Loading, please wait...").apply {
+            val progressLabel = JLabel("Loading, please wait...").apply {
                 alignmentX = Component.CENTER_ALIGNMENT
                 val labelSize = Dimension(400, 20)
                 maximumSize = labelSize
@@ -428,7 +427,7 @@ class Java2Demo : JPanel(), ActionListener
 
             frame.isVisible = true
 
-            val java2Demo = Java2Demo()
+            val java2Demo = Java2Demo(progressLabel)
             demo = java2Demo //FIXME
 
             frame.run {
