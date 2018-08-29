@@ -59,7 +59,7 @@ class GlobalPanel(private val java2Demo: Java2Demo) : JPanel()
     }
 
     fun onDemoTabChanged(selectedIndex: Int) {
-        Java2Demo.groups[index].let { oldGroup ->
+        java2Demo.groups[index].let { oldGroup ->
             oldGroup.shutDown(oldGroup.panel)
         }
         if (selectedIndex == 0) {
@@ -80,10 +80,10 @@ class GlobalPanel(private val java2Demo: Java2Demo) : JPanel()
                     java2Demo.performanceMonitor.start()
                 }
             } else {
-                remove(Java2Demo.groups[index])
+                remove(java2Demo.groups[index])
             }
             index = selectedIndex - 1
-            Java2Demo.groups[index].let { newGroup ->
+            java2Demo.groups[index].let { newGroup ->
                 add(newGroup)
                 newGroup.setup(false)
             }

@@ -203,7 +203,7 @@ class RunWindow(private val java2Demo: Java2Demo) : JPanel(GridBagLayout()), Run
 
             for (mainTabIndex in 0 until java2Demo.tabbedPaneCount) {
                 if (thread == null) break
-                val demoGroup: DemoGroup? = if (mainTabIndex != 0) Java2Demo.groups[mainTabIndex - 1] else null
+                val demoGroup: DemoGroup? = if (mainTabIndex != 0) java2Demo.groups[mainTabIndex - 1] else null
                 invokeAndWait {
                     progressBar.value = 0
                     progressBar.maximum = delay

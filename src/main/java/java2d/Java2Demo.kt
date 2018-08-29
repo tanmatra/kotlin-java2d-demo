@@ -106,6 +106,8 @@ class Java2Demo(
     val tabbedPaneCount: Int
         get() = tabbedPane.tabCount
 
+    val groups: List<DemoGroup>
+
     /**
      * Construct the Java2D Demo.
      */
@@ -145,7 +147,7 @@ class Java2Demo(
             tabbedPane.addTab(groupName, null)
             progressBar.value = progressBar.value + 1
             demoGroup
-        }.toTypedArray()
+        }
 
         add(tabbedPane, BorderLayout.CENTER)
     }
@@ -365,7 +367,6 @@ class Java2Demo(
     companion object
     {
         var demo: Java2Demo? = null
-        lateinit var groups: Array<DemoGroup>
         lateinit var verboseCB: JCheckBoxMenuItem
         lateinit var ccthreadCB: JCheckBoxMenuItem
         var printCB = JCheckBoxMenuItem("Default Printer")
