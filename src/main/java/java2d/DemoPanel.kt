@@ -45,24 +45,19 @@ import javax.swing.border.SoftBevelBorder
  * The panel for the Surface, Custom Controls & Tools.
  * Other component types welcome.
  */
-class DemoPanel private constructor(
+class DemoPanel(
     private val java2Demo: Java2Demo?,
-    val className: String,
-    component: Component?
+    private val component: Component
 ) : JPanel(BorderLayout())
 {
     val surface: Surface?
     val customControlsContext: CustomControlsContext?
     val tools: Tools?
 
-    constructor(java2Demo: Java2Demo?, className: String) : this(java2Demo, className, loadComponent(className))
-
-    constructor(java2Demo: Java2Demo?, component: Component) : this(java2Demo, component.javaClass.name, component)
+    constructor(java2Demo: Java2Demo?, clazz: Class<out Component>) : this(java2Demo, loadComponent(clazz))
 
     init {
-        if (component != null) {
-            add(component)
-        }
+        add(component)
         if (component is Surface) {
             surface = component
             tools = Tools(java2Demo, component)
@@ -81,7 +76,9 @@ class DemoPanel private constructor(
         }
     }
 
-    fun clone() = DemoPanel(java2Demo, className)
+    val componentName get() = component.name
+
+    fun clone() = DemoPanel(java2Demo, component.javaClass)
 
     fun start() {
         surface?.startClock()
@@ -110,8 +107,8 @@ class DemoPanel private constructor(
     }
 
     companion object {
-        private fun loadComponent(className: String): Component? {
-            return Class.forName(className).newInstance() as? Component
+        private fun loadComponent(clazz: Class<out Component>): Component {
+            return clazz.newInstance() // todo: handle errors
         }
     }
 }

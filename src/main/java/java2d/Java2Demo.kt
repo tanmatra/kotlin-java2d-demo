@@ -150,7 +150,7 @@ class Java2Demo(
             }
         }
 
-        groups = demos.map { groupInfo ->
+        groups = GroupInfo.LIST.map { groupInfo ->
             val groupName = groupInfo.groupName
             progressLabel.text = "Loading demos.$groupName"
             val demoGroup = DemoGroup(this, groupInfo)
@@ -369,28 +369,12 @@ class Java2Demo(
         }
     }
 
-    internal class GroupInfo(
-        val groupName: String,
-        val demos: Array<String>)
-
     companion object
     {
         var demo: Java2Demo? = null
         lateinit var ccthreadCB: JCheckBoxMenuItem
         lateinit var intro: Intro
 
-        internal val demos = arrayOf(
-            GroupInfo("Arcs_Curves", arrayOf("Arcs", "BezierAnim", "Curves", "Ellipses")),
-            GroupInfo("Clipping",    arrayOf("Areas", "ClipAnim", "Intersection", "Text")),
-            GroupInfo("Colors",      arrayOf("BullsEye", "ColorConvert", "Rotator3D")),
-            GroupInfo("Composite",   arrayOf("ACimages", "ACrules", "FadeAnim")),
-            GroupInfo("Fonts",       arrayOf("AttributedStr", "Highlighting", "Outline", "Tree")),
-            GroupInfo("Images",      arrayOf("DukeAnim", "ImageOps", "JPEGFlip", "WarpImage")),
-            GroupInfo("Lines",       arrayOf("Caps", "Dash", "Joins", "LineAnim")),
-            GroupInfo("Mix",         arrayOf("Balls", "BezierScroller", "Stars3D")),
-            GroupInfo("Paint",       arrayOf("GradAnim", "Gradient", "Texture", "TextureAnim")),
-            GroupInfo("Paths",       arrayOf("Append", "CurveQuadTo", "FillStroke", "WindingRule")),
-            GroupInfo("Transforms",  arrayOf("Rotate", "SelectTx", "TransformAnim")))
 
         private fun initFrame(args: Array<String>) {
             val frame = JFrame("Java 2D(TM) Demo").apply {

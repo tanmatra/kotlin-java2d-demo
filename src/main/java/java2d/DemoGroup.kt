@@ -31,7 +31,6 @@
  */
 package java2d
 
-import java2d.Java2Demo.GroupInfo
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.Dimension
@@ -86,9 +85,9 @@ class DemoGroup internal constructor(
     init {
         layout = BorderLayout()
 
-        val demos = groupInfo.demos
+        val classes = groupInfo.classes
         // If there are an odd number of demos, use GridBagLayout.
-        val panelLayout: LayoutManager = if (demos.size % 2 == 1) GridBagLayout() else GridLayout(0, 2)
+        val panelLayout: LayoutManager = if (classes.size % 2 == 1) GridBagLayout() else GridLayout(0, 2)
         val p = JPanel(panelLayout).apply { border = PANEL_BORDER }
 
         val mouseListener = object : MouseAdapter() {
@@ -98,9 +97,8 @@ class DemoGroup internal constructor(
         }
 
         // For each demo in the group, prepare a DemoPanel.
-        demos.forEachIndexed { i, demo ->
-            val className = "java2d.demos.$groupName.$demo"
-            val demoPanel = DemoPanel(java2Demo, className)
+        classes.forEachIndexed { i, cls ->
+            val demoPanel = DemoPanel(java2Demo, cls)
             demoPanel.setDemoBorder(p)
             demoPanel.surface?.run {
                 addMouseListener(mouseListener)
@@ -109,7 +107,7 @@ class DemoGroup internal constructor(
             if (panelLayout is GridBagLayout) {
                 val x = p.componentCount % 2
                 val y = p.componentCount / 2
-                val w = if (i == demos.lastIndex) 2 else 1
+                val w = if (i == classes.lastIndex) 2 else 1
                 p.addToGridBag(demoPanel, x, y, w, 1, 1.0, 1.0)
             } else {
                 p.add(demoPanel)
@@ -133,7 +131,6 @@ class DemoGroup internal constructor(
             val tmpP = getComponent(0) as JPanel
             tabbedPane!!.addTab(groupName, tmpP)
 
-//          clonePanels = arrayOfNulls(tmpP.componentCount)
             clonePanels = Array(tmpP.componentCount) { i ->
                 JPanel(BorderLayout())
             }
@@ -154,8 +151,7 @@ class DemoGroup internal constructor(
                     }
                 }
                 clonePanels[i].add(c)
-                val s = dp.className.substring(dp.className.indexOf('.') + 1)
-                tabbedPane!!.addTab(s, clonePanels[i])
+                tabbedPane!!.addTab(dp.componentName, clonePanels[i])
             }
             p.add(tabbedPane)
             remove(tmpP)
@@ -318,8 +314,8 @@ class DemoGroup internal constructor(
         @JvmStatic
         fun main(args: Array<String>) {
             val groupName = args.getOrNull(0) ?: return
-            val groupDescriptor = Java2Demo.demos.find { it.groupName.equals(groupName, ignoreCase = true) } ?: return
-            val group = DemoGroup(null, groupDescriptor)
+            val groupInfo = GroupInfo.findByName(groupName) ?: return
+            val group = DemoGroup(null, groupInfo)
             JFrame("Java2D Demo - DemoGroup").apply {
                 addWindowListener(object : WindowAdapter() {
                     override fun windowClosing(e: WindowEvent?) {
