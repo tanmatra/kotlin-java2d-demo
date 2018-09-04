@@ -72,33 +72,28 @@ class Tools(private val java2Demo: Java2Demo?,
             private val surface: Surface
 ) : JPanel(BorderLayout()), ActionListener, Runnable
 {
-    private val stopIcon: ImageIcon
-    private val startIcon: ImageIcon
-    private val roColor = Color(187, 213, 238)
+    private val stopIcon = ImageIcon(DemoImages.getImage("stop.gif", this))
+    private val startIcon = ImageIcon(DemoImages.getImage("start.gif", this))
     private var thread: Thread? = null
     private val toolbarPanel: JPanel
-    private val bumpyIcon: ToggleIcon
-    private val rolloverIcon: ToggleIcon
+    private val bumpyIcon = ToggleIcon(this, Color.LIGHT_GRAY)
+    private val rolloverIcon = ToggleIcon(this, ROLLOVER_COLOR)
     private var focus: Boolean = false
     val toggleButton: JToggleButton
-    var printButton: JButton
-    var screenCombo: JComboBox<String>
-    var renderButton: JToggleButton
-    var antialiasButton: JToggleButton
-    var textureButton: JToggleButton
-    var compositeB: JToggleButton
-    var startStopButton: JButton? = null
+    val printButton: JButton
+    val screenCombo: JComboBox<String>
+    val renderButton: JToggleButton
+    val antialiasButton: JToggleButton
+    val textureButton: JToggleButton
+    val compositeB: JToggleButton
+    val startStopButton: JButton?
     var cloneButton: JButton? = null
     var issueRepaint = true
-    var toolbar: JToolBar
+    val toolbar: JToolBar
     val slider: JSlider?
     var isExpanded: Boolean = false
 
     init {
-        stopIcon = ImageIcon(DemoImages.getImage("stop.gif", this))
-        startIcon = ImageIcon(DemoImages.getImage("start.gif", this))
-        bumpyIcon = ToggleIcon(this, Color.LIGHT_GRAY)
-        rolloverIcon = ToggleIcon(this, roColor)
         toggleButton = JToggleButton(bumpyIcon).apply {
             addMouseListener(object : MouseAdapter() {
                 override fun mouseEntered(e: MouseEvent?) {
@@ -125,7 +120,6 @@ class Tools(private val java2Demo: Java2Demo?,
             rolloverIcon = this@Tools.rolloverIcon
         }
         add(toggleButton, BorderLayout.NORTH)
-        isExpanded = false
 
         toolbar = JToolBar().apply {
             preferredSize = Dimension(112, 26)
@@ -147,10 +141,12 @@ class Tools(private val java2Demo: Java2Demo?,
         val printBImg = DemoImages.getImage("print.gif", this)
         printButton = addTool(printBImg, "Print the Surface", this)
 
-        if (surface is AnimatingSurface) {
+        startStopButton = if (surface is AnimatingSurface) {
             val stopImg = DemoImages.getImage("stop.gif", this)
-            startStopButton = addTool(stopImg, "Stop Animation", this)
             toolbar.preferredSize = Dimension(132, 26)
+            addTool(stopImg, "Stop Animation", this)
+        } else {
+            null
         }
 
         screenCombo = JComboBox<String>().apply {
@@ -301,18 +297,13 @@ class Tools(private val java2Demo: Java2Demo?,
         }
 
         if (issueRepaint) {
-            val animating = surface.animating
-            if (animating != null) {
-                if (surface.sleepAmount != 0L) {
-                    if (animating.isRunning) {
-                        animating.doRepaint()
-                    }
+            if (surface is AnimatingSurface) {
+                if (surface.sleepAmount != 0L && surface.isRunning) {
+                    surface.doRepaint()
                 }
-            } else if (issueRepaint) {
+            } else {
                 surface.repaint()
             }
-        } else if (issueRepaint) {
-            surface.repaint()
         }
     }
 
@@ -423,5 +414,6 @@ class Tools(private val java2Demo: Java2Demo?,
     {
         private val TOOL_BUTTON_SIZE = Dimension(21, 22)
         private const val INITIAL_SLEEP = 30
+        private val ROLLOVER_COLOR = Color(187, 213, 238)
     }
 }
