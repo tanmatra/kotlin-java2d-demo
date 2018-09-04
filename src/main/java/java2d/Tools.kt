@@ -32,8 +32,8 @@
 package java2d
 
 import java.awt.BorderLayout
+import java.awt.CardLayout
 import java.awt.Color
-import java.awt.Color.BLACK
 import java.awt.Component
 import java.awt.Dimension
 import java.awt.FlowLayout
@@ -47,7 +47,6 @@ import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.awt.print.PrinterJob
 import java.security.AccessControlException
-import java.text.DecimalFormat
 import java.util.logging.Level
 import javax.print.attribute.HashPrintRequestAttributeSet
 import javax.swing.Icon
@@ -78,12 +77,10 @@ class Tools(private val java2Demo: Java2Demo?,
     private val roColor = Color(187, 213, 238)
     private var thread: Thread? = null
     private val toolbarPanel: JPanel
-    private var sliderPanel: JPanel? = null
     private val bumpyIcon: ToggleIcon
     private val rolloverIcon: ToggleIcon
-    private val decimalFormat = DecimalFormat("000")
     private var focus: Boolean = false
-    var toggleButton: JToggleButton
+    val toggleButton: JToggleButton
     var printButton: JButton
     var screenCombo: JComboBox<String>
     var renderButton: JToggleButton
@@ -94,8 +91,7 @@ class Tools(private val java2Demo: Java2Demo?,
     var cloneButton: JButton? = null
     var issueRepaint = true
     var toolbar: JToolBar
-    var slider: JSlider? = null
-    var doSlider: Boolean = false
+    val slider: JSlider?
     var isExpanded: Boolean = false
 
     init {
@@ -158,50 +154,44 @@ class Tools(private val java2Demo: Java2Demo?,
             addActionListener(this@Tools)
         }
         toolbarPanel = JPanel(FlowLayout(FlowLayout.CENTER, 5, 0)).apply {
-            setLocation(0, 6)
-            isVisible = false
             add(toolbar)
             add(screenCombo)
             border = EtchedBorder()
         }
-        add(toolbarPanel)
 
         preferredSize = Dimension(200, 8)
 
-        if (surface is AnimatingSurface) {
-            val sliderLabel = JLabel(" Sleep = 030 ms").apply {
-                foreground = BLACK
-            }
-            slider = JSlider(SwingConstants.HORIZONTAL, 0, 200, 30).apply {
+        val center = if (surface is AnimatingSurface) {
+            fun formatSliderText(value: Int) = " Sleep = %d ms".format(value)
+            val sliderLabel = JLabel(formatSliderText(INITIAL_SLEEP))
+            slider = JSlider(SwingConstants.HORIZONTAL, 0, 200, INITIAL_SLEEP).apply {
                 addChangeListener {
-                    sliderLabel.text = " Sleep = ${decimalFormat.format(value)} ms"
+                    sliderLabel.text = formatSliderText(value)
                     sliderLabel.repaint()
                     surface.sleepAmount = value.toLong()
                 }
             }
-            sliderPanel = JPanel(BorderLayout()).apply {
+            val sliderPanel = JPanel(BorderLayout()).apply {
                 border = EtchedBorder()
                 add(sliderLabel, BorderLayout.WEST)
-                add(slider)
+                add(slider, BorderLayout.CENTER)
             }
+            val cardLayout = CardLayout()
+            val cardPanel = JPanel(cardLayout)
             addMouseListener(object : MouseAdapter() {
                 override fun mouseClicked(e: MouseEvent?) {
-                    if (toolbarPanel.isVisible) {
-                        invalidate()
-                        doSlider = !doSlider
-                        if (doSlider) {
-                            remove(toolbarPanel)
-                            add(sliderPanel)
-                        } else {
-                            remove(sliderPanel)
-                            add(toolbarPanel)
-                        }
-                        validate()
-                        repaint()
-                    }
+                    cardLayout.next(cardPanel)
                 }
             })
+            cardPanel.add(toolbarPanel)
+            cardPanel.add(sliderPanel)
+            cardPanel
+        } else {
+            slider = null
+            toolbarPanel
         }
+        center.isVisible = false
+        add(center, BorderLayout.CENTER)
     }
 
     fun addTool(
@@ -261,8 +251,8 @@ class Tools(private val java2Demo: Java2Demo?,
             } else {
                 Dimension(200, 6)
             }
-            toolbarPanel.isVisible = isExpanded
-            sliderPanel?.isVisible = isExpanded
+            val center = (layout as BorderLayout).getLayoutComponent(BorderLayout.CENTER)
+            center.isVisible = isExpanded
             parent.validate()
             toggleButton.model.isRollover = false
             return
@@ -438,5 +428,6 @@ class Tools(private val java2Demo: Java2Demo?,
     companion object
     {
         private val TOOL_BUTTON_SIZE = Dimension(21, 22)
+        private const val INITIAL_SLEEP = 30
     }
 }
