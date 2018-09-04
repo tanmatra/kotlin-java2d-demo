@@ -110,7 +110,14 @@ class Tools(private val java2Demo: Java2Demo?,
                     bumpyIcon.stop()
                 }
             })
-            addActionListener(this@Tools)
+            addActionListener {
+                isExpanded = !isExpanded
+                this@Tools.preferredSize = if (isExpanded) Dimension(200, 38) else Dimension(200, 6)
+                val center = (this@Tools.layout as BorderLayout).getLayoutComponent(BorderLayout.CENTER)
+                center.isVisible = isExpanded
+                this@Tools.parent.validate()
+                model.isRollover = false
+            }
             margin = Insets(0, 0, -4, 0)
             isBorderPainted = false
             isFocusPainted = false
@@ -243,19 +250,6 @@ class Tools(private val java2Demo: Java2Demo?,
             if (obj.icon == null) {
                 obj.background = if (obj.isSelected) Color.GREEN else Color.LIGHT_GRAY
             }
-        }
-        if (obj == toggleButton) {
-            isExpanded = !isExpanded
-            preferredSize = if (isExpanded) {
-                Dimension(200, 38)
-            } else {
-                Dimension(200, 6)
-            }
-            val center = (layout as BorderLayout).getLayoutComponent(BorderLayout.CENTER)
-            center.isVisible = isExpanded
-            parent.validate()
-            toggleButton.model.isRollover = false
-            return
         }
         if (obj == printButton) {
             start()
