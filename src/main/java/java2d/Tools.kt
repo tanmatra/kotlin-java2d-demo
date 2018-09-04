@@ -49,6 +49,7 @@ import java.awt.print.PrinterJob
 import java.security.AccessControlException
 import java.util.logging.Level
 import javax.print.attribute.HashPrintRequestAttributeSet
+import javax.swing.AbstractButton
 import javax.swing.Icon
 import javax.swing.ImageIcon
 import javax.swing.JButton
@@ -72,8 +73,6 @@ class Tools(private val java2Demo: Java2Demo?,
             private val surface: Surface
 ) : JPanel(BorderLayout()), ActionListener, Runnable
 {
-    private val stopIcon = ImageIcon(DemoImages.getImage("stop.gif", this))
-    private val startIcon = ImageIcon(DemoImages.getImage("start.gif", this))
     private var thread: Thread? = null
     private val toolbarPanel: JPanel
     private val bumpyIcon = ToggleIcon(this, Color.LIGHT_GRAY)
@@ -86,7 +85,7 @@ class Tools(private val java2Demo: Java2Demo?,
     val antialiasButton: JToggleButton
     val textureButton: JToggleButton
     val compositeB: JToggleButton
-    val startStopButton: JButton?
+    val startStopButton: AbstractButton?
     var cloneButton: JButton? = null
     var issueRepaint = true
     val toolbar: JToolBar
@@ -142,9 +141,21 @@ class Tools(private val java2Demo: Java2Demo?,
         printButton = addTool(printBImg, "Print the Surface", this)
 
         startStopButton = if (surface is AnimatingSurface) {
-            val stopImg = DemoImages.getImage("stop.gif", this)
+            val stopImage = DemoImages.getImage("stop.gif", this)
+            val stopIcon = ImageIcon(stopImage)
+            val startIcon = ImageIcon(DemoImages.getImage("start.gif", this))
             toolbar.preferredSize = Dimension(132, 26)
-            addTool(stopImg, "Stop Animation", this)
+            addToggleTool(stopImage, "Stop amination") { button ->
+                if (button.isSelected) {
+                    button.icon = stopIcon
+                    button.toolTipText = "Stop Animation"
+                    surface.animating?.start()
+                } else {
+                    button.icon = startIcon
+                    button.toolTipText = "Start Animation"
+                    surface.animating?.stop()
+                }
+            }
         } else {
             null
         }
@@ -216,6 +227,26 @@ class Tools(private val java2Demo: Java2Demo?,
         return button
     }
 
+    fun addToggleTool(
+        image: Image,
+        toolTip: String,
+        action: (AbstractButton) -> Unit
+    ): AbstractButton {
+        val button = JToggleButton(ImageIcon(image)).apply {
+            preferredSize = TOOL_BUTTON_SIZE
+            maximumSize = TOOL_BUTTON_SIZE
+            minimumSize = TOOL_BUTTON_SIZE
+            isFocusPainted = false
+            isSelected = true
+            toolTipText = toolTip
+            addActionListener {
+                action(this)
+            }
+        }
+        toolbar.add(button)
+        return button
+    }
+
     private fun addTool(
         name: String,
         toolTip: String,
@@ -252,17 +283,7 @@ class Tools(private val java2Demo: Java2Demo?,
             return
         }
 
-        if (obj == startStopButton) {
-            if (startStopButton!!.toolTipText == "Stop Animation") {
-                startStopButton!!.icon = startIcon
-                startStopButton!!.toolTipText = "Start Animation"
-                surface.animating?.stop()
-            } else {
-                startStopButton!!.icon = stopIcon
-                startStopButton!!.toolTipText = "Stop Animation"
-                surface.animating?.start()
-            }
-        } else if (obj == antialiasButton) {
+        if (obj == antialiasButton) {
             if (antialiasButton.toolTipText == "Antialiasing On") {
                 antialiasButton.toolTipText = "Antialiasing Off"
             } else {

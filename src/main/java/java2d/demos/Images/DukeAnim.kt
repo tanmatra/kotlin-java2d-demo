@@ -38,7 +38,7 @@ import java.awt.Color
 import java.awt.Graphics2D
 import java.awt.Image
 import java.awt.image.ImageObserver
-import javax.swing.JButton
+import javax.swing.AbstractButton
 
 /**
  * Animated gif with a transparent background.
@@ -46,7 +46,7 @@ import javax.swing.JButton
 class DukeAnim : AnimatingSurface(), ImageObserver
 {
     private var ix: Int = 0
-    private var startStopButton: JButton? = null
+    private var startStopButton: AbstractButton? = null
     private val agif: Image = getImage("duke.running.gif")
     private val clouds: Image = getImage("clouds.jpg")
     private val aw: Int = agif.getWidth(this) / 2

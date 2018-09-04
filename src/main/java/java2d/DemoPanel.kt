@@ -81,10 +81,10 @@ class DemoPanel(
     fun clone() = DemoPanel(java2Demo, component.javaClass)
 
     fun start() {
-        surface?.startClock()
-        if (tools != null && surface != null) {
-            if (tools.startStopButton != null && tools.startStopButton!!.isSelected) {
-                surface.animating!!.start()
+        if (surface != null) {
+            surface.startClock()
+            if (tools?.startStopButton?.isSelected == true) {
+                (surface as? AnimatingSurface)?.start()
             }
         }
         if (customControlsContext != null && Java2Demo.ccthreadCB != null && Java2Demo.ccthreadCB.isSelected) {

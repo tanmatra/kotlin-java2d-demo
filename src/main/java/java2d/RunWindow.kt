@@ -172,9 +172,9 @@ class RunWindow(private val java2Demo: Java2Demo) : JPanel(GridBagLayout()), Run
             for (component in demoGroup.panel.components) {
                 val demoPanel = component as DemoPanel
                 demoPanel.tools?.let { tools ->
-                    demoPanel.surface!!.animating?.let { animating ->
+                    demoPanel.surface?.animating?.let { animating ->
                         if (animating.isRunning) {
-                            tools.startStopButton!!.doClick()
+                            tools.startStopButton?.doClick()
                         }
                     }
                     tools.printButton.doClick()
