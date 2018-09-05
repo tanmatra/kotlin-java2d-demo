@@ -162,6 +162,7 @@ class Tools(private val java2Demo: Java2Demo?,
                     button.toolTipText = "Start Animation"
                     surface.animating?.stop()
                 }
+                checkRepaint()
             }
         } else {
             null
@@ -174,6 +175,7 @@ class Tools(private val java2Demo: Java2Demo?,
             }
             addActionListener {
                 surface.imageType = selectedIndex
+                checkRepaint()
             }
         }
         toolbarPanel = JPanel(FlowLayout(FlowLayout.CENTER, 5, 0)).apply {
