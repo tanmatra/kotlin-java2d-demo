@@ -71,22 +71,95 @@ class Tools(private val java2Demo: Java2Demo?,
             private val surface: Surface
 ) : JPanel(BorderLayout())
 {
-    private val toolbarPanel: JPanel
+    val toolbar = JToolBar().apply {
+        preferredSize = Dimension(112, 26)
+        isFloatable = false
+    }
+
     private val bumpyIcon = ToggleIcon(this, Color.LIGHT_GRAY)
-    private val rolloverIcon = ToggleIcon(this, ROLLOVER_COLOR)
+
     private var focus: Boolean = false
-    val toggleButton: JToggleButton
-    val printButton: AbstractButton
-    val screenCombo: JComboBox<String>
-    val renderButton: AbstractButton
-    val antialiasButton: AbstractButton
-    val textureButton: AbstractButton
-    val compositeButton: AbstractButton
-    val startStopButton: AbstractButton?
+
+    val toggleButton = JToggleButton(bumpyIcon).apply {
+        addMouseListener(object : MouseAdapter() {
+            override fun mouseEntered(e: MouseEvent?) {
+                focus = true
+                bumpyIcon.start()
+            }
+            override fun mouseExited(e: MouseEvent?) {
+                focus = false
+                bumpyIcon.stop()
+            }
+        })
+        addActionListener {
+            isExpanded = !isExpanded
+            this@Tools.preferredSize = if (isExpanded) Dimension(200, 38) else Dimension(200, 6)
+            val center = (this@Tools.layout as BorderLayout).getLayoutComponent(BorderLayout.CENTER)
+            center.isVisible = isExpanded
+            this@Tools.parent.validate()
+            model.isRollover = false
+        }
+        margin = Insets(0, 0, -4, 0)
+        isBorderPainted = false
+        isFocusPainted = false
+        isContentAreaFilled = false
+        rolloverIcon = ToggleIcon(this@Tools, ROLLOVER_COLOR)
+    }
+
+    val antialiasButton: AbstractButton = addToggleTool(surface::isAntialiasing, "A",
+        selectedToolTip = "Antialiasing On", unselectedToolTip = "Antialiasing Off")
+
+    val renderButton: AbstractButton = addToggleTool(surface::isRenderingQuality, "R",
+        selectedToolTip = "Rendering Quality", unselectedToolTip = "Rendering Speed")
+
+    val textureButton: AbstractButton = addToggleTool(::texture, "T",
+        selectedToolTip = "Texture On", unselectedToolTip = "Texture Off")
+
+    val compositeButton: AbstractButton = addToggleTool(surface::isComposite, "C",
+        selectedToolTip = "Composite On", unselectedToolTip = "Composite Off")
+
+    val printButton: AbstractButton = addTool(DemoImages.getImage("print.gif", this), "Print the Surface") {
+        print()
+    }
+
+    val startStopButton: AbstractButton? = if (surface is AnimatingSurface) {
+        val stopImage = DemoImages.getImage("stop.gif", this)
+        val stopIcon = ImageIcon(stopImage)
+        val startIcon = ImageIcon(DemoImages.getImage("start.gif", this))
+        toolbar.preferredSize = Dimension(132, 26)
+        addToggleTool(stopImage, "Stop amination") { button ->
+            if (button.isSelected) {
+                button.icon = stopIcon
+                button.toolTipText = "Stop Animation"
+                surface.animating?.start()
+            } else {
+                button.icon = startIcon
+                button.toolTipText = "Start Animation"
+                surface.animating?.stop()
+            }
+            checkRepaint()
+        }
+    } else {
+        null
+    }
+
+    val screenCombo: JComboBox<String> = JComboBox<String>().apply {
+        preferredSize = Dimension(100, 18)
+        for (name in GlobalControls.SCREEN_NAMES) {
+            addItem(name)
+        }
+        addActionListener {
+            surface.imageType = selectedIndex
+            checkRepaint()
+        }
+    }
+
     var cloneButton: AbstractButton? = null
+
     var issueRepaint = true
-    val toolbar: JToolBar
+
     val slider: JSlider?
+
     var isExpanded: Boolean = false
 
     private var texture: Boolean
@@ -101,89 +174,15 @@ class Tools(private val java2Demo: Java2Demo?,
         }
 
     init {
-        toggleButton = JToggleButton(bumpyIcon).apply {
-            addMouseListener(object : MouseAdapter() {
-                override fun mouseEntered(e: MouseEvent?) {
-                    focus = true
-                    bumpyIcon.start()
-                }
-                override fun mouseExited(e: MouseEvent?) {
-                    focus = false
-                    bumpyIcon.stop()
-                }
-            })
-            addActionListener {
-                isExpanded = !isExpanded
-                this@Tools.preferredSize = if (isExpanded) Dimension(200, 38) else Dimension(200, 6)
-                val center = (this@Tools.layout as BorderLayout).getLayoutComponent(BorderLayout.CENTER)
-                center.isVisible = isExpanded
-                this@Tools.parent.validate()
-                model.isRollover = false
-            }
-            margin = Insets(0, 0, -4, 0)
-            isBorderPainted = false
-            isFocusPainted = false
-            isContentAreaFilled = false
-            rolloverIcon = this@Tools.rolloverIcon
-        }
+        preferredSize = Dimension(200, 8)
+
         add(toggleButton, BorderLayout.NORTH)
 
-        toolbar = JToolBar().apply {
-            preferredSize = Dimension(112, 26)
-            isFloatable = false
-        }
-
-        antialiasButton = addToggleTool(surface::isAntialiasing, "A",
-            selectedToolTip = "Antialiasing On", unselectedToolTip = "Antialiasing Off")
-        renderButton = addToggleTool(surface::isRenderingQuality, "R",
-            selectedToolTip = "Rendering Quality", unselectedToolTip = "Rendering Speed")
-        textureButton = addToggleTool(::texture, "T",
-            selectedToolTip = "Texture On", unselectedToolTip = "Texture Off")
-        compositeButton = addToggleTool(surface::isComposite, "C",
-            selectedToolTip = "Composite On", unselectedToolTip = "Composite Off")
-
-        printButton = addTool(DemoImages.getImage("print.gif", this), "Print the Surface") {
-            print()
-        }
-
-        startStopButton = if (surface is AnimatingSurface) {
-            val stopImage = DemoImages.getImage("stop.gif", this)
-            val stopIcon = ImageIcon(stopImage)
-            val startIcon = ImageIcon(DemoImages.getImage("start.gif", this))
-            toolbar.preferredSize = Dimension(132, 26)
-            addToggleTool(stopImage, "Stop amination") { button ->
-                if (button.isSelected) {
-                    button.icon = stopIcon
-                    button.toolTipText = "Stop Animation"
-                    surface.animating?.start()
-                } else {
-                    button.icon = startIcon
-                    button.toolTipText = "Start Animation"
-                    surface.animating?.stop()
-                }
-                checkRepaint()
-            }
-        } else {
-            null
-        }
-
-        screenCombo = JComboBox<String>().apply {
-            preferredSize = Dimension(100, 18)
-            for (name in GlobalControls.SCREEN_NAMES) {
-                addItem(name)
-            }
-            addActionListener {
-                surface.imageType = selectedIndex
-                checkRepaint()
-            }
-        }
-        toolbarPanel = JPanel(FlowLayout(FlowLayout.CENTER, 5, 0)).apply {
+        val toolbarPanel = JPanel(FlowLayout(FlowLayout.CENTER, 5, 0)).apply {
             add(toolbar)
             add(screenCombo)
             border = EtchedBorder()
         }
-
-        preferredSize = Dimension(200, 8)
 
         val center = if (surface is AnimatingSurface) {
             fun formatSliderText(value: Int) = " Sleep = %d ms".format(value)
@@ -214,6 +213,7 @@ class Tools(private val java2Demo: Java2Demo?,
             slider = null
             toolbarPanel
         }
+
         center.isVisible = false
         add(center, BorderLayout.CENTER)
     }
