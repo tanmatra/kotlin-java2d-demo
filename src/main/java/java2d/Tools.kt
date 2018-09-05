@@ -40,7 +40,6 @@ import java.awt.FlowLayout
 import java.awt.Graphics
 import java.awt.Image
 import java.awt.Insets
-import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -71,7 +70,7 @@ import kotlin.reflect.KMutableProperty0
  */
 class Tools(private val java2Demo: Java2Demo?,
             private val surface: Surface
-) : JPanel(BorderLayout()), ActionListener, Runnable
+) : JPanel(BorderLayout()), Runnable
 {
     private var thread: Thread? = null
     private val toolbarPanel: JPanel
@@ -145,8 +144,9 @@ class Tools(private val java2Demo: Java2Demo?,
         compositeButton = addToggleTool(surface::isComposite, "C",
             selectedToolTip = "Composite On", unselectedToolTip = "Composite Off")
 
-        val printBImg = DemoImages.getImage("print.gif", this)
-        printButton = addTool(printBImg, "Print the Surface", this)
+        printButton = addTool(DemoImages.getImage("print.gif", this), "Print the Surface") {
+            start()
+        }
 
         startStopButton = if (surface is AnimatingSurface) {
             val stopImage = DemoImages.getImage("stop.gif", this)
@@ -218,20 +218,33 @@ class Tools(private val java2Demo: Java2Demo?,
         add(center, BorderLayout.CENTER)
     }
 
+    @Deprecated("")
     fun addTool(
         img: Image,
         toolTip: String,
         al: ActionListener
     ): JButton {
-        val button = object : JButton(ImageIcon(img)) {
-            override fun getPreferredSize(): Dimension = TOOL_BUTTON_SIZE
-            override fun getMaximumSize(): Dimension = TOOL_BUTTON_SIZE
-            override fun getMinimumSize(): Dimension = TOOL_BUTTON_SIZE
-        }.apply {
-            isFocusPainted = false
+        val button = JButton(ImageIcon(img)).apply {
+            initializeButton()
             isSelected = true
             toolTipText = toolTip
             addActionListener(al)
+        }
+        toolbar.add(button)
+        return button
+    }
+
+    private fun addTool(
+        image: Image,
+        toolTip: String,
+        action: (AbstractButton) -> Unit
+    ): AbstractButton {
+        val button = JButton(ImageIcon(image)).apply {
+            initializeButton()
+            toolTipText = toolTip
+            addActionListener {
+                action(this)
+            }
         }
         toolbar.add(button)
         return button
@@ -243,10 +256,7 @@ class Tools(private val java2Demo: Java2Demo?,
         action: (AbstractButton) -> Unit
     ): AbstractButton {
         val button = JToggleButton(ImageIcon(image)).apply {
-            preferredSize = TOOL_BUTTON_SIZE
-            maximumSize = TOOL_BUTTON_SIZE
-            minimumSize = TOOL_BUTTON_SIZE
-            isFocusPainted = false
+            initializeButton()
             isSelected = true
             toolTipText = toolTip
             addActionListener {
@@ -264,7 +274,7 @@ class Tools(private val java2Demo: Java2Demo?,
         unselectedToolTip: String
     ): AbstractButton {
         val button = JToggleButton(name).apply {
-            isFocusPainted = false
+            initializeButton()
             isSelected = property.get()
             toolTipText = if (isSelected) selectedToolTip else unselectedToolTip
             addActionListener {
@@ -275,15 +285,6 @@ class Tools(private val java2Demo: Java2Demo?,
         }
         toolbar.add(button)
         return button
-    }
-
-    override fun actionPerformed(e: ActionEvent) {
-        val obj = e.source
-        if (obj == printButton) {
-            start()
-            return
-        }
-        checkRepaint()
     }
 
     private fun checkRepaint() {
@@ -406,5 +407,12 @@ class Tools(private val java2Demo: Java2Demo?,
         private val TOOL_BUTTON_SIZE = Dimension(21, 22)
         private const val INITIAL_SLEEP = 30
         private val ROLLOVER_COLOR = Color(187, 213, 238)
+
+        private fun AbstractButton.initializeButton() {
+            isFocusPainted = false
+            preferredSize = TOOL_BUTTON_SIZE
+            maximumSize = TOOL_BUTTON_SIZE
+            minimumSize = TOOL_BUTTON_SIZE
+        }
     }
 }
