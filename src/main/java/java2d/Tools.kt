@@ -173,7 +173,9 @@ class Tools(private val java2Demo: Java2Demo?,
             for (name in GlobalControls.SCREEN_NAMES) {
                 addItem(name)
             }
-            addActionListener(this@Tools)
+            addActionListener {
+                surface.imageType = selectedIndex
+            }
         }
         toolbarPanel = JPanel(FlowLayout(FlowLayout.CENTER, 5, 0)).apply {
             add(toolbar)
@@ -299,20 +301,10 @@ class Tools(private val java2Demo: Java2Demo?,
 
     override fun actionPerformed(e: ActionEvent) {
         val obj = e.source
-        if (obj is JButton) {
-            obj.isSelected = !obj.isSelected
-            if (obj.icon == null) {
-                obj.background = if (obj.isSelected) Color.GREEN else Color.LIGHT_GRAY
-            }
-        }
         if (obj == printButton) {
             start()
             return
         }
-        if (obj == screenCombo) {
-            surface.imageType = screenCombo.selectedIndex
-        }
-
         if (issueRepaint) {
             if (surface is AnimatingSurface) {
                 if (surface.sleepAmount != 0L && surface.isRunning) {
