@@ -70,9 +70,8 @@ import kotlin.reflect.KMutableProperty0
  */
 class Tools(private val java2Demo: Java2Demo?,
             private val surface: Surface
-) : JPanel(BorderLayout()), Runnable
+) : JPanel(BorderLayout())
 {
-    private var thread: Thread? = null
     private val toolbarPanel: JPanel
     private val bumpyIcon = ToggleIcon(this, Color.LIGHT_GRAY)
     private val rolloverIcon = ToggleIcon(this, ROLLOVER_COLOR)
@@ -145,7 +144,7 @@ class Tools(private val java2Demo: Java2Demo?,
             selectedToolTip = "Composite On", unselectedToolTip = "Composite Off")
 
         printButton = addTool(DemoImages.getImage("print.gif", this), "Print the Surface") {
-            start()
+            print()
         }
 
         startStopButton = if (surface is AnimatingSurface) {
@@ -299,56 +298,36 @@ class Tools(private val java2Demo: Java2Demo?,
         }
     }
 
-    fun start() {
-        thread = Thread(this, "Printing ${surface.name}").apply {
-            priority = Thread.MAX_PRIORITY
-            start()
+    private fun print() {
+        val stopped = if ((surface as? AnimatingSurface)?.isRunning == true) {
+            startStopButton?.doClick()
+            true
+        } else {
+            false
         }
-    }
-
-    @Synchronized
-    fun stop() {
-        thread = null
-        @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
-        (this as java.lang.Object).notifyAll()
-    }
-
-    override fun run() {
-        var stopped = false
-        val animating = surface.animating
-        if (animating != null && animating.isRunning) {
-            stopped = true
-            startStopButton!!.doClick()
-        }
-
         try {
             val printJob = PrinterJob.getPrinterJob()
             printJob.setPrintable(surface)
-            var pDialogState = true
-            val aset = HashPrintRequestAttributeSet()
-
-            if (java2Demo?.isDefaultPrinter != true) {
-                pDialogState = printJob.printDialog(aset)
+            val attributes = HashPrintRequestAttributeSet()
+            val proceed = if (java2Demo?.isDefaultPrinter != true) {
+                printJob.printDialog(attributes)
+            } else {
+                true
             }
-            if (pDialogState) {
-                printJob.print(aset)
+            if (proceed) {
+                printJob.print(attributes)
             }
         } catch (ace: AccessControlException) {
-            val errmsg = ("Applet access control exception; to allow "
-                    + "access to printer, run policytool and set\n"
-                    + "permission for \"queuePrintJob\" in "
-                    + "RuntimePermission.")
-            JOptionPane.showMessageDialog(
-                this, errmsg, "Printer Access Error",
-                JOptionPane.ERROR_MESSAGE)
+            val errmsg = "Applet access control exception; to allow access to printer, run policytool and set\n" +
+                    "permission for \"queuePrintJob\" in RuntimePermission."
+            JOptionPane.showMessageDialog(this, errmsg, "Printer Access Error", JOptionPane.ERROR_MESSAGE)
         } catch (ex: Exception) {
             getLogger<Tools>().log(Level.SEVERE, null, ex)
+        } finally {
+            if (stopped) {
+                startStopButton?.doClick()
+            }
         }
-
-        if (stopped) {
-            startStopButton!!.doClick()
-        }
-        thread = null
     }
 
     /**
