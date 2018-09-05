@@ -143,7 +143,9 @@ class DemoGroup internal constructor(
                     c.surface.monitor = java2Demo?.performanceMonitor != null
                     val cloneImg = DemoImages.getImage("clone.gif", this)
                     val tools = c.tools!!
-                    tools.cloneButton = tools.addTool(cloneImg, "Clone the Surface", this)
+                    tools.cloneButton = tools.addTool(cloneImg, "Clone the Surface") {
+                        cloneDemo()
+                    }
                     val d = tools.toolbar.preferredSize
                     tools.toolbar.preferredSize = Dimension(d.width + 27, d.height)
                     java2Demo?.backgroundColor?.let { backgroundColor ->
@@ -249,7 +251,7 @@ class DemoGroup internal constructor(
         System.gc()
     }
 
-    fun cloneDemo() {
+    private fun cloneDemo() {
         val panel = clonePanels[tabbedPane!!.selectedIndex - 1]
         if (panel.componentCount == 1) {
             panel.invalidate()
@@ -263,7 +265,9 @@ class DemoGroup internal constructor(
         }
         val removeImg = DemoImages.getImage("remove.gif", this)
         val tools = clone.tools!!
-        tools.cloneButton = tools.addTool(removeImg, "Remove the Surface", this)
+        tools.cloneButton = tools.addTool(removeImg, "Remove the Surface") {
+            removeClone(clone)
+        }
         val d = tools.toolbar.preferredSize
         tools.toolbar.preferredSize = Dimension(d.width + 27, d.height)
         java2Demo?.backgroundColor?.let { backgroundColor ->
@@ -281,7 +285,7 @@ class DemoGroup internal constructor(
         panel.revalidate()
     }
 
-    fun removeClone(theClone: Component) {
+    private fun removeClone(theClone: Component) {
         val panel = clonePanels[tabbedPane!!.selectedIndex - 1]
         if (panel.componentCount == 2) {
             val cmp = panel.getComponent(0)

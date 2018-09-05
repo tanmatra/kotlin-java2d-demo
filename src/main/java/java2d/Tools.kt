@@ -40,7 +40,6 @@ import java.awt.FlowLayout
 import java.awt.Graphics
 import java.awt.Image
 import java.awt.Insets
-import java.awt.event.ActionListener
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.awt.print.PrinterJob
@@ -219,23 +218,7 @@ class Tools(private val java2Demo: Java2Demo?,
         add(center, BorderLayout.CENTER)
     }
 
-    @Deprecated("")
     fun addTool(
-        img: Image,
-        toolTip: String,
-        al: ActionListener
-    ): JButton {
-        val button = JButton(ImageIcon(img)).apply {
-            initializeButton()
-            isSelected = true
-            toolTipText = toolTip
-            addActionListener(al)
-        }
-        toolbar.add(button)
-        return button
-    }
-
-    private fun addTool(
         image: Image,
         toolTip: String,
         action: (AbstractButton) -> Unit
