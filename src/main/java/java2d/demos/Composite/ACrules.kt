@@ -185,13 +185,13 @@ class ACrules : AnimatingSurface()
         bufImg.createGraphics().use { gr ->
             gr.color = background
             gr.fillRect(0, 0, bufImg.width, bufImg.height)
-            gr.setRenderingHint(RenderingHints.KEY_ANTIALIASING, antiAlias)
+            gr.setRenderingHint(RenderingHints.KEY_ANTIALIASING, antialiasValue)
             gr.font = FONT
 
             dstBufImg.createGraphics().use { dstGr ->
-                dstGr.setRenderingHint(RenderingHints.KEY_ANTIALIASING, antiAlias)
+                dstGr.setRenderingHint(RenderingHints.KEY_ANTIALIASING, antialiasValue)
                 srcBufImg.createGraphics().use { srcGr ->
-                    srcGr.setRenderingHint(RenderingHints.KEY_ANTIALIASING, antiAlias)
+                    srcGr.setRenderingHint(RenderingHints.KEY_ANTIALIASING, antialiasValue)
 
                     var y = 0
                     val yy = lineMetrics.height.toInt() + verticalPad

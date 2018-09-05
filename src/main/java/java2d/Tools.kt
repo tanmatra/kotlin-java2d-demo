@@ -40,7 +40,6 @@ import java.awt.FlowLayout
 import java.awt.Graphics
 import java.awt.Image
 import java.awt.Insets
-import java.awt.RenderingHints
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.awt.event.MouseAdapter
@@ -63,6 +62,7 @@ import javax.swing.JToolBar
 import javax.swing.SwingConstants
 import javax.swing.Timer
 import javax.swing.border.EtchedBorder
+import kotlin.reflect.KMutableProperty0
 
 /**
  * Tools to control individual demo graphic attributes.  Also, control for
@@ -79,18 +79,29 @@ class Tools(private val java2Demo: Java2Demo?,
     private val rolloverIcon = ToggleIcon(this, ROLLOVER_COLOR)
     private var focus: Boolean = false
     val toggleButton: JToggleButton
-    val printButton: JButton
+    val printButton: AbstractButton
     val screenCombo: JComboBox<String>
-    val renderButton: JToggleButton
-    val antialiasButton: JToggleButton
-    val textureButton: JToggleButton
-    val compositeB: JToggleButton
+    val renderButton: AbstractButton
+    val antialiasButton: AbstractButton
+    val textureButton: AbstractButton
+    val compositeButton: AbstractButton
     val startStopButton: AbstractButton?
-    var cloneButton: JButton? = null
+    var cloneButton: AbstractButton? = null
     var issueRepaint = true
     val toolbar: JToolBar
     val slider: JSlider?
     var isExpanded: Boolean = false
+
+    private var texture: Boolean
+        get() = surface.texture != null
+        set(value) {
+            if (value) {
+                surface.texture = TextureChooser.texture
+            } else {
+                surface.texture = null
+                surface.clearSurface = true
+            }
+        }
 
     init {
         toggleButton = JToggleButton(bumpyIcon).apply {
@@ -125,17 +136,14 @@ class Tools(private val java2Demo: Java2Demo?,
             isFloatable = false
         }
 
-        var s = if (surface.antiAlias === RenderingHints.VALUE_ANTIALIAS_ON) "On" else "Off"
-        antialiasButton = addTool("A", "Antialiasing $s", this)
-
-        s = if (surface.rendering === RenderingHints.VALUE_RENDER_SPEED) "Speed" else "Quality"
-        renderButton = addTool("R", "Rendering $s", this)
-
-        s = if (surface.texture != null) "On" else "Off"
-        textureButton = addTool("T", "Texture $s", this)
-
-        s = if (surface.composite != null) "On" else "Off"
-        compositeB = addTool("C", "Composite $s", this)
+        antialiasButton = addToggleTool(surface::isAntialiasing, "A",
+            selectedToolTip = "Antialiasing On", unselectedToolTip = "Antialiasing Off")
+        renderButton = addToggleTool(surface::isRenderingQuality, "R",
+            selectedToolTip = "Rendering Quality", unselectedToolTip = "Rendering Speed")
+        textureButton = addToggleTool(::texture, "T",
+            selectedToolTip = "Texture On", unselectedToolTip = "Texture Off")
+        compositeButton = addToggleTool(surface::isComposite, "C",
+            selectedToolTip = "Composite On", unselectedToolTip = "Composite Off")
 
         val printBImg = DemoImages.getImage("print.gif", this)
         printButton = addTool(printBImg, "Print the Surface", this)
@@ -270,6 +278,25 @@ class Tools(private val java2Demo: Java2Demo?,
         return button
     }
 
+    private fun addToggleTool(
+        property: KMutableProperty0<Boolean>,
+        name: String,
+        selectedToolTip: String,
+        unselectedToolTip: String
+    ): AbstractButton {
+        val button = JToggleButton(name).apply {
+            isFocusPainted = false
+            isSelected = property.get()
+            toolTipText = if (isSelected) selectedToolTip else unselectedToolTip
+            addActionListener {
+                toolTipText = if (isSelected) selectedToolTip else unselectedToolTip
+                property.set(isSelected)
+            }
+        }
+        toolbar.add(button)
+        return button
+    }
+
     override fun actionPerformed(e: ActionEvent) {
         val obj = e.source
         if (obj is JButton) {
@@ -282,38 +309,7 @@ class Tools(private val java2Demo: Java2Demo?,
             start()
             return
         }
-
-        if (obj == antialiasButton) {
-            if (antialiasButton.toolTipText == "Antialiasing On") {
-                antialiasButton.toolTipText = "Antialiasing Off"
-            } else {
-                antialiasButton.toolTipText = "Antialiasing On"
-            }
-            surface.setAntiAlias(antialiasButton.isSelected)
-        } else if (obj == renderButton) {
-            if (renderButton.toolTipText == "Rendering Quality") {
-                renderButton.toolTipText = "Rendering Speed"
-            } else {
-                renderButton.toolTipText = "Rendering Quality"
-            }
-            surface.setRendering(renderButton.isSelected)
-        } else if (obj == textureButton) {
-            if (textureButton.toolTipText == "Texture On") {
-                textureButton.toolTipText = "Texture Off"
-                surface.setTexture(null)
-                surface.clearSurface = true
-            } else {
-                textureButton.toolTipText = "Texture On"
-                surface.setTexture(TextureChooser.texture)
-            }
-        } else if (obj == compositeB) {
-            if (compositeB.toolTipText == "Composite On") {
-                compositeB.toolTipText = "Composite Off"
-            } else {
-                compositeB.toolTipText = "Composite On"
-            }
-            surface.setComposite(compositeB.isSelected)
-        } else if (obj == screenCombo) {
+        if (obj == screenCombo) {
             surface.imageType = screenCombo.selectedIndex
         }
 

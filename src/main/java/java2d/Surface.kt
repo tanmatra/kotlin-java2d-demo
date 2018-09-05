@@ -33,7 +33,6 @@ package java2d
 
 import java.awt.AlphaComposite
 import java.awt.BorderLayout
-import java.awt.Color
 import java.awt.Dimension
 import java.awt.Font
 import java.awt.GradientPaint
@@ -41,12 +40,7 @@ import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.Image
 import java.awt.Paint
-import java.awt.RenderingHints.KEY_ANTIALIASING
-import java.awt.RenderingHints.KEY_RENDERING
-import java.awt.RenderingHints.VALUE_ANTIALIAS_OFF
-import java.awt.RenderingHints.VALUE_ANTIALIAS_ON
-import java.awt.RenderingHints.VALUE_RENDER_QUALITY
-import java.awt.RenderingHints.VALUE_RENDER_SPEED
+import java.awt.RenderingHints
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import java.awt.image.BufferedImage
@@ -73,10 +67,39 @@ import javax.swing.RepaintManager
  */
 abstract class Surface : JPanel(), Printable
 {
-    var antiAlias = VALUE_ANTIALIAS_ON
-    var rendering = VALUE_RENDER_SPEED
+    var antialiasValue: Any = RenderingHints.VALUE_ANTIALIAS_ON
+        private set
+
+    var isAntialiasing: Boolean
+        get() = antialiasValue == RenderingHints.VALUE_ANTIALIAS_ON
+        set(value) {
+            antialiasValue = if (value) RenderingHints.VALUE_ANTIALIAS_ON else RenderingHints.VALUE_ANTIALIAS_OFF
+        }
+
+    private var renderingValue = RenderingHints.VALUE_RENDER_SPEED
+
+    var isRenderingQuality: Boolean
+        get() = renderingValue == RenderingHints.VALUE_RENDER_QUALITY
+        set(value) {
+            renderingValue = if (value) RenderingHints.VALUE_RENDER_QUALITY else RenderingHints.VALUE_RENDER_SPEED
+        }
+
     var composite: AlphaComposite? = null
+        private set
+
+    var isComposite: Boolean
+        get() = composite == null
+        set(value) { composite = if (value) AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f) else null }
+
     var texture: Paint? = null
+        set(value) {
+            if (value is GradientPaint) {
+                field = GradientPaint(0.0f, 0.0f, value.color1, size.width * 2.0f, 0.0f, value.color2)
+            } else {
+                field = value
+            }
+        }
+
     var performanceString: String? = null // PerformanceMonitor
 
     var bufferedImage: BufferedImage? = null
@@ -129,26 +152,6 @@ abstract class Surface : JPanel(), Printable
 
     protected fun getFont(name: String): Font {
         return DemoFonts.getFont(name)
-    }
-
-    fun setAntiAlias(aa: Boolean) {
-        antiAlias = if (aa) VALUE_ANTIALIAS_ON else VALUE_ANTIALIAS_OFF
-    }
-
-    fun setRendering(rd: Boolean) {
-        rendering = if (rd) VALUE_RENDER_QUALITY else VALUE_RENDER_SPEED
-    }
-
-    fun setTexture(obj: Any?) {
-        if (obj is GradientPaint) {
-            texture = GradientPaint(0f, 0f, Color.white, (size.width * 2).toFloat(), 0f, Color.green)
-        } else {
-            texture = obj as Paint?
-        }
-    }
-
-    fun setComposite(cp: Boolean) {
-        composite = if (cp) AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f) else null
     }
 
     fun createBufferedImage(
@@ -227,8 +230,8 @@ abstract class Surface : JPanel(), Printable
         val g2: Graphics2D? = if (bi != null) bi.createGraphics() else (g as Graphics2D?)
 
         g2!!.background = background
-        g2.setRenderingHint(KEY_ANTIALIASING, antiAlias)
-        g2.setRenderingHint(KEY_RENDERING, rendering)
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, antialiasValue)
+        g2.setRenderingHint(RenderingHints.KEY_RENDERING, renderingValue)
 
         if (clearSurface || clearOnce) {
             g2.clearRect(0, 0, width, height)
@@ -392,8 +395,8 @@ abstract class Surface : JPanel(), Printable
             java2Demo?.globalControls?.selectedScreenItem?.let { screenItem ->
                 append(" $screenItem")
             }
-            append(if (antiAlias === VALUE_ANTIALIAS_ON) " ANTIALIAS_ON " else " ANTIALIAS_OFF ")
-            append(if (rendering === VALUE_RENDER_QUALITY) " RENDER_QUALITY " else " RENDER_SPEED ")
+            append(if (isAntialiasing) " ANTIALIAS_ON " else " ANTIALIAS_OFF ")
+            append(if (isRenderingQuality) " RENDER_QUALITY " else " RENDER_SPEED ")
             if (texture != null) {
                 append(" Texture")
             }

@@ -208,7 +208,7 @@ class DemoGroup internal constructor(
                 tools.isVisible = isValid
                 tools.issueRepaint = issueRepaint
                 val buttons = arrayOf(tools.toggleButton, tools.antialiasButton, tools.renderButton,
-                                      tools.textureButton, tools.compositeB)
+                                      tools.textureButton, tools.compositeButton)
                 val checkBoxes = arrayOf(controls.toolBarCheckBox, controls.antialiasingCheckBox,
                                          controls.renderCheckBox, controls.textureCheckBox, controls.compositeCheckBox)
                 for (j in buttons.indices) {

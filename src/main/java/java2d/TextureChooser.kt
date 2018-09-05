@@ -172,7 +172,7 @@ class TextureChooser(
 
     companion object
     {
-        var texture: Any = geomTexture
+        var texture: Paint = geomTexture
 
         val geomTexture: TexturePaint
             get() {

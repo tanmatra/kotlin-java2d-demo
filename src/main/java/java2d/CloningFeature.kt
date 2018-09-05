@@ -155,7 +155,7 @@ class CloningFeature(private val java2Demo: Java2Demo) : JPanel(), Runnable
                         }
                         1 -> {
                             textArea.append("   Changing Composite & Texture\n")
-                            tools.compositeB.doClick()
+                            tools.compositeButton.doClick()
                             tools.textureButton.doClick()
                         }
                         2 -> {
