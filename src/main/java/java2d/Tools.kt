@@ -237,7 +237,7 @@ class Tools(private val java2Demo: Java2Demo?,
         return button
     }
 
-    fun addToggleTool(
+    private fun addToggleTool(
         image: Image,
         toolTip: String,
         action: (AbstractButton) -> Unit
@@ -252,29 +252,6 @@ class Tools(private val java2Demo: Java2Demo?,
             addActionListener {
                 action(this)
             }
-        }
-        toolbar.add(button)
-        return button
-    }
-
-    private fun addTool(
-        name: String,
-        toolTip: String,
-        al: ActionListener
-    ): JToggleButton {
-        val button = object : JToggleButton(name) {
-            override fun getPreferredSize(): Dimension = TOOL_BUTTON_SIZE
-            override fun getMaximumSize(): Dimension = TOOL_BUTTON_SIZE
-            override fun getMinimumSize(): Dimension = TOOL_BUTTON_SIZE
-        }.apply {
-            isFocusPainted = false
-            isSelected =
-                    toolTip == "Rendering Quality" ||
-                    toolTip == "Antialiasing On" ||
-                    toolTip == "Texture On" ||
-                    toolTip == "Composite On"
-            toolTipText = toolTip
-            addActionListener(al)
         }
         toolbar.add(button)
         return button
