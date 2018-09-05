@@ -293,6 +293,7 @@ class Tools(private val java2Demo: Java2Demo?,
             addActionListener {
                 toolTipText = if (isSelected) selectedToolTip else unselectedToolTip
                 property.set(isSelected)
+                checkRepaint()
             }
         }
         toolbar.add(button)
@@ -305,6 +306,10 @@ class Tools(private val java2Demo: Java2Demo?,
             start()
             return
         }
+        checkRepaint()
+    }
+
+    private fun checkRepaint() {
         if (issueRepaint) {
             if (surface is AnimatingSurface) {
                 if (surface.sleepAmount != 0L && surface.isRunning) {
