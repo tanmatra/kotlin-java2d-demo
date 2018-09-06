@@ -113,6 +113,8 @@ class Java2Demo(
 
     val groups: List<DemoGroup>
 
+    internal val intro: Intro
+
     /**
      * Construct the Java2D Demo.
      */
@@ -373,8 +375,6 @@ class Java2Demo(
     {
         var demo: Java2Demo? = null
         lateinit var ccthreadCB: JCheckBoxMenuItem
-        lateinit var intro: Intro
-
 
         private fun initFrame(args: Array<String>) {
             val frame = JFrame("Java 2D(TM) Demo").apply {

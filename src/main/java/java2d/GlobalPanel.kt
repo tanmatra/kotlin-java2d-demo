@@ -43,19 +43,18 @@ import javax.swing.border.EmptyBorder
  * It's a special "always visible" panel for the Controls, MemoryMonitor &
  * PerformanceMonitor.
  */
-class GlobalPanel(private val java2Demo: Java2Demo) : JPanel()
+class GlobalPanel(private val java2Demo: Java2Demo) : JPanel(BorderLayout())
 {
-    private val panel = JPanel(GridBagLayout()).apply {
+    private val sidePanel = JPanel(GridBagLayout()).apply {
         border = CompoundBorder(EmptyBorder(5, 0, 5, 5), BevelBorder(BevelBorder.LOWERED))
     }
     private var index: Int = 0
 
     init {
-        layout = BorderLayout()
-        panel.addToGridBag(java2Demo.globalControls, 0, 0, 1, 1, 0.0, 0.0)
-        panel.addToGridBag(java2Demo.memoryMonitor, 0, 1, 1, 1, 0.0, 0.0)
-        panel.addToGridBag(java2Demo.performanceMonitor, 0, 2, 1, 1, 0.0, 0.0)
-        add(Java2Demo.intro)
+        sidePanel.addToGridBag(java2Demo.globalControls, 0, 0, 1, 1, 0.0, 0.0)
+        sidePanel.addToGridBag(java2Demo.memoryMonitor, 0, 1, 1, 1, 0.0, 0.0)
+        sidePanel.addToGridBag(java2Demo.performanceMonitor, 0, 2, 1, 1, 0.0, 0.0)
+        add(java2Demo.intro)
     }
 
     fun onDemoTabChanged(selectedIndex: Int) {
@@ -66,13 +65,13 @@ class GlobalPanel(private val java2Demo: Java2Demo) : JPanel()
             java2Demo.memoryMonitor.surface.stop()
             java2Demo.performanceMonitor.stop()
             removeAll()
-            add(Java2Demo.intro)
-            Java2Demo.intro.start()
+            add(java2Demo.intro)
+            java2Demo.intro.start()
         } else {
             if (componentCount == 1) {
-                Java2Demo.intro.stop()
-                remove(Java2Demo.intro)
-                add(panel, BorderLayout.EAST)
+                java2Demo.intro.stop()
+                remove(java2Demo.intro)
+                add(sidePanel, BorderLayout.EAST)
                 if (java2Demo.memoryMonitorCheckBox.isSelected) {
                     java2Demo.memoryMonitor.surface.start()
                 }
