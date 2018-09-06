@@ -43,8 +43,6 @@ import java.awt.Graphics2D
 import java.awt.Insets
 import java.awt.RenderingHints
 import java.awt.Toolkit
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import java.awt.font.FontRenderContext
@@ -80,11 +78,8 @@ import kotlin.math.roundToInt
 class Java2Demo(
     private val progressLabel: JLabel,
     private val progressBar: JProgressBar
-) : JPanel(), ActionListener
+) : JPanel(BorderLayout())
 {
-    private var runMI: JMenuItem? = null
-    private var cloneMI: JMenuItem? = null
-    private var backgMI: JMenuItem? = null
     // private JMenuItem ccthreadMI, verboseMI;
     private var runWindow: RunWindow? = null
     private var cloningFeature: CloningFeature? = null
@@ -122,7 +117,6 @@ class Java2Demo(
      * Construct the Java2D Demo.
      */
     init {
-        layout = BorderLayout()
         border = EtchedBorder()
 
         add(createMenuBar(), BorderLayout.NORTH)
@@ -233,14 +227,21 @@ class Java2Demo(
 
         optionsMenu.add(JSeparator())
 
-        backgMI = optionsMenu.add(JMenuItem("Background Color"))
-        backgMI!!.addActionListener(this)
-
-        runMI = optionsMenu.add(JMenuItem("Run Window"))
-        runMI!!.addActionListener(this)
-
-        cloneMI = optionsMenu.add(JMenuItem("Cloning Feature"))
-        cloneMI!!.addActionListener(this)
+        optionsMenu.add(JMenuItem("Background Color").apply {
+            addActionListener {
+                selectBackgroundColor()
+            }
+        })
+        optionsMenu.add(JMenuItem("Run Window").apply {
+            addActionListener {
+                createRunWindow()
+            }
+        })
+        optionsMenu.add(JMenuItem("Cloning Feature").apply {
+            addActionListener {
+                createCloningFeature()
+            }
+        })
 
         return menuBar
     }
@@ -272,39 +273,38 @@ class Java2Demo(
         SwingUtilities.invokeLater { runWindow!!.doRunAction() }
     }
 
-    override fun actionPerformed(e: ActionEvent) {
-        when {
-            e.source == runMI -> createRunWindow()
-            e.source == cloneMI -> if (cloningFeature == null) {
-                cloningFeature = CloningFeature(this)
-                cloningFrame = JFrame("Cloning Demo").apply {
-                    addWindowListener(object : WindowAdapter() {
-                        override fun windowClosing(e: WindowEvent?) {
-                            cloningFeature!!.stop()
-                            dispose()
-                        }
-                        override fun windowClosed(e: WindowEvent?) {
-                            cloningFeature = null
-                        }
-                    })
-                    contentPane.add(cloningFeature, BorderLayout.CENTER)
-                    pack()
-                    size = Dimension(320, 330)
-                    isVisible = true
-                }
-            } else {
-                cloningFrame!!.toFront()
-            }
-            e.source == backgMI -> {
-                backgroundColor = JColorChooser.showDialog(this, "Background Color", Color.WHITE)
-                for (i in 1 until tabbedPaneCount) {
-                    val p = groups[i - 1].panel
-                    for (j in 0 until p.componentCount) {
-                        val dp = p.getComponent(j) as DemoPanel
-                        if (dp.surface != null) {
-                            dp.surface.background = backgroundColor
-                        }
+    private fun createCloningFeature() {
+        if (cloningFeature == null) {
+            cloningFeature = CloningFeature(this)
+            cloningFrame = JFrame("Cloning Demo").apply {
+                addWindowListener(object : WindowAdapter() {
+                    override fun windowClosing(e: WindowEvent?) {
+                        cloningFeature!!.stop()
+                        dispose()
                     }
+
+                    override fun windowClosed(e: WindowEvent?) {
+                        cloningFeature = null
+                    }
+                })
+                contentPane.add(cloningFeature, BorderLayout.CENTER)
+                pack()
+                size = Dimension(320, 330)
+                isVisible = true
+            }
+        } else {
+            cloningFrame!!.toFront()
+        }
+    }
+
+    private fun selectBackgroundColor() {
+        backgroundColor = JColorChooser.showDialog(this, "Background Color", Color.WHITE)
+        for (i in 1 until tabbedPaneCount) {
+            val p = groups[i - 1].panel
+            for (j in 0 until p.componentCount) {
+                val dp = p.getComponent(j) as DemoPanel
+                if (dp.surface != null) {
+                    dp.surface.background = backgroundColor
                 }
             }
         }
