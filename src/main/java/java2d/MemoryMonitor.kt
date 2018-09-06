@@ -74,13 +74,13 @@ class MemoryMonitor : JPanel(BorderLayout())
         controls = JPanel(GridBagLayout()).apply {
             preferredSize = PREFERRED_SIZE
         }
-        controls.add(JLabel("Sample Rate"), gbc(0, 0))
+        controls.add(JLabel("Sample Rate"), GBC(0, 0))
         textField = JTextField("1000").apply {
             preferredSize = Dimension(45, preferredSize.height)
         }
-        controls.add(textField, gbc(1, 0).insets(0, 2, 0, 2))
-        controls.add(JLabel("ms"), gbc(2, 0))
-        controls.add(dateStampCheckBox, gbc(0, 1).span(3, 1))
+        controls.add(textField, GBC(1, 0).insets(0, 2, 0, 2))
+        controls.add(JLabel("ms"), GBC(2, 0))
+        controls.add(dateStampCheckBox, GBC(0, 1).span(3, 1))
 
         addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {

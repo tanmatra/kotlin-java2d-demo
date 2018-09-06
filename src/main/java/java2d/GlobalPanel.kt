@@ -34,8 +34,6 @@ package java2d
 import java.awt.BorderLayout
 import java.awt.GridBagLayout
 import javax.swing.JPanel
-import javax.swing.border.BevelBorder
-import javax.swing.border.CompoundBorder
 import javax.swing.border.EmptyBorder
 
 /**
@@ -43,17 +41,20 @@ import javax.swing.border.EmptyBorder
  * It's a special "always visible" panel for the Controls, MemoryMonitor &
  * PerformanceMonitor.
  */
-class GlobalPanel(private val java2Demo: Java2Demo) : JPanel(BorderLayout())
+class GlobalPanel(private val java2Demo: Java2Demo) : JPanel(BorderLayout(5, 5))
 {
     private val sidePanel = JPanel(GridBagLayout()).apply {
-        border = CompoundBorder(EmptyBorder(5, 0, 5, 5), BevelBorder(BevelBorder.LOWERED))
+        border = EmptyBorder(5, 0, 5, 5)
     }
     private var index: Int = 0
 
     init {
-        sidePanel.addToGridBag(java2Demo.globalControls, 0, 0, 1, 1, 0.0, 0.0)
-        sidePanel.addToGridBag(java2Demo.memoryMonitor, 0, 1, 1, 1, 0.0, 0.0)
-        sidePanel.addToGridBag(java2Demo.performanceMonitor, 0, 2, 1, 1, 0.0, 0.0)
+        sidePanel.add(java2Demo.globalControls,
+            GBC(0, 0).weight(0.0, 1.0).fillHorizontal().anchor(GBC.PAGE_START))
+        sidePanel.add(java2Demo.memoryMonitor,
+            GBC(0, 1).weight(0.0, 0.0).fill())
+        sidePanel.add(java2Demo.performanceMonitor,
+            GBC(0, 2).weight(0.0, 0.0).fill())
         add(java2Demo.intro)
     }
 
