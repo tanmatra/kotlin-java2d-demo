@@ -87,14 +87,10 @@ class Java2Demo(
     private var cloningFrame: JFrame? = null
 
     private val verboseCheckBox = JCheckBoxMenuItem("Verbose")
-    var isVerbose: Boolean
-        get() = verboseCheckBox.isSelected
-        set(value) { verboseCheckBox.isSelected = value }
+    var isVerbose: Boolean by verboseCheckBox.isSelectedProperty
 
     private val defaultPrinterCheckBox = JCheckBoxMenuItem("Default Printer")
-    var isDefaultPrinter: Boolean
-        get() = defaultPrinterCheckBox.isSelected
-        set(value) { defaultPrinterCheckBox.isSelected = value }
+    var isDefaultPrinter: Boolean by defaultPrinterCheckBox.isSelectedProperty
 
     val memoryMonitor = MemoryMonitor()
     val performanceMonitor = PerformanceMonitor()
