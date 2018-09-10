@@ -191,7 +191,7 @@ class DemoGroup internal constructor(
         setup(false)
     }
 
-    fun setup(issueRepaint: Boolean) {
+    fun setup(issueRepaint: Boolean, eventSource: Any? = null) {
         val panel = panel
 
         // Let PerformanceMonitor know which demos are running
@@ -200,27 +200,29 @@ class DemoGroup internal constructor(
             surface.setSurfaceState()
         }
 
-        val controls = java2Demo?.globalControls
+        val globalControls = java2Demo?.globalControls
         // .. tools check against global controls settings ..
         // .. & start demo & custom control thread if need be ..
         for (i in 0 until panel.componentCount) {
             val demoPanel = panel.getComponent(i) as DemoPanel
-            if (demoPanel.surface != null && controls != null) {
+            if (demoPanel.surface != null && globalControls != null) {
                 val tools = demoPanel.tools!!
                 tools.isVisible = isValid
                 tools.issueRepaint = issueRepaint
-                val buttons = arrayOf(tools.toggleButton, tools.antialiasButton, tools.renderButton,
-                                      tools.textureButton, tools.compositeButton)
-                val checkBoxes = arrayOf(controls.toolBarCheckBox, controls.antialiasingCheckBox,
-                                         controls.renderCheckBox, controls.textureCheckBox, controls.compositeCheckBox)
-                for (j in buttons.indices) {
-                    if (controls.itemEventSource != null && controls.itemEventSource == checkBoxes[j]) {
-                        if (buttons[j].isSelected != checkBoxes[j].isSelected) {
-                            buttons[j].doClick()
+                val toolButtons = arrayOf(
+                    tools.toggleButton, tools.antialiasButton, tools.renderButton,
+                    tools.textureButton, tools.compositeButton)
+                val globalCheckBoxes = arrayOf(
+                    globalControls.toolBarCheckBox, globalControls.antialiasingCheckBox,
+                    globalControls.renderCheckBox, globalControls.textureCheckBox, globalControls.compositeCheckBox)
+                for (j in toolButtons.indices) {
+                    if (eventSource != null && eventSource == globalCheckBoxes[j]) {
+                        if (toolButtons[j].isSelected != globalCheckBoxes[j].isSelected) {
+                            toolButtons[j].doClick()
                         }
-                    } else if (controls.itemEventSource == null) {
-                        if (buttons[j].isSelected != checkBoxes[j].isSelected) {
-                            buttons[j].doClick()
+                    } else if (eventSource == null) {
+                        if (toolButtons[j].isSelected != globalCheckBoxes[j].isSelected) {
+                            toolButtons[j].doClick()
                         }
                     }
                 }
@@ -233,7 +235,7 @@ class DemoGroup internal constructor(
                 if (java2Demo?.isVerbose == true) {
                     demoPanel.surface.verbose(java2Demo)
                 }
-                demoPanel.surface.sleepAmount = controls.slider.value.toLong()
+                demoPanel.surface.sleepAmount = globalControls.slider.value.toLong()
                 java2Demo?.backgroundColor?.let { backgroundColor ->
                     demoPanel.surface.background = backgroundColor
                 }

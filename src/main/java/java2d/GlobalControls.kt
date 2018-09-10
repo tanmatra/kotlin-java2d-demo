@@ -49,17 +49,10 @@ import javax.swing.border.TitledBorder
  */
 class GlobalControls(private val java2Demo: Java2Demo) : JPanel(GridBagLayout())
 {
-    var itemEventSource: Any? = null
-
     private val itemListener = ItemListener { event: ItemEvent ->
         val tabIndex = java2Demo.tabbedPaneIndex
         if (tabIndex != 0) {
-            itemEventSource = event.source
-            try {
-                java2Demo.groups[tabIndex - 1].setup(true)
-            } finally {
-                itemEventSource = null
-            }
+            java2Demo.groups[tabIndex - 1].setup(true, event.source)
         }
     }
 
