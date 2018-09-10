@@ -32,7 +32,6 @@
 package java2d
 
 import java.awt.Dimension
-import java.awt.Font
 import java.awt.GridBagLayout
 import java.awt.event.ItemEvent
 import java.awt.event.ItemListener
@@ -48,8 +47,22 @@ import javax.swing.border.TitledBorder
  * Global Controls panel for changing graphic attributes of
  * the demo surface.
  */
-class GlobalControls(private val java2Demo: Java2Demo) : JPanel(GridBagLayout()), ItemListener
+class GlobalControls(private val java2Demo: Java2Demo) : JPanel(GridBagLayout())
 {
+    var itemEventSource: Any? = null
+
+    private val itemListener = ItemListener { event: ItemEvent ->
+        val tabIndex = java2Demo.tabbedPaneIndex
+        if (tabIndex != 0) {
+            itemEventSource = event.source
+            try {
+                java2Demo.groups[tabIndex - 1].setup(true)
+            } finally {
+                itemEventSource = null
+            }
+        }
+    }
+
     val antialiasingCheckBox: JCheckBox = addCheckBox("Anti-Aliasing", true, 0)
 
     val renderCheckBox: JCheckBox = addCheckBox("Rendering Quality", false, 1)
@@ -61,22 +74,31 @@ class GlobalControls(private val java2Demo: Java2Demo) : JPanel(GridBagLayout())
     private val screenComboBox: JComboBox<String> = JComboBox<String>().apply {
         preferredSize = Dimension(120, 18)
         isLightWeightPopupEnabled = true
-        font = FONT
         for (s in SCREEN_NAMES) {
             addItem(s)
         }
-        addItemListener(this@GlobalControls)
+        addItemListener(itemListener)
     }.also {
         add(it, GBC(0, 4).fill())
     }
 
     val toolBarCheckBox: JCheckBox = addCheckBox("Tools", false, 5)
 
-    val slider: JSlider = JSlider(SwingConstants.HORIZONTAL, 0, 200, 30).apply {
-        addChangeListener { onSliderChange() }
+    val slider = JSlider(SwingConstants.HORIZONTAL, 0, 200, 30).apply {
+        fun formatTitle(value: Int) = "Anim delay = $value ms"
+        addChangeListener {
+            (border as TitledBorder).title = formatTitle(value)
+            val index = java2Demo.tabbedPaneIndex - 1
+            val demoGroup = java2Demo.groups[index]
+            val panel = demoGroup.panel
+            for (i in 0 until panel.componentCount) {
+                val demoPanel = panel.getComponent(i) as DemoPanel
+                demoPanel.tools?.slider?.value = value
+            }
+            repaint()
+        }
         border = TitledBorder(EtchedBorder()).apply {
-            titleFont = FONT
-            title = "Anim delay = 30 ms"
+            title = formatTitle(30)
         }
         minimumSize = Dimension(80, 46)
     }.also {
@@ -86,8 +108,6 @@ class GlobalControls(private val java2Demo: Java2Demo) : JPanel(GridBagLayout())
     val textureChooser = TextureChooser(this, 0).also {
         add(it, GBC(0, 7).fill().grow())
     }
-
-    var itemEventSource: Any? = null
 
     var selectedScreenIndex: Int
         get() = screenComboBox.selectedIndex
@@ -102,33 +122,9 @@ class GlobalControls(private val java2Demo: Java2Demo) : JPanel(GridBagLayout())
 
     private fun addCheckBox(text: String, selected: Boolean, y: Int): JCheckBox {
         return JCheckBox(text, selected).apply {
-            font = FONT
-            horizontalAlignment = SwingConstants.LEFT
-            addItemListener(this@GlobalControls)
+            addItemListener(itemListener)
         }.also {
             add(it, GBC(0, y).fill().grow())
-        }
-    }
-
-    private fun onSliderChange() {
-        val value = slider.value
-        (slider.border as TitledBorder).title = "Anim delay = $value ms"
-        val index = java2Demo.tabbedPaneIndex - 1
-        val demoGroup = java2Demo.groups[index]
-        val panel = demoGroup.panel
-        for (i in 0 until panel.componentCount) {
-            val demoPanel = panel.getComponent(i) as DemoPanel
-            demoPanel.tools?.slider?.value = value
-        }
-        slider.repaint()
-    }
-
-    override fun itemStateChanged(event: ItemEvent) {
-        if (java2Demo.tabbedPaneIndex != 0) {
-            itemEventSource = event.source
-            val index = java2Demo.tabbedPaneIndex - 1
-            java2Demo.groups[index].setup(true)
-            itemEventSource = null
         }
     }
 
@@ -157,7 +153,5 @@ class GlobalControls(private val java2Demo: Java2Demo) : JPanel(GridBagLayout())
             "BYTE_BINARY 4 bit",
             "INT_RGBx",
             "USHORT_555x_RGB")
-
-        private val FONT = Font("serif", Font.PLAIN, 12)
     }
 }
