@@ -1,12 +1,9 @@
 package java2d
 
-import java.awt.Component
 import java.awt.Dimension
 import java.awt.EventQueue
 import java.awt.Graphics
 import java.awt.Graphics2D
-import java.awt.GridBagConstraints
-import java.awt.GridBagLayout
 import java.awt.Image
 import java.awt.Insets
 import java.awt.RenderingHints
@@ -81,27 +78,6 @@ var Graphics2D.textAntialiasing: Any?
 val systemTextAntialiasing: Any? = run {
     val hints = Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints")
     (hints as? Map<*, *>)?.get(RenderingHints.KEY_TEXT_ANTIALIASING)
-}
-
-@Deprecated("Use GBC(x, y).fill()")
-fun JComponent.addToGridBag(
-    component: Component,
-    x: Int, y: Int,
-    w: Int, h: Int,
-    weightx: Double, weighty: Double
-) {
-    val layout = layout as GridBagLayout
-    val gbc = GridBagConstraints().apply gbc@{
-        fill = GridBagConstraints.BOTH
-        gridx = x
-        gridy = y
-        gridwidth = w
-        gridheight = h
-        this@gbc.weightx = weightx
-        this@gbc.weighty = weighty
-    }
-    add(component)
-    layout.setConstraints(component, gbc)
 }
 
 fun <R> executeAndReturn(function: () -> R): R {

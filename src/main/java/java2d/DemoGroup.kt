@@ -108,7 +108,7 @@ class DemoGroup internal constructor(
                 val x = p.componentCount % 2
                 val y = p.componentCount / 2
                 val w = if (i == classes.lastIndex) 2 else 1
-                p.addToGridBag(demoPanel, x, y, w, 1, 1.0, 1.0)
+                p.add(demoPanel, GBC(x, y).span(w, 1).fill().grow())
             } else {
                 p.add(demoPanel)
             }

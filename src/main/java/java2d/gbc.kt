@@ -56,6 +56,18 @@ fun GridBagConstraints.grow(): GridBagConstraints {
     return this
 }
 
+fun GridBagConstraints.growHorizontal(): GridBagConstraints {
+    weightx = 1.0
+    weighty = 0.0
+    return this
+}
+
+fun GridBagConstraints.growVertical(): GridBagConstraints {
+    weightx = 0.0
+    weighty = 1.0
+    return this
+}
+
 fun GridBagConstraints.noGrow(): GridBagConstraints {
     weightx = 0.0
     weighty = 0.0
