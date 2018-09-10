@@ -83,7 +83,7 @@ val systemTextAntialiasing: Any? = run {
     (hints as? Map<*, *>)?.get(RenderingHints.KEY_TEXT_ANTIALIASING)
 }
 
-
+@Deprecated("Use GBC(x, y).fill()")
 fun JComponent.addToGridBag(
     component: Component,
     x: Int, y: Int,

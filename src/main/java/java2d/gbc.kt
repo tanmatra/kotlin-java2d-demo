@@ -50,6 +50,18 @@ fun GridBagConstraints.weight(x: Double, y: Double): GridBagConstraints {
     return this
 }
 
+fun GridBagConstraints.grow(): GridBagConstraints {
+    weightx = 1.0
+    weighty = 1.0
+    return this
+}
+
+fun GridBagConstraints.noGrow(): GridBagConstraints {
+    weightx = 0.0
+    weighty = 0.0
+    return this
+}
+
 fun GridBagConstraints.insets(top: Int, left: Int, bottom: Int, right: Int): GridBagConstraints {
     insets = Insets(top, left, bottom, right)
     return this

@@ -50,63 +50,64 @@ import javax.swing.border.TitledBorder
  */
 class GlobalControls(private val java2Demo: Java2Demo) : JPanel(GridBagLayout()), ItemListener
 {
-    val textureChooser = TextureChooser(this, 0)
-    val antialiasingCheckBox: JCheckBox
-    val renderCheckBox: JCheckBox
-    val toolBarCheckBox: JCheckBox
-    val compositeCheckBox: JCheckBox
-    val textureCheckBox: JCheckBox
-    val slider: JSlider
+    val antialiasingCheckBox: JCheckBox = addCheckBox("Anti-Aliasing", true, 0)
+
+    val renderCheckBox: JCheckBox = addCheckBox("Rendering Quality", false, 1)
+
+    val textureCheckBox: JCheckBox = addCheckBox("Texture", false, 2)
+
+    val compositeCheckBox: JCheckBox = addCheckBox("AlphaComposite", false, 3)
+
+    private val screenComboBox: JComboBox<String> = JComboBox<String>().apply {
+        preferredSize = Dimension(120, 18)
+        isLightWeightPopupEnabled = true
+        font = FONT
+        for (s in SCREEN_NAMES) {
+            addItem(s)
+        }
+        addItemListener(this@GlobalControls)
+    }.also {
+        add(it, GBC(0, 4).fill())
+    }
+
+    val toolBarCheckBox: JCheckBox = addCheckBox("Tools", false, 5)
+
+    val slider: JSlider = JSlider(SwingConstants.HORIZONTAL, 0, 200, 30).apply {
+        addChangeListener { onSliderChange() }
+        border = TitledBorder(EtchedBorder()).apply {
+            titleFont = FONT
+            title = "Anim delay = 30 ms"
+        }
+        minimumSize = Dimension(80, 46)
+    }.also {
+        add(it, GBC(0, 6).fill().grow())
+    }
+
+    val textureChooser = TextureChooser(this, 0).also {
+        add(it, GBC(0, 7).fill().grow())
+    }
+
     var itemEventSource: Any? = null
-    private val screenComboBox: JComboBox<String>
+
     var selectedScreenIndex: Int
         get() = screenComboBox.selectedIndex
         set(value) { screenComboBox.selectedIndex = value }
-    val selectedScreenItem
-        get() = screenComboBox.selectedItem
+
+    val selectedScreenItem: String?
+        get() = screenComboBox.selectedItem as String?
 
     init {
         border = TitledBorder(EtchedBorder(), "Global Controls")
-
-        antialiasingCheckBox = createCheckBox("Anti-Aliasing", true, 0)
-        renderCheckBox = createCheckBox("Rendering Quality", false, 1)
-        textureCheckBox = createCheckBox("Texture", false, 2)
-        compositeCheckBox = createCheckBox("AlphaComposite", false, 3)
-
-        screenComboBox = JComboBox<String>().apply {
-            preferredSize = Dimension(120, 18)
-            isLightWeightPopupEnabled = true
-            font = FONT
-            for (s in SCREEN_NAMES) {
-                addItem(s)
-            }
-            addItemListener(this@GlobalControls)
-        }
-        addToGridBag(screenComboBox, 0, 4, 1, 1, 0.0, 0.0)
-
-        toolBarCheckBox = createCheckBox("Tools", false, 5)
-
-        slider = JSlider(SwingConstants.HORIZONTAL, 0, 200, 30).apply {
-            addChangeListener { onSliderChange() }
-            border = TitledBorder(EtchedBorder()).apply {
-                titleFont = FONT
-                title = "Anim delay = 30 ms"
-            }
-            minimumSize = Dimension(80, 46)
-        }
-        addToGridBag(slider, 0, 6, 1, 1, 1.0, 1.0)
-
-        addToGridBag(textureChooser, 0, 7, 1, 1, 1.0, 1.0)
     }
 
-    private fun createCheckBox(text: String, selected: Boolean, y: Int): JCheckBox {
-        val checkBox = JCheckBox(text, selected).apply {
+    private fun addCheckBox(text: String, selected: Boolean, y: Int): JCheckBox {
+        return JCheckBox(text, selected).apply {
             font = FONT
             horizontalAlignment = SwingConstants.LEFT
             addItemListener(this@GlobalControls)
+        }.also {
+            add(it, GBC(0, y).fill().grow())
         }
-        addToGridBag(checkBox, 0, y, 1, 1, 1.0, 1.0)
-        return checkBox
     }
 
     private fun onSliderChange() {
