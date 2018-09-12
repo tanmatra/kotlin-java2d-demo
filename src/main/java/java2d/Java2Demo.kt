@@ -37,6 +37,7 @@ import java.awt.Color
 import java.awt.Component
 import java.awt.Cursor
 import java.awt.Dimension
+import java.awt.EventQueue
 import java.awt.Font
 import java.awt.Graphics
 import java.awt.Graphics2D
@@ -83,7 +84,6 @@ class Java2Demo(
 {
     // private JMenuItem ccthreadMI, verboseMI;
     private var runWindow: RunWindow? = null
-    private var cloningFeature: CloningFeature? = null
     private var runFrame: JFrame? = null
     private var cloningFrame: JFrame? = null
 
@@ -246,44 +246,42 @@ class Java2Demo(
     }
 
     fun createRunWindow() {
-        if (runFrame != null) {
-            runFrame!!.toFront()
-            return
-        }
-        runWindow = RunWindow(this)
-        runFrame = JFrame("Run").apply {
-            addWindowListener(object : WindowAdapter() {
-                override fun windowClosing(e: WindowEvent?) {
-                    runWindow!!.stop()
-                    dispose()
-                }
-                override fun windowClosed(e: WindowEvent?) {
-                    runFrame = null
-                }
-            })
-            contentPane.add(runWindow, BorderLayout.CENTER)
-            pack()
-            size = if (Java2DemoApplet.applet == null) Dimension(200, 125) else Dimension(200, 150)
-            isVisible = true
+        runFrame?.toFront() ?: run {
+            val runWindow = RunWindow(this).also { runWindow = it }
+            runFrame = JFrame("Run").apply {
+                addWindowListener(object : WindowAdapter() {
+                    override fun windowClosing(e: WindowEvent?) {
+                        runWindow.stop()
+                        this@Java2Demo.runWindow = null
+                        dispose()
+                    }
+                    override fun windowClosed(e: WindowEvent?) {
+                        runFrame = null
+                    }
+                })
+                contentPane.add(runWindow, BorderLayout.CENTER)
+                pack()
+                size = if (Java2DemoApplet.applet == null) Dimension(200, 125) else Dimension(200, 150)
+                isVisible = true
+            }
         }
     }
 
     fun startRunWindow() {
-        SwingUtilities.invokeLater { runWindow!!.doRunAction() }
+        runWindow?.let { EventQueue.invokeLater { it.doRunAction() } }
     }
 
     private fun createCloningFeature() {
-        if (cloningFeature == null) {
-            cloningFeature = CloningFeature(this)
+        cloningFrame?.toFront() ?: run {
+            val cloningFeature = CloningFeature(this)
             cloningFrame = JFrame("Cloning Demo").apply {
                 addWindowListener(object : WindowAdapter() {
                     override fun windowClosing(e: WindowEvent?) {
-                        cloningFeature!!.stop()
+                        cloningFeature.stop()
                         dispose()
                     }
-
                     override fun windowClosed(e: WindowEvent?) {
-                        cloningFeature = null
+                        cloningFrame = null
                     }
                 })
                 contentPane.add(cloningFeature, BorderLayout.CENTER)
@@ -291,8 +289,6 @@ class Java2Demo(
                 size = Dimension(320, 330)
                 isVisible = true
             }
-        } else {
-            cloningFrame!!.toFront()
         }
     }
 
