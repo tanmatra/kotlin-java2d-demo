@@ -67,6 +67,7 @@ import javax.swing.SwingUtilities
 import javax.swing.UIManager
 import javax.swing.border.EtchedBorder
 import kotlin.math.roundToInt
+import kotlin.reflect.KProperty
 
 /**
  * A demo that shows Java 2D(TM) features.
@@ -87,10 +88,10 @@ class Java2Demo(
     private var cloningFrame: JFrame? = null
 
     private val verboseCheckBox = JCheckBoxMenuItem("Verbose")
-    var isVerbose: Boolean by verboseCheckBox.isSelectedProperty
+    var isVerbose: Boolean by verboseCheckBox.selectedProperty()
 
     private val defaultPrinterCheckBox = JCheckBoxMenuItem("Default Printer")
-    var isDefaultPrinter: Boolean by defaultPrinterCheckBox.isSelectedProperty
+    var isDefaultPrinter: Boolean by defaultPrinterCheckBox.selectedProperty()
 
     val memoryMonitor = MemoryMonitor()
     val performanceMonitor = PerformanceMonitor()
@@ -333,6 +334,10 @@ class Java2Demo(
             val i = tabbedPane.selectedIndex - 1
             groups[i].shutDown(groups[i].panel)
         }
+    }
+
+    fun setupSelectedGroup(issueRepaint: Boolean, eventSource: KProperty<*>?) {
+        groups.getOrNull(tabbedPaneIndex - 1)?.setup(issueRepaint, eventSource)
     }
 
     /**

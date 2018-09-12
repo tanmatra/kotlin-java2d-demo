@@ -55,6 +55,7 @@ import javax.swing.border.EmptyBorder
 import javax.swing.border.SoftBevelBorder
 import javax.swing.event.ChangeEvent
 import javax.swing.event.ChangeListener
+import kotlin.reflect.KProperty
 
 /**
  * DemoGroup handles multiple demos inside of a panel.  Demos are loaded
@@ -191,7 +192,7 @@ class DemoGroup internal constructor(
         setup(false)
     }
 
-    fun setup(issueRepaint: Boolean, eventSource: Any? = null) {
+    fun setup(issueRepaint: Boolean, sourceProperty: KProperty<*>? = null) {
         val panel = panel
 
         // Let PerformanceMonitor know which demos are running
@@ -209,23 +210,7 @@ class DemoGroup internal constructor(
                 val tools = demoPanel.tools!!
                 tools.isVisible = isValid
                 tools.issueRepaint = issueRepaint
-                val toolButtons = arrayOf(
-                    tools.toggleButton, tools.antialiasButton, tools.renderButton,
-                    tools.textureButton, tools.compositeButton)
-                val globalCheckBoxes = arrayOf(
-                    globalControls.toolBarCheckBox, globalControls.antialiasingCheckBox,
-                    globalControls.renderCheckBox, globalControls.textureCheckBox, globalControls.compositeCheckBox)
-                for (j in toolButtons.indices) {
-                    if (eventSource != null && eventSource == globalCheckBoxes[j]) {
-                        if (toolButtons[j].isSelected != globalCheckBoxes[j].isSelected) {
-                            toolButtons[j].doClick()
-                        }
-                    } else if (eventSource == null) {
-                        if (toolButtons[j].isSelected != globalCheckBoxes[j].isSelected) {
-                            toolButtons[j].doClick()
-                        }
-                    }
-                }
+                tools.options.copyFrom(globalControls.options, sourceProperty)
                 tools.isVisible = true
                 java2Demo?.globalControls?.selectedScreenIndex?.let { globalScreenIndex ->
                     if (globalScreenIndex != tools.screenCombo.selectedIndex) {

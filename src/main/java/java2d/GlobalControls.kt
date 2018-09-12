@@ -33,8 +33,6 @@ package java2d
 
 import java.awt.Dimension
 import java.awt.GridBagLayout
-import java.awt.event.ItemEvent
-import java.awt.event.ItemListener
 import javax.swing.JCheckBox
 import javax.swing.JComboBox
 import javax.swing.JPanel
@@ -42,6 +40,7 @@ import javax.swing.JSlider
 import javax.swing.SwingConstants
 import javax.swing.border.EtchedBorder
 import javax.swing.border.TitledBorder
+import kotlin.reflect.KProperty
 
 /**
  * Global Controls panel for changing graphic attributes of
@@ -49,11 +48,8 @@ import javax.swing.border.TitledBorder
  */
 class GlobalControls(private val java2Demo: Java2Demo) : JPanel(GridBagLayout())
 {
-    private val itemListener = ItemListener { event: ItemEvent ->
-        val tabIndex = java2Demo.tabbedPaneIndex
-        if (tabIndex != 0) {
-            java2Demo.groups[tabIndex - 1].setup(true, event.source)
-        }
+    private val optionsListener = { kProperty: KProperty<*>? ->
+        java2Demo.setupSelectedGroup(true, kProperty)
     }
 
     val antialiasingCheckBox: JCheckBox = addCheckBox("Anti-Aliasing", true, 0)
@@ -70,7 +66,9 @@ class GlobalControls(private val java2Demo: Java2Demo) : JPanel(GridBagLayout())
         for (s in SCREEN_NAMES) {
             addItem(s)
         }
-        addItemListener(itemListener)
+        addItemListener {
+            optionsListener(null)
+        }
     }.also {
         add(it, GBC(0, 4).fill())
     }
@@ -109,14 +107,20 @@ class GlobalControls(private val java2Demo: Java2Demo) : JPanel(GridBagLayout())
     val selectedScreenItem: String?
         get() = screenComboBox.selectedItem as String?
 
+    val options = object : DemoOptions {
+        override var toolBar by toolBarCheckBox.selectedProperty(optionsListener)
+        override var antialiasing by antialiasingCheckBox.selectedProperty(optionsListener)
+        override var renderQuality by renderCheckBox.selectedProperty(optionsListener)
+        override var texture by textureCheckBox.selectedProperty(optionsListener)
+        override var composite by compositeCheckBox.selectedProperty(optionsListener)
+    }
+
     init {
         border = TitledBorder(EtchedBorder(), "Global Controls")
     }
 
     private fun addCheckBox(text: String, selected: Boolean, y: Int): JCheckBox {
-        return JCheckBox(text, selected).apply {
-            addItemListener(itemListener)
-        }.also {
+        return JCheckBox(text, selected).also {
             add(it, GBC(0, y).fill().grow())
         }
     }

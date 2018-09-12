@@ -91,7 +91,7 @@ class Tools(private val java2Demo: Java2Demo?,
                 bumpyIcon.stop()
             }
         })
-        addActionListener {
+        addItemListener {
             isExpanded = !isExpanded
             this@Tools.preferredSize = if (isExpanded) Dimension(200, 38) else Dimension(200, 6)
             val center = (this@Tools.layout as BorderLayout).getLayoutComponent(BorderLayout.CENTER)
@@ -172,6 +172,14 @@ class Tools(private val java2Demo: Java2Demo?,
                 surface.clearSurface = true
             }
         }
+
+    val options = object : DemoOptions {
+        override var toolBar: Boolean by toggleButton.selectedProperty()
+        override var antialiasing: Boolean by antialiasButton.selectedProperty()
+        override var renderQuality: Boolean by renderButton.selectedProperty()
+        override var texture: Boolean by textureButton.selectedProperty()
+        override var composite: Boolean by compositeButton.selectedProperty()
+    }
 
     init {
         preferredSize = Dimension(200, 8)
@@ -261,7 +269,7 @@ class Tools(private val java2Demo: Java2Demo?,
             initializeButton()
             isSelected = property.get()
             toolTipText = if (isSelected) selectedToolTip else unselectedToolTip
-            addActionListener {
+            addItemListener {
                 toolTipText = if (isSelected) selectedToolTip else unselectedToolTip
                 property.set(isSelected)
                 checkRepaint()
