@@ -439,35 +439,31 @@ class Java2Demo(
 
             for (arg in args) {
                 val value = arg.substringAfter('=', "")
+                val globalControls = java2Demo.globalControls
+                val globalOptions = globalControls.options
                 when {
                     arg.startsWith("-runs=") -> {
-                        RunWindow.numRuns = Integer.parseInt(value)
+                        RunWindow.numRuns = value.toInt()
                         RunWindow.exit = true
                         java2Demo.createRunWindow()
                     }
-                    arg.startsWith("-screen=") ->
-                        java2Demo.globalControls.selectedScreenIndex = value.toInt()
-                    arg.startsWith("-antialias=") ->
-                        java2Demo.globalControls.antialiasingCheckBox.isSelected = value.endsWith("true")
-                    arg.startsWith("-rendering=") ->
-                        java2Demo.globalControls.renderCheckBox.isSelected = value.endsWith("true")
-                    arg.startsWith("-texture=") ->
-                        java2Demo.globalControls.textureCheckBox.isSelected = value.endsWith("true")
-                    arg.startsWith("-composite=") ->
-                        java2Demo.globalControls.compositeCheckBox.isSelected = value.endsWith("true")
+                    arg.startsWith("-screen=") -> globalControls.selectedScreenIndex = value.toInt()
+                    arg.startsWith("-antialias=") -> globalOptions.antialiasing = value.toBoolean()
+                    arg.startsWith("-rendering=") -> globalOptions.renderQuality = value.toBoolean()
+                    arg.startsWith("-texture=") -> globalOptions.texture = value.toBoolean()
+                    arg.startsWith("-composite=") -> globalOptions.composite = value.toBoolean()
                     arg.startsWith("-verbose") -> java2Demo.isVerbose = true
                     arg.startsWith("-print") -> {
                         java2Demo.isDefaultPrinter = true
                         RunWindow.printCheckBox.isSelected = true
                     }
-                    arg.startsWith("-columns=") ->
-                        DemoGroup.columns = Integer.parseInt(value)
+                    arg.startsWith("-columns=") -> DemoGroup.columns = value.toInt()
                     arg.startsWith("-buffers=") -> {
                         // usage -buffers=3,10
                         RunWindow.buffersFlag = true
                         val (v1, v2) = value.split(',')
-                        RunWindow.bufBeg = Integer.parseInt(v1)
-                        RunWindow.bufEnd = Integer.parseInt(v2)
+                        RunWindow.bufBeg = v1.toInt()
+                        RunWindow.bufEnd = v2.toInt()
                     }
                     arg.startsWith("-ccthread") -> Java2Demo.ccthreadCB.isSelected = true
                     arg.startsWith("-zoom") -> RunWindow.zoomCheckBox.isSelected = true
