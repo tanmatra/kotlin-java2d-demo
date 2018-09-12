@@ -1,6 +1,7 @@
 package java2d
 
 import javax.swing.AbstractButton
+import javax.swing.JComboBox
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
@@ -30,3 +31,16 @@ class SelectedProperty(
 }
 
 fun AbstractButton.selectedProperty(onChange: KPropertyCallback? = null) = SelectedProperty(this, onChange)
+
+class ComboBoxSelectedIndexProperty(private val comboBox: JComboBox<*>) : ReadWriteProperty<Any, Int>
+{
+    override operator fun getValue(thisRef: Any, property: KProperty<*>): Int {
+        return comboBox.selectedIndex
+    }
+
+    override fun setValue(thisRef: Any, property: KProperty<*>, value: Int) {
+        comboBox.selectedIndex = value
+    }
+}
+
+fun JComboBox<*>.selectedIndexProperty() = ComboBoxSelectedIndexProperty(this)

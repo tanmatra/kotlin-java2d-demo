@@ -212,9 +212,9 @@ class DemoGroup internal constructor(
                 tools.issueRepaint = issueRepaint
                 tools.options.copyFrom(globalControls.options, sourceProperty)
                 tools.isVisible = true
-                java2Demo?.globalControls?.selectedScreenIndex?.let { globalScreenIndex ->
-                    if (globalScreenIndex != tools.screenCombo.selectedIndex) {
-                        tools.screenCombo.selectedIndex = globalScreenIndex
+                globalControls.selectedScreenIndex.let { globalScreenIndex ->
+                    if (globalScreenIndex != tools.selectedScreenIndex) {
+                        tools.selectedScreenIndex = globalScreenIndex
                     }
                 }
                 if (java2Demo?.isVerbose == true) {

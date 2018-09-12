@@ -237,7 +237,7 @@ class RunWindow(private val java2Demo: Java2Demo) : JPanel(GridBagLayout()), Run
                                         clone.surface!!.animating?.stop()
                                         clone.tools?.let { tools ->
                                             tools.issueRepaint = true
-                                            tools.screenCombo.selectedIndex = cloneIndex
+                                            tools.selectedScreenIndex = cloneIndex
                                             tools.issueRepaint = false
                                         }
                                     }

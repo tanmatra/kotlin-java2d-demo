@@ -106,16 +106,16 @@ class Tools(private val java2Demo: Java2Demo?,
         rolloverIcon = ToggleIcon(this@Tools, ROLLOVER_COLOR)
     }
 
-    val antialiasButton: AbstractButton = addToggleTool(surface::isAntialiasing, "A",
+    private val antialiasButton: AbstractButton = addToggleTool(surface::isAntialiasing, "A",
         selectedToolTip = "Antialiasing On", unselectedToolTip = "Antialiasing Off")
 
-    val renderButton: AbstractButton = addToggleTool(surface::isRenderingQuality, "R",
+    private val renderButton: AbstractButton = addToggleTool(surface::isRenderingQuality, "R",
         selectedToolTip = "Rendering Quality", unselectedToolTip = "Rendering Speed")
 
-    val textureButton: AbstractButton = addToggleTool(::texture, "T",
+    private val textureButton: AbstractButton = addToggleTool(::texture, "T",
         selectedToolTip = "Texture On", unselectedToolTip = "Texture Off")
 
-    val compositeButton: AbstractButton = addToggleTool(surface::isComposite, "C",
+    private val compositeButton: AbstractButton = addToggleTool(surface::isComposite, "C",
         selectedToolTip = "Composite On", unselectedToolTip = "Composite Off")
 
     val printButton: AbstractButton = addTool(DemoImages.getImage("print.gif", this), "Print the Surface") {
@@ -143,7 +143,7 @@ class Tools(private val java2Demo: Java2Demo?,
         null
     }
 
-    val screenCombo: JComboBox<String> = JComboBox<String>().apply {
+    private val screenComboBox: JComboBox<String> = JComboBox<String>().apply {
         preferredSize = Dimension(100, 18)
         for (name in GlobalControls.SCREEN_NAMES) {
             addItem(name)
@@ -154,11 +154,17 @@ class Tools(private val java2Demo: Java2Demo?,
         }
     }
 
+    var selectedScreenIndex: Int by screenComboBox.selectedIndexProperty()
+
     var cloneButton: AbstractButton? = null
 
     var issueRepaint = true
 
-    val slider: JSlider?
+    private val animationDelaySlider: JSlider?
+
+    var animationDelay: Int
+        get() = animationDelaySlider?.value ?: -1
+        set(value) { animationDelaySlider?.value = value }
 
     var isExpanded: Boolean = false
 
@@ -188,14 +194,14 @@ class Tools(private val java2Demo: Java2Demo?,
 
         val toolbarPanel = JPanel(FlowLayout(FlowLayout.CENTER, 5, 0)).apply {
             add(toolbar)
-            add(screenCombo)
+            add(screenComboBox)
             border = EtchedBorder()
         }
 
         val center = if (surface is AnimatingSurface) {
             fun formatSliderText(value: Int) = " Sleep = %d ms".format(value)
             val sliderLabel = JLabel(formatSliderText(INITIAL_SLEEP))
-            slider = JSlider(SwingConstants.HORIZONTAL, 0, 200, INITIAL_SLEEP).apply {
+            animationDelaySlider = JSlider(SwingConstants.HORIZONTAL, 0, 200, INITIAL_SLEEP).apply {
                 addChangeListener {
                     sliderLabel.text = formatSliderText(value)
                     sliderLabel.repaint()
@@ -205,7 +211,7 @@ class Tools(private val java2Demo: Java2Demo?,
             val sliderPanel = JPanel(BorderLayout()).apply {
                 border = EtchedBorder()
                 add(sliderLabel, BorderLayout.WEST)
-                add(slider, BorderLayout.CENTER)
+                add(animationDelaySlider, BorderLayout.CENTER)
             }
             val cardLayout = CardLayout()
             val cardPanel = JPanel(cardLayout)
@@ -218,7 +224,7 @@ class Tools(private val java2Demo: Java2Demo?,
             cardPanel.add(sliderPanel)
             cardPanel
         } else {
-            slider = null
+            animationDelaySlider = null
             toolbarPanel
         }
 

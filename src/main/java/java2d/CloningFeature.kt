@@ -147,24 +147,25 @@ class CloningFeature(private val java2Demo: Java2Demo) : JPanel(), Runnable
             }
             demoPanel = component as DemoPanel
             demoPanel.tools?.let { tools ->
+                val options = tools.options
                 EventQueue.invokeLater {
                     when (i) {
                         0 -> {
                             textArea.append("   Changing AntiAliasing\n")
-                            tools.antialiasButton.doClick()
+                            options.antialiasing = !options.antialiasing
                         }
                         1 -> {
                             textArea.append("   Changing Composite & Texture\n")
-                            tools.compositeButton.doClick()
-                            tools.textureButton.doClick()
+                            options.composite = !options.composite
+                            options.texture = !options.texture
                         }
                         2 -> {
                             textArea.append("   Changing Screen\n")
-                            tools.screenCombo.setSelectedIndex(4)
+                            tools.selectedScreenIndex = 4
                         }
                         3 -> {
                             textArea.append("   Removing a clone\n")
-                            tools.cloneButton!!.doClick()
+                            tools.cloneButton?.doClick()
                         }
                     }
                 }

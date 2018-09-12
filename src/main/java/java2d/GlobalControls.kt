@@ -84,7 +84,7 @@ class GlobalControls(private val java2Demo: Java2Demo) : JPanel(GridBagLayout())
             val panel = demoGroup.panel
             for (i in 0 until panel.componentCount) {
                 val demoPanel = panel.getComponent(i) as DemoPanel
-                demoPanel.tools?.slider?.value = value
+                demoPanel.tools?.animationDelay = value
             }
             repaint()
         }
@@ -100,9 +100,7 @@ class GlobalControls(private val java2Demo: Java2Demo) : JPanel(GridBagLayout())
         add(it, GBC(0, 7).fill().grow())
     }
 
-    var selectedScreenIndex: Int
-        get() = screenComboBox.selectedIndex
-        set(value) { screenComboBox.selectedIndex = value }
+    var selectedScreenIndex: Int by screenComboBox.selectedIndexProperty()
 
     val selectedScreenItem: String?
         get() = screenComboBox.selectedItem as String?
