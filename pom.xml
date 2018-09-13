@@ -24,7 +24,7 @@
                     <jvmTarget>1.8</jvmTarget>
                     <args>
                         <arg>-Xjsr305=strict</arg>
-                        <arg>-Xenable-jvm-default</arg>
+                        <arg>-Xjvm-default=enable</arg>
                         <arg>-Xprogressive</arg>
                     </args>
                 </configuration>
