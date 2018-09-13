@@ -79,7 +79,8 @@ import kotlin.reflect.KProperty
  */
 class Java2Demo(
     private val progressLabel: JLabel,
-    private val progressBar: JProgressBar
+    private val progressBar: JProgressBar,
+    private val applet: Boolean = false
 ) : JPanel(BorderLayout())
 {
     // private JMenuItem ccthreadMI, verboseMI;
@@ -159,7 +160,7 @@ class Java2Demo(
         JPopupMenu.setDefaultLightWeightPopupEnabled(false)
         val menuBar = JMenuBar()
 
-        if (Java2DemoApplet.applet == null) {
+        if (!applet) {
             val file = menuBar.add(JMenu("File"))
             file.add(JMenuItem("Exit").apply {
                 addActionListener {
@@ -261,7 +262,7 @@ class Java2Demo(
                 })
                 contentPane.add(runWindow, BorderLayout.CENTER)
                 pack()
-                size = if (Java2DemoApplet.applet == null) Dimension(200, 125) else Dimension(200, 150)
+                size = if (!applet) Dimension(200, 125) else Dimension(200, 150)
                 isVisible = true
             }
         }
@@ -370,7 +371,6 @@ class Java2Demo(
 
     companion object
     {
-        var demo: Java2Demo? = null
         lateinit var ccthreadCB: JCheckBoxMenuItem
 
         private fun initFrame(args: Array<String>) {
@@ -382,12 +382,6 @@ class Java2Demo(
                 addWindowListener(object : WindowAdapter() {
                     override fun windowClosing(e: WindowEvent?) {
                         System.exit(0)
-                    }
-                    override fun windowDeiconified(e: WindowEvent?) {
-                        demo?.start()
-                    }
-                    override fun windowIconified(e: WindowEvent?) {
-                        demo?.stop()
                     }
                 })
                 JOptionPane.setRootFrame(this)
@@ -422,9 +416,16 @@ class Java2Demo(
             frame.isVisible = true
 
             val java2Demo = Java2Demo(progressLabel, progressBar)
-            demo = java2Demo //FIXME
 
             frame.run {
+                addWindowListener(object : WindowAdapter() {
+                    override fun windowDeiconified(e: WindowEvent?) {
+                        java2Demo.start()
+                    }
+                    override fun windowIconified(e: WindowEvent?) {
+                        java2Demo.stop()
+                    }
+                })
                 contentPane.removeAll()
                 contentPane.layout = BorderLayout()
                 contentPane.add(java2Demo, BorderLayout.CENTER)

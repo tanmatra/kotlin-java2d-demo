@@ -66,9 +66,9 @@ import javax.swing.JProgressBar
  */
 class Java2DemoApplet : JApplet()
 {
-    override fun init() {
-        applet = this
+    private lateinit var demo: Java2Demo
 
+    override fun init() {
         val panel = JPanel()
         contentPane.add(panel, BorderLayout.CENTER)
         panel.layout = BoxLayout(panel, BoxLayout.X_AXIS)
@@ -108,8 +108,7 @@ class Java2DemoApplet : JApplet()
         validate()
         isVisible = true
 
-        val demo = Java2Demo(progressLabel, progressBar)
-        Java2Demo.demo = demo
+        val demo = Java2Demo(progressLabel, progressBar, applet = true).also { this.demo = it }
         contentPane.remove(panel)
         contentPane.layout = BorderLayout()
         contentPane.add(demo, BorderLayout.CENTER)
@@ -150,16 +149,10 @@ class Java2DemoApplet : JApplet()
     }
 
     override fun start() {
-        Java2Demo.demo?.start()
+        demo.start()
     }
 
     override fun stop() {
-        Java2Demo.demo?.stop()
-    }
-
-    companion object
-    {
-        var applet: JApplet? = null
-            private set
+        demo.stop()
     }
 }
