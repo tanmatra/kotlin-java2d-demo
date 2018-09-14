@@ -85,7 +85,6 @@ class Java2Demo(
 {
     // private JMenuItem ccthreadMI, verboseMI;
     private var runWindow: RunWindow? = null
-    private var runFrame: JFrame? = null
     private var cloningFrame: JFrame? = null
 
     private val verboseCheckBox = JCheckBoxMenuItem("Verbose")
@@ -247,17 +246,15 @@ class Java2Demo(
     }
 
     fun createRunWindow() {
-        runFrame?.toFront() ?: run {
-            val runWindow = RunWindow(this).also { runWindow = it }
-            runFrame = JFrame("Run").apply {
+        runWindow?.frame?.toFront() ?: run {
+            val runFrame = JFrame("Run")
+            val runWindow = RunWindow(this, runFrame).also { runWindow = it }
+            with(runFrame) {
                 addWindowListener(object : WindowAdapter() {
                     override fun windowClosing(e: WindowEvent?) {
                         runWindow.stop()
                         this@Java2Demo.runWindow = null
                         dispose()
-                    }
-                    override fun windowClosed(e: WindowEvent?) {
-                        runFrame = null
                     }
                 })
                 contentPane.add(runWindow, BorderLayout.CENTER)

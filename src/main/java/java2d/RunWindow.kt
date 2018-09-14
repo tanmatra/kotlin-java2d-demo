@@ -41,6 +41,7 @@ import java.util.Date
 import java.util.logging.Level
 import javax.swing.JButton
 import javax.swing.JCheckBox
+import javax.swing.JFrame
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JProgressBar
@@ -53,7 +54,10 @@ import javax.swing.border.EmptyBorder
 /**
  * A separate window for running the Java2Demo.  Go from tab to tab or demo to demo.
  */
-class RunWindow(private val java2Demo: Java2Demo) : JPanel(GridBagLayout()), Runnable
+class RunWindow(
+    private val java2Demo: Java2Demo,
+    internal val frame: JFrame
+) : JPanel(GridBagLayout()), Runnable
 {
     private val delayTextField: JTextField
 
