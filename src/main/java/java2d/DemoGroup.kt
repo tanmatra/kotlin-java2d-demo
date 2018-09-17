@@ -45,7 +45,6 @@ import java.awt.event.MouseEvent
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import javax.swing.JButton
-import javax.swing.JCheckBoxMenuItem
 import javax.swing.JFrame
 import javax.swing.JPanel
 import javax.swing.JTabbedPane
@@ -65,10 +64,13 @@ import kotlin.reflect.KProperty
  * Loads all the demos found in the demos/Fonts directory.
  */
 class DemoGroup internal constructor(
-    private val java2Demo: Java2Demo? = null,
-    groupInfo: GroupInfo
+    groupInfo: GroupInfo,
+    private val globalOptions: GlobalOptions,
+    private val java2Demo: Java2Demo? = null
 ) : JPanel(), ChangeListener, ActionListener
 {
+    internal constructor(groupInfo: GroupInfo, java2Demo: Java2Demo) : this(groupInfo, java2Demo, java2Demo)
+
     private val groupName = groupInfo.groupName
     lateinit var clonePanels: Array<JPanel>
     var tabbedPane: JTabbedPane? = null
@@ -99,7 +101,7 @@ class DemoGroup internal constructor(
 
         // For each demo in the group, prepare a DemoPanel.
         classes.forEachIndexed { i, cls ->
-            val demoPanel = DemoPanel(java2Demo, cls)
+            val demoPanel = DemoPanel(globalOptions, cls)
             demoPanel.setDemoBorder(p)
             demoPanel.surface?.run {
                 addMouseListener(mouseListener)
@@ -217,7 +219,7 @@ class DemoGroup internal constructor(
                         tools.selectedScreenIndex = globalScreenIndex
                     }
                 }
-                if (java2Demo?.isVerbose == true) {
+                if (globalOptions.isVerbose) {
                     demoPanel.surface.verbose(java2Demo)
                 }
                 demoPanel.surface.sleepAmount = globalControls.slider.value.toLong()
@@ -304,9 +306,12 @@ class DemoGroup internal constructor(
 
         @JvmStatic
         fun main(args: Array<String>) {
+            val options = GlobalOptions.Basic()
+            options.isCustomControlThread = args.any { it.startsWith("-ccthread") }
+
             val groupName = args.getOrNull(0) ?: return
             val groupInfo = GroupInfo.findByName(groupName) ?: return
-            val group = DemoGroup(null, groupInfo)
+            val group = DemoGroup(groupInfo, options)
             JFrame("Java2D Demo - DemoGroup").apply {
                 addWindowListener(object : WindowAdapter() {
                     override fun windowClosing(e: WindowEvent?) {
@@ -326,11 +331,6 @@ class DemoGroup internal constructor(
                 setSize(FRAME_WIDTH, FRAME_HEIGHT)
                 setLocationRelativeTo(null)  // centers f on screen
                 isVisible = true
-            }
-            for (arg in args) {
-                if (arg.startsWith("-ccthread")) {
-                    Java2Demo.ccthreadCB = JCheckBoxMenuItem("CCThread", true)
-                }
             }
             group.setup(false)
         }

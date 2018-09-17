@@ -46,7 +46,7 @@ import javax.swing.border.SoftBevelBorder
  * Other component types welcome.
  */
 class DemoPanel(
-    private val java2Demo: Java2Demo?,
+    private val globalOptions: GlobalOptions,
     private val component: Component
 ) : JPanel(BorderLayout())
 {
@@ -54,13 +54,13 @@ class DemoPanel(
     val customControlsContext: CustomControlsContext?
     val tools: Tools?
 
-    constructor(java2Demo: Java2Demo?, clazz: Class<out Component>) : this(java2Demo, loadComponent(clazz))
+    constructor(globalOptions: GlobalOptions, clazz: Class<out Component>) : this(globalOptions, loadComponent(clazz))
 
     init {
         add(component)
         if (component is Surface) {
             surface = component
-            tools = Tools(java2Demo, component)
+            tools = Tools(globalOptions, component)
             add(tools, BorderLayout.SOUTH)
         } else {
             surface = null
@@ -78,7 +78,7 @@ class DemoPanel(
 
     val componentName get() = component.name
 
-    fun clone() = DemoPanel(java2Demo, component.javaClass)
+    fun clone() = DemoPanel(globalOptions, component.javaClass)
 
     fun start() {
         if (surface != null) {
@@ -87,7 +87,7 @@ class DemoPanel(
                 (surface as? AnimatingSurface)?.start()
             }
         }
-        if (customControlsContext != null && Java2Demo.ccthreadCB != null && Java2Demo.ccthreadCB.isSelected) {
+        if (customControlsContext != null && globalOptions.isCustomControlThread) {
             customControlsContext.handleThread(START)
         }
     }

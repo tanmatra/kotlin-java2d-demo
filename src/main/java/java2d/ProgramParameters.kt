@@ -17,7 +17,7 @@ abstract class ProgramParameters
             val (s1, s2) = it.split(',')
             runWindowOptions.setBuffers(s1.toInt(), s2.toInt())
         }
-        get("ccthread")?.let { Java2Demo.ccthreadCB.isSelected = true }
+        get("ccthread")?.let { demo.isCustomControlThread = true }
         get("columns")?.let { DemoGroup.columns = it.toInt() }
         get("composite")?.let { globalOptions.composite = it.toBoolean() }
         get("delay")?.let { runWindowOptions.delay = it.toInt() }

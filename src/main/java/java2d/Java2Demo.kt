@@ -81,17 +81,17 @@ class Java2Demo(
     private val progressLabel: JLabel,
     private val progressBar: JProgressBar,
     private val applet: Boolean = false
-) : JPanel(BorderLayout())
+) : JPanel(BorderLayout()), GlobalOptions
 {
     // private JMenuItem ccthreadMI, verboseMI;
     internal var runWindow: RunWindow? = null
     private var cloningFrame: JFrame? = null
 
     private val verboseCheckBox = JCheckBoxMenuItem("Verbose")
-    var isVerbose: Boolean by verboseCheckBox.selectedProperty()
+    override var isVerbose: Boolean by verboseCheckBox.selectedProperty()
 
     private val defaultPrinterCheckBox = JCheckBoxMenuItem("Default Printer")
-    var isDefaultPrinter: Boolean by defaultPrinterCheckBox.selectedProperty()
+    override var isDefaultPrinter: Boolean by defaultPrinterCheckBox.selectedProperty()
 
     val memoryMonitor = MemoryMonitor()
     val performanceMonitor = PerformanceMonitor()
@@ -107,6 +107,22 @@ class Java2Demo(
         set(value) { tabbedPane.selectedIndex = value }
     val tabbedPaneCount: Int
         get() = tabbedPane.tabCount
+
+    private val customThreadMenuItem = JCheckBoxMenuItem("Custom Controls Thread").apply {
+        addItemListener {
+            val state = if (isCustomControlThread)
+                CustomControlsContext.State.START else
+                CustomControlsContext.State.STOP
+            if (tabbedPaneIndex != 0) {
+                val panel = groups[tabbedPaneIndex - 1].panel
+                for (component in panel.components) {
+                    val demoPanel = component as DemoPanel
+                    demoPanel.customControlsContext?.handleThread(state)
+                }
+            }
+        }
+    }
+    override var isCustomControlThread: Boolean by customThreadMenuItem.selectedProperty()
 
     val groups: List<DemoGroup>
 
@@ -146,7 +162,7 @@ class Java2Demo(
         groups = GroupInfo.LIST.map { groupInfo ->
             val groupName = groupInfo.groupName
             progressLabel.text = "Loading demos.$groupName"
-            val demoGroup = DemoGroup(this, groupInfo)
+            val demoGroup = DemoGroup(groupInfo, this)
             tabbedPane.addTab(groupName, null)
             progressBar.value = progressBar.value + 1
             demoGroup
@@ -207,19 +223,7 @@ class Java2Demo(
 
         optionsMenu.add(JSeparator())
 
-        ccthreadCB = optionsMenu.add(JCheckBoxMenuItem("Custom Controls Thread").apply {
-            addItemListener {
-                val state = if (ccthreadCB.isSelected) CustomControlsContext.State.START
-                    else CustomControlsContext.State.STOP
-                if (tabbedPaneIndex != 0) {
-                    val p = groups[tabbedPaneIndex - 1].panel
-                    for (i in 0 until p.componentCount) {
-                        val dp = p.getComponent(i) as DemoPanel
-                        dp.customControlsContext?.handleThread(state)
-                    }
-                }
-            }
-        }) as JCheckBoxMenuItem
+        optionsMenu.add(customThreadMenuItem)
 
         optionsMenu.add(defaultPrinterCheckBox)
         optionsMenu.add(verboseCheckBox)
@@ -368,8 +372,6 @@ class Java2Demo(
 
     companion object
     {
-        lateinit var ccthreadCB: JCheckBoxMenuItem
-
         private fun initFrame(args: Array<String>) {
             val frame = JFrame("Java 2D(TM) Demo").apply {
                 accessibleContext.accessibleDescription = "A sample application to demonstrate Java2D features"

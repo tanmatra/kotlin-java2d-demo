@@ -427,7 +427,7 @@ abstract class Surface : JPanel(), Printable
 
         @JvmStatic
         fun createDemoFrame(surface: Surface) {
-            val demoPanel = DemoPanel(null, surface)
+            val demoPanel = DemoPanel(GlobalOptions.Basic(), surface)
             JFrame("Java2D Demo - ${surface.name}").apply {
                 addWindowListener(object : WindowAdapter() {
                     override fun windowClosing(e: WindowEvent?) {

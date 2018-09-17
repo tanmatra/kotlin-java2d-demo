@@ -67,7 +67,7 @@ import kotlin.reflect.KMutableProperty0
  * start & stop on animated demos; control for cloning the demo; control for
  * printing the demo.  Expand and collapse the Tools panel with ToggleIcon.
  */
-class Tools(private val java2Demo: Java2Demo?,
+class Tools(private val globalOptions: GlobalOptions,
             private val surface: Surface
 ) : JPanel(BorderLayout())
 {
@@ -308,7 +308,7 @@ class Tools(private val java2Demo: Java2Demo?,
             val printJob = PrinterJob.getPrinterJob()
             printJob.setPrintable(surface)
             val attributes = HashPrintRequestAttributeSet()
-            val proceed = if (java2Demo?.isDefaultPrinter != true) {
+            val proceed = if (!globalOptions.isDefaultPrinter) {
                 printJob.printDialog(attributes)
             } else {
                 true
