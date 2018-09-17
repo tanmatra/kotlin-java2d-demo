@@ -119,14 +119,14 @@ class DemoGroup internal constructor(
     }
 
     fun scatterDemos(eventSource: Component) {
-        if (tabbedPane == null) {
+        val tabbedPane = tabbedPane ?: run {
             shutDown(panel)
             val newPanel = JPanel(BorderLayout()).apply { border = PANEL_BORDER }
 
-            val tabbedPane = JTabbedPane().also { tabbedPane = it }
+            val newTabbedPane = JTabbedPane().also { tabbedPane = it }
 
             val oldGridPanel = getComponent(0) as JPanel
-            tabbedPane.addTab(groupName, oldGridPanel)
+            newTabbedPane.addTab(groupName, oldGridPanel)
 
             clonePanels = oldGridPanel.components.map { oldComponent ->
                 val demoPanel = oldComponent as DemoPanel
@@ -145,25 +145,22 @@ class DemoGroup internal constructor(
                     }
                 }
                 clonesPanel.add(demoPanelClone)
-                tabbedPane.addTab(demoPanel.componentName, clonesPanel)
+                newTabbedPane.addTab(demoPanel.componentName, clonesPanel)
                 clonesPanel
             }.toTypedArray()
 
-            newPanel.add(tabbedPane)
+            newPanel.add(newTabbedPane)
             remove(oldGridPanel)
             add(newPanel)
 
-            tabbedPane.addChangeListener(this)
+            newTabbedPane.addChangeListener(this)
             revalidate()
+            newTabbedPane
         }
 
-        val className = eventSource.javaClass.name
-        for (i in 0 until tabbedPane!!.tabCount) {
-            val s1 = className.substringAfterLast('.')
-            if (tabbedPane!!.getTitleAt(i) == s1) {
-                tabbedPane!!.selectedIndex = i
-                break
-            }
+        val indexOfTab = tabbedPane.indexOfTab(eventSource.javaClass.simpleName)
+        if (indexOfTab > 0) {
+            tabbedPane.selectedIndex = indexOfTab
         }
 
         revalidate()
