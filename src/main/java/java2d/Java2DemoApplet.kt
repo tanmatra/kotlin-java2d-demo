@@ -113,30 +113,12 @@ class Java2DemoApplet : JApplet()
         contentPane.layout = BorderLayout()
         contentPane.add(demo, BorderLayout.CENTER)
 
-        val globalControls = demo.globalControls
-        val globalOptions = globalControls.options
-        getParameter("delay")?.let { RunWindow.delay = it.toInt() }
-        getParameter("ccthread")?.let { Java2Demo.ccthreadCB.isSelected = true }
-        getParameter("screen")?.let { globalControls.selectedScreenIndex = it.toInt() }
-        getParameter("antialias")?.let { globalOptions.antialiasing = it.toBoolean() }
-        getParameter("rendering")?.let { globalOptions.renderQuality = it.toBoolean() }
-        getParameter("texture")?.let { globalOptions.texture = it.toBoolean() }
-        getParameter("composite")?.let { globalOptions.composite = it.toBoolean() }
-        getParameter("verbose")?.let { demo.isVerbose = true }
-        getParameter("columns")?.let { DemoGroup.columns = it.toInt() }
-        getParameter("buffers")?.let {
-            // usage -buffers=3,10
-            RunWindow.buffersFlag = true
-            val (s1, s2) = it.split(',')
-            RunWindow.bufBeg = s1.toInt()
-            RunWindow.bufEnd = s2.toInt()
-        }
-        getParameter("zoom")?.let { RunWindow.zoomCheckBox.isSelected = true }
-        getParameter("runs")?.let {
-            RunWindow.numRuns = it.toInt()
-            demo.createRunWindow()
+        AppletParameters(this).parse(demo)
+
+        if (demo.runWindow != null) {
             RunWindow.runButton.doClick()
         }
+
         validate()
         repaint()
         requestDefaultFocus()

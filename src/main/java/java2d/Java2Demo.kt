@@ -84,7 +84,7 @@ class Java2Demo(
 ) : JPanel(BorderLayout())
 {
     // private JMenuItem ccthreadMI, verboseMI;
-    private var runWindow: RunWindow? = null
+    internal var runWindow: RunWindow? = null
     private var cloningFrame: JFrame? = null
 
     private val verboseCheckBox = JCheckBoxMenuItem("Verbose")
@@ -431,42 +431,12 @@ class Java2Demo(
                 cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR)
             }
 
-            for (arg in args) {
-                val value = arg.substringAfter('=', "")
-                val globalControls = java2Demo.globalControls
-                val globalOptions = globalControls.options
-                when {
-                    arg.startsWith("-runs=") -> {
-                        RunWindow.numRuns = value.toInt()
-                        RunWindow.exit = true
-                        java2Demo.createRunWindow()
-                    }
-                    arg.startsWith("-screen=") -> globalControls.selectedScreenIndex = value.toInt()
-                    arg.startsWith("-antialias=") -> globalOptions.antialiasing = value.toBoolean()
-                    arg.startsWith("-rendering=") -> globalOptions.renderQuality = value.toBoolean()
-                    arg.startsWith("-texture=") -> globalOptions.texture = value.toBoolean()
-                    arg.startsWith("-composite=") -> globalOptions.composite = value.toBoolean()
-                    arg.startsWith("-verbose") -> java2Demo.isVerbose = true
-                    arg.startsWith("-print") -> {
-                        java2Demo.isDefaultPrinter = true
-                        RunWindow.printCheckBox.isSelected = true
-                    }
-                    arg.startsWith("-columns=") -> DemoGroup.columns = value.toInt()
-                    arg.startsWith("-buffers=") -> {
-                        // usage -buffers=3,10
-                        RunWindow.buffersFlag = true
-                        val (v1, v2) = value.split(',')
-                        RunWindow.bufBeg = v1.toInt()
-                        RunWindow.bufEnd = v2.toInt()
-                    }
-                    arg.startsWith("-ccthread") -> Java2Demo.ccthreadCB.isSelected = true
-                    arg.startsWith("-zoom") -> RunWindow.zoomCheckBox.isSelected = true
-                    arg.startsWith("-maxscreen") -> {
-                        frame.setLocation(0, 0)
-                        val screenSize = Toolkit.getDefaultToolkit().screenSize
-                        frame.setSize(screenSize.width, screenSize.height)
-                    }
-                }
+            val parameters = CommandLineParameters(args)
+            parameters.parse(java2Demo)
+            parameters["maxscreen"]?.let {
+                frame.setLocation(0, 0)
+                val screenSize = Toolkit.getDefaultToolkit().screenSize
+                frame.setSize(screenSize.width, screenSize.height)
             }
 
             frame.validate()
@@ -474,23 +444,18 @@ class Java2Demo(
             frame.focusTraversalPolicy.getDefaultComponent(frame).requestFocus()
             java2Demo.start()
 
-            if (RunWindow.exit) {
+            if (java2Demo.runWindow != null) {
+                RunWindow.exit = true
                 java2Demo.startRunWindow()
             }
         }
 
         @JvmStatic
         fun main(args: Array<String>) {
-            for (i in args.indices) {
-                if (args[i].startsWith("-h") || args[i].startsWith("-help")) {
-                    printHelp()
-                    System.exit(0)
-                } else if (args[i].startsWith("-delay=")) {
-                    val s = args[i].substring(args[i].indexOf('=') + 1)
-                    RunWindow.delay = Integer.parseInt(s)
-                }
+            if (args.any { it == "-h" || it == "-help" }) {
+                printHelp()
+                System.exit(0)
             }
-
             SwingUtilities.invokeLater { initFrame(args) }
         }
 
