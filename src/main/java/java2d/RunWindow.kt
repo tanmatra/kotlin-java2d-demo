@@ -221,7 +221,7 @@ internal class RunWindow(
                     var demoPanel: DemoPanel = demoGroup.panel.getComponent(0) as DemoPanel
                     if (demoGroup.tabbedPane == null && demoPanel.surface != null) {
                         invokeAndWait {
-                            demoGroup.mouseClicked(demoPanel.surface!!)
+                            demoGroup.scatterDemos(demoPanel.surface!!)
                         }
                     }
                     for (subTabIndex in 1 until demoGroup.tabbedPane!!.tabCount) {

@@ -169,3 +169,7 @@ fun BufferedImage.copy(): BufferedImage = createSimilar().also {
 fun <T> unsafeLazy(initializer: () -> T): Lazy<T> {
     return lazy(LazyThreadSafetyMode.NONE, initializer)
 }
+
+fun JComponent.increasePreferredWidth(amount: Int) {
+    preferredSize = preferredSize.apply { width += amount }
+}

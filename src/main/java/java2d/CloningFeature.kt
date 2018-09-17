@@ -112,7 +112,7 @@ class CloningFeature(private val java2Demo: Java2Demo) : JPanel(), Runnable
             return
         }
 
-        demoGroup.mouseClicked(demoPanel.surface!!)
+        demoGroup.scatterDemos(demoPanel.surface!!)
 
         Thread.sleep(3333)
 

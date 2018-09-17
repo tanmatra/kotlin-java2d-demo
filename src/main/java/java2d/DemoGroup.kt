@@ -33,8 +33,6 @@ package java2d
 
 import java.awt.BorderLayout
 import java.awt.Component
-import java.awt.Dimension
-import java.awt.Font
 import java.awt.GridBagLayout
 import java.awt.GridLayout
 import java.awt.LayoutManager
@@ -91,85 +89,77 @@ class DemoGroup internal constructor(
         val classes = groupInfo.classes
         // If there are an odd number of demos, use GridBagLayout.
         val panelLayout: LayoutManager = if (classes.size % 2 == 1) GridBagLayout() else GridLayout(0, 2)
-        val p = JPanel(panelLayout).apply { border = PANEL_BORDER }
+        val gridPanel = JPanel(panelLayout).apply { border = PANEL_BORDER }
 
         val mouseListener = object : MouseAdapter() {
-            override fun mouseClicked(e: MouseEvent) {
-                this@DemoGroup.mouseClicked(e.component)
+            override fun mouseClicked(event: MouseEvent) {
+                scatterDemos(event.component)
             }
         }
 
         // For each demo in the group, prepare a DemoPanel.
         classes.forEachIndexed { i, cls ->
             val demoPanel = DemoPanel(globalOptions, cls)
-            demoPanel.setDemoBorder(p)
+            demoPanel.setDemoBorder(gridPanel)
             demoPanel.surface?.run {
                 addMouseListener(mouseListener)
                 monitor = java2Demo?.performanceMonitor != null
             }
             if (panelLayout is GridBagLayout) {
-                val x = p.componentCount % 2
-                val y = p.componentCount / 2
+                val x = gridPanel.componentCount % 2
+                val y = gridPanel.componentCount / 2
                 val w = if (i == classes.lastIndex) 2 else 1
-                p.add(demoPanel, GBC(x, y).span(w, 1).fill().grow())
+                gridPanel.add(demoPanel, GBC(x, y).span(w, 1).fill().grow())
             } else {
-                p.add(demoPanel)
+                gridPanel.add(demoPanel)
             }
         }
 
-        add(p)
+        add(gridPanel)
     }
 
-    fun mouseClicked(component: Component) {
-        var className = component.toString()
-
+    fun scatterDemos(eventSource: Component) {
         if (tabbedPane == null) {
             shutDown(panel)
-            val p = JPanel(BorderLayout()).apply { border = PANEL_BORDER }
+            val newPanel = JPanel(BorderLayout()).apply { border = PANEL_BORDER }
 
-            tabbedPane = JTabbedPane().apply {
-                font = FONT
-            }
+            val tabbedPane = JTabbedPane().also { tabbedPane = it }
 
-            val tmpP = getComponent(0) as JPanel
-            tabbedPane!!.addTab(groupName, tmpP)
+            val oldGridPanel = getComponent(0) as JPanel
+            tabbedPane.addTab(groupName, oldGridPanel)
 
-            clonePanels = Array(tmpP.componentCount) { i ->
-                JPanel(BorderLayout())
-            }
-            for (i in clonePanels.indices) {
-//              clonePanels[i] = JPanel(BorderLayout())
-                val dp = tmpP.getComponent(i) as DemoPanel
-                val c = dp.clone()
-                c.setDemoBorder(clonePanels[i])
-                if (c.surface != null) {
-                    c.surface.monitor = java2Demo?.performanceMonitor != null
-                    val cloneImg = DemoImages.getImage("clone.gif", this)
-                    val tools = c.tools!!
-                    tools.cloneButton = tools.addTool(cloneImg, "Clone the Surface") {
-                        cloneDemo()
-                    }
-                    val d = tools.toolbar.preferredSize
-                    tools.toolbar.preferredSize = Dimension(d.width + 27, d.height)
-                    java2Demo?.backgroundColor?.let { backgroundColor ->
-                        c.surface.background = backgroundColor
+            clonePanels = oldGridPanel.components.map { oldComponent ->
+                val demoPanel = oldComponent as DemoPanel
+                val clonesPanel = JPanel(BorderLayout())
+                val demoPanelClone: DemoPanel = demoPanel.clone()
+                demoPanelClone.setDemoBorder(clonesPanel) // fixme
+                demoPanelClone.surface?.let { surface ->
+                    surface.monitor = java2Demo?.performanceMonitor != null
+                    demoPanelClone.tools?.let { tools ->
+                        val cloneImg = DemoImages.getImage("clone.gif", this)
+                        tools.cloneButton = tools.addTool(cloneImg, "Clone the Surface") {
+                            cloneDemo()
+                        }
+                        tools.toolbar.increasePreferredWidth(27)
+                        java2Demo?.backgroundColor?.let { surface.background = it }
                     }
                 }
-                clonePanels[i].add(c)
-                tabbedPane!!.addTab(dp.componentName, clonePanels[i])
-            }
-            p.add(tabbedPane)
-            remove(tmpP)
-            add(p)
+                clonesPanel.add(demoPanelClone)
+                tabbedPane.addTab(demoPanel.componentName, clonesPanel)
+                clonesPanel
+            }.toTypedArray()
 
-            tabbedPane!!.addChangeListener(this)
+            newPanel.add(tabbedPane)
+            remove(oldGridPanel)
+            add(newPanel)
+
+            tabbedPane.addChangeListener(this)
             revalidate()
         }
 
-        className = className.substring(0, className.indexOf('['))
-
+        val className = eventSource.javaClass.name
         for (i in 0 until tabbedPane!!.tabCount) {
-            val s1 = className.substring(className.indexOf('.') + 1)
+            val s1 = className.substringAfterLast('.')
             if (tabbedPane!!.getTitleAt(i) == s1) {
                 tabbedPane!!.selectedIndex = i
                 break
@@ -257,8 +247,7 @@ class DemoGroup internal constructor(
         tools.cloneButton = tools.addTool(removeImg, "Remove the Surface") {
             removeClone(clone)
         }
-        val d = tools.toolbar.preferredSize
-        tools.toolbar.preferredSize = Dimension(d.width + 27, d.height)
+        tools.toolbar.increasePreferredWidth(27)
         java2Demo?.backgroundColor?.let { backgroundColor ->
             clone.surface?.background = backgroundColor
         }
@@ -301,7 +290,6 @@ class DemoGroup internal constructor(
     companion object
     {
         var columns = 2
-        private val FONT = Font(Font.SERIF, Font.PLAIN, 10)
         private val PANEL_BORDER = CompoundBorder(EmptyBorder(5, 5, 5, 5), BevelBorder(BevelBorder.LOWERED))
 
         @JvmStatic
