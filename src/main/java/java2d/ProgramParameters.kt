@@ -9,32 +9,28 @@ abstract class ProgramParameters
     fun parse(demo: Java2Demo) {
         val globalControls = demo.globalControls
         val globalOptions = globalControls.options
+        val runWindowOptions = RunWindow.Options()
 
         get("antialias")?.let { globalOptions.antialiasing = it.toBoolean() }
         get("buffers")?.let {
             // usage -buffers=3,10
-            RunWindow.buffersFlag = true
             val (s1, s2) = it.split(',')
-            RunWindow.bufBeg = s1.toInt()
-            RunWindow.bufEnd = s2.toInt()
+            runWindowOptions.setBuffers(s1.toInt(), s2.toInt())
         }
         get("ccthread")?.let { Java2Demo.ccthreadCB.isSelected = true }
         get("columns")?.let { DemoGroup.columns = it.toInt() }
         get("composite")?.let { globalOptions.composite = it.toBoolean() }
-        get("delay")?.let { RunWindow.delay = it.toInt() }
-        get("print")?.let {
-            demo.isDefaultPrinter = true
-            RunWindow.printCheckBox.isSelected = true
-        }
+        get("delay")?.let { runWindowOptions.delay = it.toInt() }
+        get("print")?.let { runWindowOptions.print = true }
         get("rendering")?.let { globalOptions.renderQuality = it.toBoolean() }
         get("runs")?.let {
-            RunWindow.numRuns = it.toInt()
-            demo.createRunWindow()
+            runWindowOptions.runs = it.toInt()
+            demo.createRunWindow(runWindowOptions)
         }
         get("screen")?.let { globalControls.selectedScreenIndex = it.toInt() }
         get("texture")?.let { globalOptions.texture = it.toBoolean() }
         get("verbose")?.let { demo.isVerbose = true }
-        get("zoom")?.let { RunWindow.zoomCheckBox.isSelected = true }
+        get("zoom")?.let { runWindowOptions.zoom = true }
     }
 }
 

@@ -54,7 +54,8 @@ import javax.swing.border.EmptyBorder
 /**
  * A separate window for running the Java2Demo.  Go from tab to tab or demo to demo.
  */
-class RunWindow(
+internal class RunWindow(
+    internal val options: Options,
     private val java2Demo: Java2Demo,
     internal val frame: JFrame
 ) : JPanel(GridBagLayout()), Runnable
@@ -97,10 +98,10 @@ class RunWindow(
             foreground = Color.BLACK
         })
 
-        runsTextField = JTextField(numRuns.toString()).apply {
+        runsTextField = JTextField(options.runs.toString()).apply {
             preferredSize = Dimension(30, 20)
             addActionListener {
-                numRuns = Integer.parseInt(text.trim())
+                options.runs = text.trim().toInt()
             }
         }.also {
             p2.add(it)
@@ -112,24 +113,29 @@ class RunWindow(
             font = FONT
             foreground = Color.BLACK
         })
-        delayTextField = JTextField(delay.toString()).apply {
+        delayTextField = JTextField(options.delay.toString()).apply {
             preferredSize = Dimension(30, 20)
             addActionListener {
-                delay = Integer.parseInt(text.trim())
+                options.delay = text.trim().toInt()
             }
         }.also {
             p2.add(it)
         }
         p1.add(p2)
 
+        zoomCheckBox.isSelected = options.zoom
         zoomCheckBox.horizontalAlignment = SwingConstants.CENTER
         zoomCheckBox.font = FONT
+
+        printCheckBox.isSelected = options.print
+        java2Demo.isDefaultPrinter = options.print
         printCheckBox.font = FONT
-        p1.add(zoomCheckBox)
-        p1.add(printCheckBox)
         printCheckBox.addActionListener {
             java2Demo.isDefaultPrinter = printCheckBox.isSelected
         }
+
+        p1.add(zoomCheckBox)
+        p1.add(printCheckBox)
         add(p1, GBC(0, 1).span(3, 1).fill().grow())
     }
 
@@ -155,8 +161,8 @@ class RunWindow(
     }
 
     fun sleepPerTab() {
-        repeat(delay + 1) {
-            repeat(10) {
+        repeat(options.delay + 1) { _ ->
+            repeat(10) { _ ->
                 if (thread == null) return
                 try {
                     Thread.sleep(100)
@@ -191,13 +197,13 @@ class RunWindow(
         val javaVersion = System.getProperty("java.version")
         val osName = System.getProperty("os.name")
         val osVersion = System.getProperty("os.version")
-        println("\nJava2D Demo RunWindow : $numRuns Runs, $delay second delay between tabs\n" +
+        println("\nJava2D Demo RunWindow : ${options.runs} Runs, ${options.delay} second delay between tabs\n" +
                 "java version: $javaVersion\n" +
                 "$osName $osVersion\n")
         val runtime = Runtime.getRuntime()
 
         var runNum = 0
-        while (runNum < numRuns && thread != null) {
+        while (runNum < options.runs && thread != null) {
             val date = Date()
             print("#$runNum $date, ")
             runtime.gc()
@@ -210,12 +216,12 @@ class RunWindow(
                 val demoGroup: DemoGroup? = if (mainTabIndex != 0) java2Demo.groups[mainTabIndex - 1] else null
                 invokeAndWait {
                     progressBar.value = 0
-                    progressBar.maximum = delay
+                    progressBar.maximum = options.delay
                     demoGroup?.invalidate()
                     java2Demo.tabbedPaneIndex = mainTabIndex
                 }
 
-                if (demoGroup != null && (zoomCheckBox.isSelected || buffersFlag)) {
+                if (demoGroup != null && (zoomCheckBox.isSelected || options.buffersFlag)) {
                     var demoPanel: DemoPanel = demoGroup.panel.getComponent(0) as DemoPanel
                     if (demoGroup.tabbedPane == null && demoPanel.surface != null) {
                         invokeAndWait {
@@ -226,14 +232,14 @@ class RunWindow(
                         if (thread == null) break
                         invokeAndWait {
                             progressBar.value = 0
-                            progressBar.maximum = delay
+                            progressBar.maximum = options.delay
                             demoGroup.tabbedPane!!.selectedIndex = subTabIndex
                         }
                         val p = demoGroup.panel
-                        if (buffersFlag && p.componentCount == 1) {
+                        if (options.buffersFlag && p.componentCount == 1) {
                             demoPanel = p.getComponent(0) as DemoPanel
                             demoPanel.surface!!.animating?.stop()
-                            for (cloneIndex in bufBeg .. bufEnd) {
+                            for (cloneIndex in options.beginBuffer .. options.endBuffer) {
                                 if (thread == null) break
                                 invokeAndWait {
                                     demoPanel.tools!!.cloneButton!!.doClick()
@@ -260,9 +266,9 @@ class RunWindow(
                     sleepPerTab()
                 }
             }
-            if (runNum + 1 == numRuns) {
+            if (runNum + 1 == options.runs) {
                 println("Finished.")
-                if (exit && thread != null) {
+                if (options.exit && thread != null) {
                     println("System.exit(0).")
                     System.exit(0)
                 }
@@ -278,17 +284,28 @@ class RunWindow(
         thread = null
     }
 
+    internal class Options(
+        var runs: Int = 20,
+        var delay: Int = 10,
+        var exit: Boolean = false,
+        var zoom: Boolean = false,
+        var print: Boolean = false,
+        var buffersFlag: Boolean = false,
+        var beginBuffer: Int = 0,
+        var endBuffer: Int = 0
+    ) {
+        fun setBuffers(beginBuffer: Int, endBuffer: Int) {
+            buffersFlag = true
+            this.beginBuffer = beginBuffer
+            this.endBuffer = endBuffer
+        }
+    }
+
     companion object
     {
         lateinit var runButton: JButton
-        var delay = 10
-        var numRuns = 20
-        var exit: Boolean = false
         val zoomCheckBox = JCheckBox("Zoom")
         val printCheckBox = JCheckBox("Print")
-        var buffersFlag: Boolean = false
-        var bufBeg: Int = 0
-        var bufEnd: Int = 0
         private val FONT = Font(Font.SERIF, Font.PLAIN, 10)
 
         private fun invokeAndWait(run: () -> Unit) {

@@ -245,10 +245,10 @@ class Java2Demo(
         return menuBar
     }
 
-    fun createRunWindow() {
+    internal fun createRunWindow(options: RunWindow.Options = RunWindow.Options()) {
         runWindow?.frame?.toFront() ?: run {
             val runFrame = JFrame("Run")
-            val runWindow = RunWindow(this, runFrame).also { runWindow = it }
+            val runWindow = RunWindow(options, this, runFrame).also { runWindow = it }
             with(runFrame) {
                 addWindowListener(object : WindowAdapter() {
                     override fun windowClosing(e: WindowEvent?) {
@@ -444,8 +444,8 @@ class Java2Demo(
             frame.focusTraversalPolicy.getDefaultComponent(frame).requestFocus()
             java2Demo.start()
 
-            if (java2Demo.runWindow != null) {
-                RunWindow.exit = true
+            java2Demo.runWindow?.let { runWindow ->
+                runWindow.options.exit = true
                 java2Demo.startRunWindow()
             }
         }
