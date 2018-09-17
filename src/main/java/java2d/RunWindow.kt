@@ -34,7 +34,6 @@ package java2d
 import java.awt.Color
 import java.awt.Dimension
 import java.awt.EventQueue
-import java.awt.Font
 import java.awt.GridBagLayout
 import java.awt.GridLayout
 import java.util.Date
@@ -69,20 +68,34 @@ internal class RunWindow(
 
     private val progressBar: JProgressBar
 
+    private val zoomCheckBox = JCheckBox("Zoom").apply {
+        isSelected = options.zoom
+        horizontalAlignment = SwingConstants.CENTER
+    }
+
+    private val printCheckBox = JCheckBox("Print").apply {
+        isSelected = options.print
+        java2Demo.isDefaultPrinter = options.print
+        addActionListener {
+            java2Demo.isDefaultPrinter = isSelected
+        }
+    }
+
+    internal val runButton = JButton("Run").apply {
+        background = Color.GREEN
+        addActionListener {
+            if (text == "Run") {
+                doRunAction()
+            } else {
+                stop()
+            }
+        }
+        minimumSize = Dimension(70, 30)
+    }
+
     init {
         border = CompoundBorder(EmptyBorder(5, 5, 5, 5), BevelBorder(BevelBorder.LOWERED))
 
-        runButton = JButton("Run").apply {
-            background = Color.GREEN
-            addActionListener {
-                if (text == "Run") {
-                    doRunAction()
-                } else {
-                    stop()
-                }
-            }
-            minimumSize = Dimension(70, 30)
-        }
         add(runButton, GBC(0, 0).fill())
 
         progressBar = JProgressBar().apply {
@@ -93,10 +106,7 @@ internal class RunWindow(
 
         val p1 = JPanel(GridLayout(2, 2))
         var p2 = JPanel()
-        p2.add(JLabel("Runs:").apply {
-            font = FONT
-            foreground = Color.BLACK
-        })
+        p2.add(JLabel("Runs:"))
 
         runsTextField = JTextField(options.runs.toString()).apply {
             preferredSize = Dimension(30, 20)
@@ -109,10 +119,7 @@ internal class RunWindow(
 
         p1.add(p2)
         p2 = JPanel()
-        p2.add(JLabel("Delay:").apply {
-            font = FONT
-            foreground = Color.BLACK
-        })
+        p2.add(JLabel("Delay:"))
         delayTextField = JTextField(options.delay.toString()).apply {
             preferredSize = Dimension(30, 20)
             addActionListener {
@@ -122,17 +129,6 @@ internal class RunWindow(
             p2.add(it)
         }
         p1.add(p2)
-
-        zoomCheckBox.isSelected = options.zoom
-        zoomCheckBox.horizontalAlignment = SwingConstants.CENTER
-        zoomCheckBox.font = FONT
-
-        printCheckBox.isSelected = options.print
-        java2Demo.isDefaultPrinter = options.print
-        printCheckBox.font = FONT
-        printCheckBox.addActionListener {
-            java2Demo.isDefaultPrinter = printCheckBox.isSelected
-        }
 
         p1.add(zoomCheckBox)
         p1.add(printCheckBox)
@@ -303,11 +299,6 @@ internal class RunWindow(
 
     companion object
     {
-        lateinit var runButton: JButton
-        val zoomCheckBox = JCheckBox("Zoom")
-        val printCheckBox = JCheckBox("Print")
-        private val FONT = Font(Font.SERIF, Font.PLAIN, 10)
-
         private fun invokeAndWait(run: () -> Unit) {
             try {
                 EventQueue.invokeAndWait(run)

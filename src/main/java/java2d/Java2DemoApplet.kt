@@ -115,9 +115,7 @@ class Java2DemoApplet : JApplet()
 
         AppletParameters(this).parse(demo)
 
-        if (demo.runWindow != null) {
-            RunWindow.runButton.doClick()
-        }
+        demo.runWindow?.runButton?.doClick()
 
         validate()
         repaint()
