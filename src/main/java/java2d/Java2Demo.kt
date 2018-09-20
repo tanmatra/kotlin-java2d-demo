@@ -114,7 +114,7 @@ class Java2Demo(
                 CustomControlsContext.State.START else
                 CustomControlsContext.State.STOP
             if (tabbedPaneIndex != 0) {
-                val panel = groups[tabbedPaneIndex - 1].panel
+                val panel = groups[tabbedPaneIndex - 1].activePanel
                 for (component in panel.components) {
                     val demoPanel = component as DemoPanel
                     demoPanel.customControlsContext?.handleThread(state)
@@ -296,13 +296,9 @@ class Java2Demo(
 
     private fun selectBackgroundColor() {
         backgroundColor = JColorChooser.showDialog(this, "Background Color", Color.WHITE)
-        for (i in 1 until tabbedPaneCount) {
-            val p = groups[i - 1].panel
-            for (j in 0 until p.componentCount) {
-                val dp = p.getComponent(j) as DemoPanel
-                if (dp.surface != null) {
-                    dp.surface.background = backgroundColor
-                }
+        groups.forEach { demoGroup ->
+            demoGroup.activePanel.forEachComponent<DemoPanel> { demoPanel ->
+                demoPanel.surface?.background = backgroundColor
             }
         }
     }
@@ -330,7 +326,7 @@ class Java2Demo(
             memoryMonitor.surface.stop()
             performanceMonitor.stop()
             val i = tabbedPane.selectedIndex - 1
-            groups[i].shutDown(groups[i].panel)
+            groups[i].shutDown(groups[i].activePanel)
         }
     }
 

@@ -104,7 +104,7 @@ class CloningFeature(private val java2Demo: Java2Demo) : JPanel(), Runnable
 
         index = java2Demo.tabbedPaneIndex - 1
         val demoGroup: DemoGroup = java2Demo.groups[index]
-        var demoPanel: DemoPanel = demoGroup.panel.getComponent(0) as DemoPanel
+        var demoPanel: DemoPanel = demoGroup.activePanel.getComponent(0) as DemoPanel
         if (demoPanel.surface == null) {
             EventQueue.invokeLater {
                 textArea.append("Sorry your zeroth component is not a Surface.")

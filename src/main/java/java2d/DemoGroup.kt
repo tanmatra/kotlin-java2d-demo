@@ -74,7 +74,7 @@ class DemoGroup internal constructor(
     var tabbedPane: JTabbedPane? = null
     private var index: Int = 0
 
-    val panel: JPanel
+    val activePanel: JPanel
         get() = tabbedPane.let { tabbedPane ->
             if (tabbedPane != null) {
                 tabbedPane.selectedComponent as JPanel
@@ -120,7 +120,7 @@ class DemoGroup internal constructor(
 
     fun scatterDemos(eventSource: Component) {
         val tabbedPane = tabbedPane ?: run {
-            shutDown(panel)
+            shutDown(activePanel)
             val newPanel = JPanel(BorderLayout()).apply { border = PANEL_BORDER }
 
             val newTabbedPane = JTabbedPane().also { tabbedPane = it }
@@ -182,19 +182,18 @@ class DemoGroup internal constructor(
     }
 
     fun setup(issueRepaint: Boolean, sourceProperty: KProperty<*>? = null) {
-        val panel = panel
+        val activePanel = activePanel
 
         // Let PerformanceMonitor know which demos are running
         java2Demo?.performanceMonitor?.run {
-            surface.panel = panel
+            surface.panel = activePanel
             surface.setSurfaceState()
         }
 
         val globalControls = java2Demo?.globalControls
         // .. tools check against global controls settings ..
         // .. & start demo & custom control thread if need be ..
-        for (i in 0 until panel.componentCount) {
-            val demoPanel = panel.getComponent(i) as DemoPanel
+        activePanel.forEachComponent<DemoPanel> { demoPanel ->
             if (demoPanel.surface != null && globalControls != null) {
                 val tools = demoPanel.tools!!
                 tools.isVisible = isValid
@@ -220,9 +219,9 @@ class DemoGroup internal constructor(
         revalidate()
     }
 
-    fun shutDown(p: JPanel) {
-        for (i in 0 until p.componentCount) {
-            (p.getComponent(i) as DemoPanel).stop()
+    fun shutDown(panel: JPanel) {
+        panel.forEachComponent<DemoPanel> { demoPanel ->
+            demoPanel.stop()
         }
         System.gc()
     }
@@ -270,8 +269,7 @@ class DemoGroup internal constructor(
             panel.add(cmp)
         } else {
             panel.remove(theClone)
-            val cmpCount = panel.componentCount
-            for (j in 1 until cmpCount) {
+            for (j in 1 until panel.componentCount) {
                 val top = if (j + 1 >= 3) 0 else 5
                 val left = if ((j + 1) % 2 == 0) 0 else 5
                 val eb = EmptyBorder(top, left, 5, 5)
@@ -306,7 +304,7 @@ class DemoGroup internal constructor(
                         group.setup(false)
                     }
                     override fun windowIconified(e: WindowEvent?) {
-                        group.shutDown(group.panel)
+                        group.shutDown(group.activePanel)
                     }
                 })
                 contentPane.add(group, BorderLayout.CENTER)

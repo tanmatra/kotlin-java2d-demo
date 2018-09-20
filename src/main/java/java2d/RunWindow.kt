@@ -175,7 +175,7 @@ internal class RunWindow(
                 java2Demo.globalControls.toolBarCheckBox.isSelected = true
                 demoGroup.invalidate()
             }
-            for (component in demoGroup.panel.components) {
+            for (component in demoGroup.activePanel.components) {
                 val demoPanel = component as DemoPanel
                 demoPanel.tools?.let { tools ->
                     demoPanel.surface?.animating?.let { animating ->
@@ -218,7 +218,7 @@ internal class RunWindow(
                 }
 
                 if (demoGroup != null && (zoomCheckBox.isSelected || options.buffersFlag)) {
-                    var demoPanel: DemoPanel = demoGroup.panel.getComponent(0) as DemoPanel
+                    var demoPanel: DemoPanel = demoGroup.activePanel.getComponent(0) as DemoPanel
                     if (demoGroup.tabbedPane == null && demoPanel.surface != null) {
                         invokeAndWait {
                             demoGroup.scatterDemos(demoPanel.surface!!)
@@ -231,7 +231,7 @@ internal class RunWindow(
                             progressBar.maximum = options.delay
                             demoGroup.tabbedPane!!.selectedIndex = subTabIndex
                         }
-                        val p = demoGroup.panel
+                        val p = demoGroup.activePanel
                         if (options.buffersFlag && p.componentCount == 1) {
                             demoPanel = p.getComponent(0) as DemoPanel
                             demoPanel.surface!!.animating?.stop()

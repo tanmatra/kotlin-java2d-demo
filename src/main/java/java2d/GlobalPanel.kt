@@ -60,7 +60,7 @@ class GlobalPanel(private val java2Demo: Java2Demo) : JPanel(BorderLayout(5, 5))
 
     fun onDemoTabChanged(selectedIndex: Int) {
         java2Demo.groups[index].let { oldGroup ->
-            oldGroup.shutDown(oldGroup.panel)
+            oldGroup.shutDown(oldGroup.activePanel)
         }
         if (selectedIndex == 0) {
             java2Demo.memoryMonitor.surface.stop()

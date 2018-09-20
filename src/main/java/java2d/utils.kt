@@ -1,5 +1,7 @@
 package java2d
 
+import java.awt.Component
+import java.awt.Container
 import java.awt.Dimension
 import java.awt.EventQueue
 import java.awt.Graphics
@@ -172,4 +174,13 @@ fun <T> unsafeLazy(initializer: () -> T): Lazy<T> {
 
 fun JComponent.increasePreferredWidth(amount: Int) {
     preferredSize = preferredSize.apply { width += amount }
+}
+
+inline fun <reified T : Component> Container.forEachComponent(block: (T) -> Unit) {
+    for (i in 0 until componentCount) {
+        val component = getComponent(i)
+        if (component is T) {
+            block(component)
+        }
+    }
 }

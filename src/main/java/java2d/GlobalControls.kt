@@ -81,9 +81,7 @@ class GlobalControls(private val java2Demo: Java2Demo) : JPanel(GridBagLayout())
             (border as TitledBorder).title = formatTitle(value)
             val index = java2Demo.tabbedPaneIndex - 1
             val demoGroup = java2Demo.groups[index]
-            val panel = demoGroup.panel
-            for (i in 0 until panel.componentCount) {
-                val demoPanel = panel.getComponent(i) as DemoPanel
+            demoGroup.activePanel.forEachComponent<DemoPanel> { demoPanel ->
                 demoPanel.tools?.animationDelay = value
             }
             repaint()
