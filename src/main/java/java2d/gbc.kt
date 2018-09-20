@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package java2d
 
 import java.awt.GridBagConstraints
@@ -5,20 +7,19 @@ import java.awt.Insets
 
 typealias GBC = GridBagConstraints
 
+@Suppress("FunctionName")
 fun GBC(x: Int, y: Int): GridBagConstraints = GridBagConstraints().apply {
     gridx = x
     gridy = y
 }
 
-fun GridBagConstraints.at(x: Int, y: Int): GridBagConstraints {
+fun GridBagConstraints.at(x: Int, y: Int): GridBagConstraints = apply {
     gridx = x
     gridy = y
-    return this
 }
 
-fun GridBagConstraints.fill(value: Int = GridBagConstraints.BOTH): GridBagConstraints {
+fun GridBagConstraints.fill(value: Int = GridBagConstraints.BOTH): GridBagConstraints = apply {
     fill = value
-    return this
 }
 
 fun GridBagConstraints.noFill(): GridBagConstraints = fill(GridBagConstraints.NONE)
@@ -27,54 +28,45 @@ fun GridBagConstraints.fillVertical(): GridBagConstraints = fill(GridBagConstrai
 
 fun GridBagConstraints.fillHorizontal(): GridBagConstraints = fill(GridBagConstraints.HORIZONTAL)
 
-fun GridBagConstraints.span(x: Int, y: Int): GridBagConstraints {
+fun GridBagConstraints.span(x: Int, y: Int): GridBagConstraints = apply {
     gridwidth = x
     gridheight = y
-    return this
 }
 
-fun GridBagConstraints.anchor(value: Int): GridBagConstraints {
+fun GridBagConstraints.anchor(value: Int): GridBagConstraints = apply {
     anchor = value
-    return this
 }
 
-fun GridBagConstraints.pad(x: Int, y: Int): GridBagConstraints {
+fun GridBagConstraints.pad(x: Int, y: Int): GridBagConstraints = apply {
     ipadx = x
     ipady = y
-    return this
 }
 
-fun GridBagConstraints.weight(x: Double, y: Double): GridBagConstraints {
+fun GridBagConstraints.weight(x: Double, y: Double): GridBagConstraints = apply {
     weightx = x
     weighty = y
-    return this
 }
 
-fun GridBagConstraints.grow(): GridBagConstraints {
+fun GridBagConstraints.grow(): GridBagConstraints = apply {
     weightx = 1.0
     weighty = 1.0
-    return this
 }
 
-fun GridBagConstraints.growHorizontal(): GridBagConstraints {
+fun GridBagConstraints.growHorizontal(): GridBagConstraints = apply {
     weightx = 1.0
     weighty = 0.0
-    return this
 }
 
-fun GridBagConstraints.growVertical(): GridBagConstraints {
+fun GridBagConstraints.growVertical(): GridBagConstraints = apply {
     weightx = 0.0
     weighty = 1.0
-    return this
 }
 
-fun GridBagConstraints.noGrow(): GridBagConstraints {
+fun GridBagConstraints.noGrow(): GridBagConstraints = apply {
     weightx = 0.0
     weighty = 0.0
-    return this
 }
 
-fun GridBagConstraints.insets(top: Int, left: Int, bottom: Int, right: Int): GridBagConstraints {
+fun GridBagConstraints.insets(top: Int, left: Int, bottom: Int, right: Int): GridBagConstraints = apply {
     insets = Insets(top, left, bottom, right)
-    return this
 }
