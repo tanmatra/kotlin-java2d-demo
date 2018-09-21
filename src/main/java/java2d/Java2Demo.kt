@@ -96,8 +96,33 @@ class Java2Demo(
     val memoryMonitor = MemoryMonitor()
     val performanceMonitor = PerformanceMonitor()
     val globalControls = GlobalControls(this)
-    lateinit var memoryMonitorCheckBox: JCheckBoxMenuItem
-    lateinit var performanceMontiorCheckBox: JCheckBoxMenuItem
+
+    private val memoryMonitorCheckBox = JCheckBoxMenuItem("Memory Monitor", true).apply {
+        addItemListener {
+            val visible = !memoryMonitor.isVisible
+            memoryMonitor.isVisible = visible
+            memoryMonitor.surface.isVisible = visible
+            if (visible) memoryMonitor.surface.start() else memoryMonitor.surface.stop()
+        }
+    }
+    val isMemoryMonitorVisible: Boolean by memoryMonitorCheckBox.selectedProperty()
+
+    private val performanceMontiorCheckBox = JCheckBoxMenuItem("Performance Monitor", true).apply {
+        addItemListener {
+            performanceMonitor.run {
+                if (isVisible) {
+                    isVisible = false
+                    surface.isVisible = false
+                    stop()
+                } else {
+                    isVisible = true
+                    surface.isVisible = true
+                    start()
+                }
+            }
+        }
+    }
+    val isPerformanceMonitorVisible: Boolean by performanceMontiorCheckBox.selectedProperty()
 
     var backgroundColor: Color? = null
 
@@ -185,8 +210,7 @@ class Java2Demo(
         }
 
         val optionsMenu = menuBar.add(JMenu("Options"))
-
-        optionsMenu.add(JCheckBoxMenuItem("Global Controls", true).apply {
+        optionsMenu += JCheckBoxMenuItem("Global Controls", true).apply {
             addItemListener {
                 val newVisibility = !globalControls.isVisible
                 globalControls.isVisible = newVisibility
@@ -194,57 +218,29 @@ class Java2Demo(
                     cmp.isVisible = newVisibility
                 }
             }
-        }) as JCheckBoxMenuItem
-
-        memoryMonitorCheckBox = optionsMenu.add(JCheckBoxMenuItem("Memory Monitor", true).apply {
-            addItemListener {
-                val visible = !memoryMonitor.isVisible
-                memoryMonitor.isVisible = visible
-                memoryMonitor.surface.isVisible = visible
-                if (visible) memoryMonitor.surface.start() else memoryMonitor.surface.stop()
-            }
-        }) as JCheckBoxMenuItem
-
-        performanceMontiorCheckBox = optionsMenu.add(JCheckBoxMenuItem("Performance Monitor", true).apply {
-            addItemListener {
-                performanceMonitor.run {
-                    if (isVisible) {
-                        isVisible = false
-                        surface.isVisible = false
-                        stop()
-                    } else {
-                        isVisible = true
-                        surface.isVisible = true
-                        start()
-                    }
-                }
-            }
-        }) as JCheckBoxMenuItem
-
-        optionsMenu.add(JSeparator())
-
-        optionsMenu.add(customThreadMenuItem)
-
-        optionsMenu.add(defaultPrinterCheckBox)
-        optionsMenu.add(verboseCheckBox)
-
-        optionsMenu.add(JSeparator())
-
-        optionsMenu.add(JMenuItem("Background Color").apply {
+        }
+        optionsMenu += memoryMonitorCheckBox
+        optionsMenu += performanceMontiorCheckBox
+        optionsMenu += JSeparator()
+        optionsMenu += customThreadMenuItem
+        optionsMenu += defaultPrinterCheckBox
+        optionsMenu += verboseCheckBox
+        optionsMenu += JSeparator()
+        optionsMenu += JMenuItem("Background Color").apply {
             addActionListener {
                 selectBackgroundColor()
             }
-        })
-        optionsMenu.add(JMenuItem("Run Window").apply {
+        }
+        optionsMenu += JMenuItem("Run Window").apply {
             addActionListener {
                 createRunWindow()
             }
-        })
-        optionsMenu.add(JMenuItem("Cloning Feature").apply {
+        }
+        optionsMenu += JMenuItem("Cloning Feature").apply {
             addActionListener {
                 createCloningFeature()
             }
-        })
+        }
 
         return menuBar
     }
@@ -308,11 +304,11 @@ class Java2Demo(
             intro.start()
         } else {
             groups[tabbedPaneIndex - 1].setup(false)
-            if (memoryMonitor.surface.thread == null && memoryMonitorCheckBox.isSelected) {
+            if (memoryMonitor.surface.thread == null && isMemoryMonitorVisible) {
                 memoryMonitor.surface.start()
             }
             performanceMonitor.run {
-                if (!isRunning && performanceMontiorCheckBox.isSelected) {
+                if (!isRunning && isPerformanceMonitorVisible) {
                     start()
                 }
             }

@@ -73,10 +73,10 @@ class GlobalPanel(private val java2Demo: Java2Demo) : JPanel(BorderLayout(5, 5))
                 java2Demo.intro.stop()
                 remove(java2Demo.intro)
                 add(sidePanel, BorderLayout.EAST)
-                if (java2Demo.memoryMonitorCheckBox.isSelected) {
+                if (java2Demo.isMemoryMonitorVisible) {
                     java2Demo.memoryMonitor.surface.start()
                 }
-                if (java2Demo.performanceMontiorCheckBox.isSelected) {
+                if (java2Demo.isPerformanceMonitorVisible) {
                     java2Demo.performanceMonitor.start()
                 }
             } else {

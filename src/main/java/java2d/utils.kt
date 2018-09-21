@@ -184,3 +184,8 @@ inline fun <reified T : Component> Container.forEachComponent(block: (T) -> Unit
         }
     }
 }
+
+@Suppress("NOTHING_TO_INLINE")
+inline operator fun Container.plusAssign(component: Component) {
+    add(component)
+}
