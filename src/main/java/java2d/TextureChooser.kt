@@ -117,12 +117,10 @@ class TextureChooser(
                 override fun mouseClicked(e: MouseEvent?) {
                     TextureChooser.texture = paint
                     clickedFrame = true
-                    for (component in textureChooser.components) {
-                        if (component is Surface) {
-                            if (component != this@Surface && component.clickedFrame) {
-                                component.clickedFrame = false
-                                component.repaint()
-                            }
+                    textureChooser.forEachComponent<Surface> { component ->
+                        if (component != this@Surface && component.clickedFrame) {
+                            component.clickedFrame = false
+                            component.repaint()
                         }
                     }
                     // ABP

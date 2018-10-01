@@ -36,6 +36,7 @@ import java2d.ControlsSurface
 import java2d.CustomControls
 import java2d.RepaintingProperty
 import java2d.createToolButton
+import java2d.forEachComponent
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Dimension
@@ -180,8 +181,8 @@ class Areas : ControlsSurface()
 
             val me = Thread.currentThread()
             while (thread === me) {
-                for (comp in toolbar.components) {
-                    (comp as AbstractButton).doClick()
+                toolbar.forEachComponent<AbstractButton> { button ->
+                    button.doClick()
                     try {
                         Thread.sleep(4444)
                     } catch (e: InterruptedException) {

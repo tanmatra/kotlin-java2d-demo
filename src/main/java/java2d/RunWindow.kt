@@ -175,8 +175,7 @@ internal class RunWindow(
                 java2Demo.globalControls.toolBarCheckBox.isSelected = true
                 demoGroup.invalidate()
             }
-            for (component in demoGroup.activePanel.components) {
-                val demoPanel = component as DemoPanel
+            demoGroup.activePanel.forEachComponent<DemoPanel> { demoPanel ->
                 demoPanel.tools?.let { tools ->
                     demoPanel.surface?.animating?.let { animating ->
                         if (animating.isRunning) {

@@ -129,8 +129,7 @@ class Java2Demo(
             CustomControlsContext.State.STOP
         if (tabbedPaneIndex != 0) {
             val panel = groups[tabbedPaneIndex - 1].activePanel
-            for (component in panel.components) {
-                val demoPanel = component as DemoPanel
+            panel.forEachComponent<DemoPanel> { demoPanel ->
                 demoPanel.customControlsContext?.handleThread(state)
             }
         }
@@ -202,7 +201,7 @@ class Java2Demo(
             addItemListener {
                 val newVisibility = !globalControls.isVisible
                 globalControls.isVisible = newVisibility
-                for (cmp in globalControls.textureChooser.components) {
+                globalControls.textureChooser.forEachComponent<Component> { cmp ->
                     cmp.isVisible = newVisibility
                 }
             }

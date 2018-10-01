@@ -125,12 +125,8 @@ class PerformanceMonitor : JPanel(BorderLayout())
         }
 
         fun setSurfaceState() {
-            panel?.let { panel ->
-                for (component in panel.components) {
-                    if ((component as DemoPanel).surface != null) {
-                        component.surface!!.monitor = (timer != null)
-                    }
-                }
+            panel?.forEachComponent<DemoPanel> { demoPanel ->
+                demoPanel.surface?.monitor = (timer != null)
             }
         }
 
@@ -152,8 +148,8 @@ class PerformanceMonitor : JPanel(BorderLayout())
                     var y = 1
                     val ascent = fontMetrics.ascent
                     val descent = fontMetrics.descent
-                    for (component in panel.components) {
-                        (component as? DemoPanel)?.surface?.performanceString?.let { performanceString ->
+                    panel.forEachComponent<DemoPanel> { component ->
+                        component.surface?.performanceString?.let { performanceString ->
                             y += ascent
                             imgGr.drawString(performanceString, 4, y + 1)
                             y += descent
