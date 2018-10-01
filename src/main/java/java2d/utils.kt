@@ -14,6 +14,7 @@ import java.awt.image.BufferedImage
 import java.lang.reflect.InvocationTargetException
 import java.util.logging.Logger
 import javax.swing.AbstractButton
+import javax.swing.Action
 import javax.swing.JComponent
 import javax.swing.JSlider
 import javax.swing.JToggleButton
@@ -189,3 +190,7 @@ inline fun <reified T : Component> Container.forEachComponent(block: (T) -> Unit
 inline operator fun Container.plusAssign(component: Component) {
     add(component)
 }
+
+var Action.isSelected: Boolean
+    get() = getValue(Action.SELECTED_KEY) as? Boolean ?: false
+    set(value) { putValue(Action.SELECTED_KEY, value) }

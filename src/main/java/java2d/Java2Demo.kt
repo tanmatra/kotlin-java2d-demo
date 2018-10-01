@@ -83,7 +83,6 @@ class Java2Demo(
     private val applet: Boolean = false
 ) : JPanel(BorderLayout()), GlobalOptions
 {
-    // private JMenuItem ccthreadMI, verboseMI;
     internal var runWindow: RunWindow? = null
     private var cloningFrame: JFrame? = null
 
@@ -97,32 +96,23 @@ class Java2Demo(
     val performanceMonitor = PerformanceMonitor()
     val globalControls = GlobalControls(this)
 
-    private val memoryMonitorCheckBox = JCheckBoxMenuItem("Memory Monitor", true).apply {
-        addItemListener {
-            val visible = !memoryMonitor.isVisible
-            memoryMonitor.isVisible = visible
-            memoryMonitor.surface.isVisible = visible
-            if (visible) memoryMonitor.surface.start() else memoryMonitor.surface.stop()
-        }
+    private val memoryMonitorAction = SelectableAction("Memory Monitor", true) {
+        val visible = it.isSelected
+        memoryMonitor.isVisible = visible
+        memoryMonitor.surface.isVisible = visible
+        if (visible) memoryMonitor.surface.start() else memoryMonitor.surface.stop()
     }
-    val isMemoryMonitorVisible: Boolean by memoryMonitorCheckBox.selectedProperty()
+    val isMemoryMonitorVisible: Boolean by memoryMonitorAction.selectedProperty()
 
-    private val performanceMontiorCheckBox = JCheckBoxMenuItem("Performance Monitor", true).apply {
-        addItemListener {
-            performanceMonitor.run {
-                if (isVisible) {
-                    isVisible = false
-                    surface.isVisible = false
-                    stop()
-                } else {
-                    isVisible = true
-                    surface.isVisible = true
-                    start()
-                }
-            }
+    private val performanceMonitorAction = SelectableAction("Performance Monitor", true) {
+        val visible = it.isSelected
+        with(performanceMonitor) {
+            isVisible = visible
+            surface.isVisible = visible
+            if (visible) start() else stop()
         }
     }
-    val isPerformanceMonitorVisible: Boolean by performanceMontiorCheckBox.selectedProperty()
+    val isPerformanceMonitorVisible: Boolean by performanceMonitorAction.selectedProperty()
 
     var backgroundColor: Color? = null
 
@@ -133,21 +123,19 @@ class Java2Demo(
     val tabbedPaneCount: Int
         get() = tabbedPane.tabCount
 
-    private val customThreadMenuItem = JCheckBoxMenuItem("Custom Controls Thread").apply {
-        addItemListener {
-            val state = if (isCustomControlThread)
-                CustomControlsContext.State.START else
-                CustomControlsContext.State.STOP
-            if (tabbedPaneIndex != 0) {
-                val panel = groups[tabbedPaneIndex - 1].activePanel
-                for (component in panel.components) {
-                    val demoPanel = component as DemoPanel
-                    demoPanel.customControlsContext?.handleThread(state)
-                }
+    private val customThreadAction = SelectableAction("Custom Controls Thread", false) {
+        val state = if (it.isSelected)
+            CustomControlsContext.State.START else
+            CustomControlsContext.State.STOP
+        if (tabbedPaneIndex != 0) {
+            val panel = groups[tabbedPaneIndex - 1].activePanel
+            for (component in panel.components) {
+                val demoPanel = component as DemoPanel
+                demoPanel.customControlsContext?.handleThread(state)
             }
         }
     }
-    override var isCustomControlThread: Boolean by customThreadMenuItem.selectedProperty()
+    override var isCustomControlThread: Boolean by customThreadAction.selectedProperty()
 
     val groups: List<DemoGroup>
 
@@ -219,10 +207,10 @@ class Java2Demo(
                 }
             }
         }
-        optionsMenu += memoryMonitorCheckBox
-        optionsMenu += performanceMontiorCheckBox
+        optionsMenu += JCheckBoxMenuItem(memoryMonitorAction)
+        optionsMenu += JCheckBoxMenuItem(performanceMonitorAction)
         optionsMenu += JSeparator()
-        optionsMenu += customThreadMenuItem
+        optionsMenu += JCheckBoxMenuItem(customThreadAction)
         optionsMenu += defaultPrinterCheckBox
         optionsMenu += verboseCheckBox
         optionsMenu += JSeparator()
