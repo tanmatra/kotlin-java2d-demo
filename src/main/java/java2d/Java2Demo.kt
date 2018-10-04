@@ -48,6 +48,7 @@ import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import java.awt.font.FontRenderContext
 import java.awt.font.TextLayout
+import javax.swing.BorderFactory
 import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.Icon
@@ -66,7 +67,6 @@ import javax.swing.JSeparator
 import javax.swing.JTabbedPane
 import javax.swing.SwingUtilities
 import javax.swing.UIManager
-import javax.swing.border.EtchedBorder
 import kotlin.math.roundToInt
 import kotlin.reflect.KProperty
 
@@ -144,7 +144,7 @@ class Java2Demo(
      * Construct the Java2D Demo.
      */
     init {
-        border = EtchedBorder()
+        border = BorderFactory.createEtchedBorder()
 
         add(createMenuBar(), BorderLayout.NORTH)
 

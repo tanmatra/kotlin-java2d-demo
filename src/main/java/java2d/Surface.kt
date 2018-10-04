@@ -55,7 +55,6 @@ import java.awt.image.WritableRaster
 import java.awt.print.PageFormat
 import java.awt.print.Printable
 import java.awt.print.PrinterException
-import java.util.logging.Level
 import javax.swing.JFrame
 import javax.swing.JPanel
 import javax.swing.RepaintManager
@@ -142,7 +141,7 @@ abstract class Surface : JPanel(), Printable
                 outputPerf = true
                 monitor = outputPerf
             }
-        } catch (ex: Exception) {
+        } catch (ignored: Exception) {
         }
     }
 
@@ -181,11 +180,7 @@ abstract class Surface : JPanel(), Printable
             1 -> IndexColorModel(pixelBits, lut1Arr.size, lut1Arr, lut1Arr, lut1Arr)
             2 -> IndexColorModel(pixelBits, lut2Arr.size, lut2Arr, lut2Arr, lut2Arr)
             4 -> IndexColorModel(pixelBits, lut4Arr.size, lut4Arr, lut4Arr, lut4Arr)
-            else -> {
-                val exception = Exception("Invalid # of bit per pixel")
-                getLogger<Surface>().log(Level.SEVERE, null, exception)
-                throw exception
-            }
+            else -> throw IllegalArgumentException("Invalid # of bit per pixel: $pixelBits")
         }
         val dataBufferByte = DataBufferByte(imageData, imageData.size)
         val raster = Raster.createPackedRaster(dataBufferByte, w, h, pixelBits, null)
@@ -193,32 +188,25 @@ abstract class Surface : JPanel(), Printable
     }
 
     private fun createSGISurface(w: Int, h: Int, pixelBits: Int): BufferedImage {
-        val rMask32 = -0x1000000
-        val rMask16 = 0xF800
-        val gMask32 = 0x00FF0000
-        val gMask16 = 0x07C0
-        val bMask32 = 0x0000FF00
-        val bMask16 = 0x003E
-
-        var dcm: DirectColorModel? = null
-        var db: DataBuffer? = null
-        var wr: WritableRaster? = null
+        val colorModel: DirectColorModel
+        val dataBuffer: DataBuffer
+        val writableRaster: WritableRaster
         when (pixelBits) {
             16 -> {
                 val imageDataUShort = ShortArray(w * h)
-                dcm = DirectColorModel(16, rMask16, gMask16, bMask16)
-                db = DataBufferUShort(imageDataUShort, imageDataUShort.size)
-                wr = Raster.createPackedRaster(db, w, h, w, intArrayOf(rMask16, gMask16, bMask16), null)
+                colorModel = DirectColorModel(16, R_MASK_16, G_MASK_16, B_MASK_16)
+                dataBuffer = DataBufferUShort(imageDataUShort, imageDataUShort.size)
+                writableRaster = Raster.createPackedRaster(dataBuffer, w, h, w, BAND_MASK_16, null)
             }
             32 -> {
                 val imageDataInt = IntArray(w * h)
-                dcm = DirectColorModel(32, rMask32, gMask32, bMask32)
-                db = DataBufferInt(imageDataInt, imageDataInt.size)
-                wr = Raster.createPackedRaster(db, w, h, w, intArrayOf(rMask32, gMask32, bMask32), null)
+                colorModel = DirectColorModel(32, R_MASK_32, G_MASK_32, B_MASK_32)
+                dataBuffer = DataBufferInt(imageDataInt, imageDataInt.size)
+                writableRaster = Raster.createPackedRaster(dataBuffer, w, h, w, BAND_MASK_32, null)
             }
-            else -> getLogger<Surface>().log(Level.SEVERE, null, Exception("Invalid # of bit per pixel"))
+            else -> throw IllegalArgumentException("Invalid # of bit per pixel: $pixelBits")
         }
-        return BufferedImage(dcm!!, wr!!, false, null)
+        return BufferedImage(colorModel, writableRaster, false, null)
     }
 
     fun createGraphics2D(
@@ -268,18 +256,14 @@ abstract class Surface : JPanel(), Printable
         var save = true
         if (!isDoubleBuffered) {
             repaintManager = RepaintManager.currentManager(this)
-            save = repaintManager!!.isDoubleBufferingEnabled
+            save = repaintManager.isDoubleBufferingEnabled
             repaintManager.isDoubleBufferingEnabled = false
         }
         super.paintImmediately(x, y, w, h)
-
-        if (repaintManager != null) {
-            repaintManager.isDoubleBufferingEnabled = save
-        }
+        repaintManager?.isDoubleBufferingEnabled = save
     }
 
-    override fun paint(g: Graphics?) {
-
+    override fun paint(g: Graphics) {
         super.paint(g)
 
         val d = size
@@ -311,12 +295,12 @@ abstract class Surface : JPanel(), Printable
         g2.dispose()
 
         if (bufferedImage != null) {
-            g!!.drawImage(bufferedImage, 0, 0, null)
+            g.drawImage(bufferedImage, 0, 0, null)
             toolkit.sync()
         }
 
         if (monitor) {
-            LogPerformance()
+            logPerformance()
         }
     }
 
@@ -358,7 +342,7 @@ abstract class Surface : JPanel(), Printable
         frame = 0
     }
 
-    private fun LogPerformance() {
+    private fun logPerformance() {
         if (frame % REPORTFRAMES == 0L) {
             val end = System.currentTimeMillis()
             val rel = end - start
@@ -368,12 +352,8 @@ abstract class Surface : JPanel(), Printable
                     frame = -1
                 }
             } else {
-                var s1 = java.lang.Float.toString(REPORTFRAMES / (rel / 1000.0f))
-                s1 = if (s1.length < 4)
-                    s1.substring(0, s1.length)
-                else
-                    s1.substring(0, 4)
-                performanceString = "$name $s1 fps"
+                val fps ="%.3g".format(REPORTFRAMES / (rel / 1000.0f))
+                performanceString = "$name $fps fps"
             }
             if (outputPerf) {
                 println(performanceString)
@@ -418,10 +398,19 @@ abstract class Surface : JPanel(), Printable
 
     companion object
     {
+        const val R_MASK_32 = 0xFF000000.toInt()
+        const val G_MASK_32 = 0x00FF0000
+        const val B_MASK_32 = 0x0000FF00
+        const val R_MASK_16 = 0xF800
+        const val G_MASK_16 = 0x07C0
+        const val B_MASK_16 = 0x003E
+        val BAND_MASK_16 = intArrayOf(R_MASK_16, G_MASK_16, B_MASK_16)
+        val BAND_MASK_32 = intArrayOf(R_MASK_32, G_MASK_32, B_MASK_32)
+
         // Lookup tables for BYTE_BINARY 1, 2 and 4 bits.
-        internal var lut1Arr = byteArrayFrom(0, 255)
-        internal var lut2Arr = byteArrayFrom(0, 85, 170, 255)
-        internal var lut4Arr = byteArrayFrom(0, 17, 34, 51, 68, 85, 102, 119, 136, 153, 170, 187, 204, 221, 238, 255)
+        internal var lut1Arr = byteArrayOf(0, 255.toByte())
+        internal var lut2Arr = ByteArray(4) { i -> (i * 85).toByte() }
+        internal var lut4Arr = ByteArray(16) { i -> (i * 17).toByte() }
 
         const private val REPORTFRAMES = 30
 
