@@ -16,9 +16,11 @@ import java.util.logging.Logger
 import javax.swing.AbstractButton
 import javax.swing.Action
 import javax.swing.JComponent
+import javax.swing.JFrame
 import javax.swing.JSlider
 import javax.swing.JToggleButton
 import javax.swing.SwingConstants
+import javax.swing.WindowConstants
 import javax.swing.border.EtchedBorder
 import javax.swing.border.TitledBorder
 import kotlin.reflect.KMutableProperty0
@@ -194,3 +196,14 @@ inline operator fun Container.plusAssign(component: Component) {
 var Action.isSelected: Boolean
     get() = getValue(Action.SELECTED_KEY) as? Boolean ?: false
     set(value) { putValue(Action.SELECTED_KEY, value) }
+
+fun runInFrame(title: String, block: JFrame.() -> Unit) {
+    EventQueue.invokeLater {
+        JFrame(title).apply {
+            defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
+            block()
+            setLocationRelativeTo(null)
+            isVisible = true
+        }
+    }
+}

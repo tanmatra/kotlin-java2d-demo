@@ -50,7 +50,6 @@ import java.awt.geom.Rectangle2D
 import java.awt.image.BufferedImage
 import java.util.Date
 import javax.swing.JCheckBox
-import javax.swing.JFrame
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JTextField
@@ -323,12 +322,9 @@ class MemoryMonitor : JPanel(BorderLayout())
 
         @JvmStatic
         fun main(s: Array<String>) {
-            val demo = MemoryMonitor()
-            JFrame("Java2D Demo - MemoryMonitor").apply {
+            runInFrame("Java2D Demo - MemoryMonitor") {
+                val demo = MemoryMonitor()
                 addWindowListener(object : WindowAdapter() {
-                    override fun windowClosing(e: WindowEvent?) {
-                        System.exit(0)
-                    }
                     override fun windowDeiconified(e: WindowEvent?) {
                         demo.surface.start()
                     }
@@ -338,10 +334,8 @@ class MemoryMonitor : JPanel(BorderLayout())
                 })
                 contentPane.add(demo, BorderLayout.CENTER)
                 pack()
-                size = Dimension(200, 200)
-                isVisible = true
+                demo.surface.start()
             }
-            demo.surface.start()
         }
     }
 }
