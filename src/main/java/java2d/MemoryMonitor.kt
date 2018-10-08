@@ -49,11 +49,11 @@ import java.awt.geom.Line2D
 import java.awt.geom.Rectangle2D
 import java.awt.image.BufferedImage
 import java.util.Date
+import javax.swing.BorderFactory
 import javax.swing.JCheckBox
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JTextField
-import javax.swing.border.EtchedBorder
 import javax.swing.border.TitledBorder
 
 /**
@@ -68,7 +68,7 @@ class MemoryMonitor : JPanel(BorderLayout())
     private val dateStampCheckBox = JCheckBox("Output Date Stamp")
 
     init {
-        border = TitledBorder(EtchedBorder(), "Memory Monitor")
+        border = TitledBorder(BorderFactory.createEtchedBorder(), "Memory Monitor")
         add(surface)
         controls = JPanel(GridBagLayout()).apply {
             preferredSize = PREFERRED_SIZE
@@ -159,34 +159,32 @@ class MemoryMonitor : JPanel(BorderLayout())
             imgGr.drawString(usedStr, 4, h - descent)
 
             // Calculate remaining size
-            val ssH = (ascent + descent).toFloat()
-            val remainingHeight = h.toFloat() - ssH * 2 - 0.5f
+            val textHeight = (ascent + descent).toFloat()
+            val remainingHeight = h.toFloat() - textHeight * 2 - 0.5f
             val blockHeight = remainingHeight / 10
-            val blockWidth = 20.0f
+            val visibleBlockHeight = (blockHeight - 1).toDouble()
+            val blockWidth = 20.0
+            fun blockY(i: Int) = (textHeight + i * blockHeight).toDouble()
 
             // .. Memory Free ..
             imgGr.color = FREE_MEMORY_COLOR
             val memUsage = (freeMemory / totalMemory * 10).toInt()
             for (i in 0 until memUsage) {
-                mfRect.setRect(
-                    5.0, (ssH + i * blockHeight).toDouble(),
-                    blockWidth.toDouble(), (blockHeight - 1).toDouble())
+                mfRect.setRect(5.0, blockY(i), blockWidth, visibleBlockHeight)
                 imgGr.fill(mfRect)
             }
 
             // .. Memory Used ..
             imgGr.color = GREEN
             for (i in memUsage until 10) {
-                muRect.setRect(
-                    5.0, (ssH + i * blockHeight).toDouble(),
-                    blockWidth.toDouble(), (blockHeight - 1).toDouble())
+                muRect.setRect(5.0, blockY(i), blockWidth, visibleBlockHeight)
                 imgGr.fill(muRect)
             }
 
             // .. Draw History Graph ..
             imgGr.color = GRAPH_COLOR
             val graphX = 30
-            val graphY = ssH.toInt()
+            val graphY = textHeight.toInt()
             val graphW = w - graphX - 5
             val graphH = remainingHeight.toInt()
             graphOutlineRect.setRect(graphX.toDouble(), graphY.toDouble(), graphW.toDouble(), graphH.toDouble())
