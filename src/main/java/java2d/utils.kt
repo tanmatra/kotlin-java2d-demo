@@ -15,13 +15,13 @@ import java.lang.reflect.InvocationTargetException
 import java.util.logging.Logger
 import javax.swing.AbstractButton
 import javax.swing.Action
+import javax.swing.BorderFactory
 import javax.swing.JComponent
 import javax.swing.JFrame
 import javax.swing.JSlider
 import javax.swing.JToggleButton
 import javax.swing.SwingConstants
 import javax.swing.WindowConstants
-import javax.swing.border.EtchedBorder
 import javax.swing.border.TitledBorder
 import kotlin.reflect.KMutableProperty0
 
@@ -121,7 +121,7 @@ inline infix fun Int.hasNoBits(bits: Int): Boolean = (this and bits) == 0
 
 fun createTitledSlider(suffix: String, max: Int, property: KMutableProperty0<Int>): JSlider {
     fun formatTitle(value: Int) = "$value $suffix"
-    val titledBorder = TitledBorder(EtchedBorder()).apply {
+    val titledBorder = TitledBorder(BorderFactory.createEtchedBorder()).apply {
         title = formatTitle(property.get())
     }
     return JSlider(SwingConstants.HORIZONTAL, 0, max, property.get()).apply {

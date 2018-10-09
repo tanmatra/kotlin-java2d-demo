@@ -38,13 +38,12 @@ import java.awt.Dimension
 import java.awt.EventQueue
 import java.awt.Font
 import java.io.InterruptedIOException
+import javax.swing.BorderFactory
 import javax.swing.JPanel
 import javax.swing.JScrollPane
 import javax.swing.JTextArea
-import javax.swing.border.BevelBorder
 import javax.swing.border.CompoundBorder
 import javax.swing.border.EmptyBorder
-import javax.swing.border.SoftBevelBorder
 
 /**
  * Illustration of how to use the clone feature of the demo.
@@ -64,7 +63,7 @@ class CloningFeature(private val java2Demo: Java2Demo) : JPanel(), Runnable
 
     init {
         layout = BorderLayout()
-        border = CompoundBorder(EmptyBorder(5, 5, 5, 5), SoftBevelBorder(BevelBorder.RAISED))
+        border = CompoundBorder(EmptyBorder(5, 5, 5, 5), BorderFactory.createRaisedSoftBevelBorder())
         add(JScrollPane(textArea), BorderLayout.CENTER)
         start()
     }

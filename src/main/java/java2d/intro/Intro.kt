@@ -45,9 +45,9 @@ import java.awt.event.MouseEvent
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import java.awt.image.BufferedImage
+import javax.swing.BorderFactory
 import javax.swing.JFrame
 import javax.swing.JPanel
-import javax.swing.border.BevelBorder
 import javax.swing.border.CompoundBorder
 import javax.swing.border.EmptyBorder
 
@@ -64,7 +64,7 @@ class Intro : JPanel(BorderLayout())
     private var showTable = false
 
     init {
-        border = CompoundBorder(EmptyBorder(80, 110, 80, 110), BevelBorder(BevelBorder.LOWERED))
+        border = CompoundBorder(EmptyBorder(80, 110, 80, 110), BorderFactory.createLoweredBevelBorder())
         background = Color.GRAY
         toolTipText = "click for scene table"
         add(surface)

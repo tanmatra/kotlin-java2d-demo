@@ -33,12 +33,12 @@ package java2d
 
 import java.awt.Dimension
 import java.awt.GridBagLayout
+import javax.swing.BorderFactory
 import javax.swing.JCheckBox
 import javax.swing.JComboBox
 import javax.swing.JPanel
 import javax.swing.JSlider
 import javax.swing.SwingConstants
-import javax.swing.border.EtchedBorder
 import javax.swing.border.TitledBorder
 import kotlin.reflect.KProperty
 
@@ -86,7 +86,7 @@ class GlobalControls(private val java2Demo: Java2Demo) : JPanel(GridBagLayout())
             }
             repaint()
         }
-        border = TitledBorder(EtchedBorder()).apply {
+        border = TitledBorder(BorderFactory.createEtchedBorder()).apply {
             title = formatTitle(30)
         }
         minimumSize = Dimension(80, 46)
@@ -114,7 +114,7 @@ class GlobalControls(private val java2Demo: Java2Demo) : JPanel(GridBagLayout())
     }
 
     init {
-        border = TitledBorder(EtchedBorder(), "Global Controls")
+        border = TitledBorder(BorderFactory.createEtchedBorder(), "Global Controls")
     }
 
     private fun addCheckBox(text: String, selected: Boolean, y: Int): JCheckBox {

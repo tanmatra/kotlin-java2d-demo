@@ -3,13 +3,13 @@ package java2d.intro
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Dimension
+import javax.swing.BorderFactory
 import javax.swing.JButton
 import javax.swing.JPanel
 import javax.swing.JScrollPane
 import javax.swing.JSlider
 import javax.swing.JTable
 import javax.swing.SwingConstants
-import javax.swing.border.EtchedBorder
 import javax.swing.border.TitledBorder
 import javax.swing.table.AbstractTableModel
 
@@ -90,7 +90,7 @@ internal class ScenesTable(private val surface: Intro.Surface) : JPanel(BorderLa
 
         val slider = JSlider(JSlider.HORIZONTAL, 0, 200, surface.sleepAmt.toInt()).apply {
             fun formatTitle(value: Int) = "Anim delay = $value ms"
-            border = TitledBorder(EtchedBorder()).apply {
+            border = TitledBorder(BorderFactory.createEtchedBorder()).apply {
                 title = formatTitle(surface.sleepAmt.toInt())
             }
             addChangeListener {

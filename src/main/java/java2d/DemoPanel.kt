@@ -35,11 +35,10 @@ import java2d.CustomControlsContext.State.START
 import java2d.CustomControlsContext.State.STOP
 import java.awt.BorderLayout
 import java.awt.Component
+import javax.swing.BorderFactory
 import javax.swing.JPanel
-import javax.swing.border.BevelBorder
 import javax.swing.border.CompoundBorder
 import javax.swing.border.EmptyBorder
-import javax.swing.border.SoftBevelBorder
 
 /**
  * The panel for the Surface, Custom Controls & Tools.
@@ -103,7 +102,7 @@ class DemoPanel(
     fun setDemoBorder(panel: JPanel) {
         val top = if (panel.componentCount + 1 >= 3) 0 else 5
         val left = if ((panel.componentCount + 1) % 2 == 0) 0 else 5
-        border = CompoundBorder(EmptyBorder(top, left, 5, 5), SoftBevelBorder(BevelBorder.RAISED))
+        border = CompoundBorder(EmptyBorder(top, left, 5, 5), BorderFactory.createRaisedSoftBevelBorder())
     }
 
     companion object {

@@ -47,6 +47,7 @@ import java.security.AccessControlException
 import java.util.logging.Level
 import javax.print.attribute.HashPrintRequestAttributeSet
 import javax.swing.AbstractButton
+import javax.swing.BorderFactory
 import javax.swing.Icon
 import javax.swing.ImageIcon
 import javax.swing.JButton
@@ -59,7 +60,6 @@ import javax.swing.JToggleButton
 import javax.swing.JToolBar
 import javax.swing.SwingConstants
 import javax.swing.Timer
-import javax.swing.border.EtchedBorder
 import kotlin.reflect.KMutableProperty0
 
 /**
@@ -195,7 +195,7 @@ class Tools(private val globalOptions: GlobalOptions,
         val toolbarPanel = JPanel(FlowLayout(FlowLayout.CENTER, 5, 0)).apply {
             add(toolbar)
             add(screenComboBox)
-            border = EtchedBorder()
+            border = BorderFactory.createEtchedBorder()
         }
 
         val center = if (surface is AnimatingSurface) {
@@ -209,7 +209,7 @@ class Tools(private val globalOptions: GlobalOptions,
                 }
             }
             val sliderPanel = JPanel(BorderLayout()).apply {
-                border = EtchedBorder()
+                border = BorderFactory.createEtchedBorder()
                 add(sliderLabel, BorderLayout.WEST)
                 add(animationDelaySlider, BorderLayout.CENTER)
             }

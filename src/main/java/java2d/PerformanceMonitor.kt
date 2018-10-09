@@ -40,9 +40,9 @@ import java.awt.Graphics
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.awt.image.BufferedImage
+import javax.swing.BorderFactory
 import javax.swing.JPanel
 import javax.swing.Timer
-import javax.swing.border.EtchedBorder
 import javax.swing.border.TitledBorder
 
 /**
@@ -55,7 +55,7 @@ class PerformanceMonitor : JPanel(BorderLayout())
     val surface = Surface()
 
     init {
-        border = TitledBorder(EtchedBorder(), "Performance")
+        border = TitledBorder(BorderFactory.createEtchedBorder(), "Performance")
         add(surface)
     }
 

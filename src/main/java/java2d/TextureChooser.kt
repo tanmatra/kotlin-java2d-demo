@@ -51,9 +51,9 @@ import java.awt.font.FontRenderContext
 import java.awt.font.TextLayout
 import java.awt.geom.Ellipse2D
 import java.awt.image.BufferedImage
+import javax.swing.BorderFactory
 import javax.swing.JFrame
 import javax.swing.JPanel
-import javax.swing.border.EtchedBorder
 import javax.swing.border.TitledBorder
 
 /**
@@ -91,7 +91,7 @@ class TextureChooser(
         get() = GradientPaint(0f, 0f, Color.WHITE, 80f, 0f, Color.GREEN)
 
     init {
-        border = TitledBorder(EtchedBorder(), "Texture Chooser")
+        border = TitledBorder(BorderFactory.createEtchedBorder(), "Texture Chooser")
         add(Surface(geomTexture, this, 0))
         add(Surface(imageTexture, this, 1))
         add(Surface(textTexture, this, 2))

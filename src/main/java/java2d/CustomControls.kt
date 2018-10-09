@@ -35,8 +35,8 @@ import java.awt.Color
 import java.awt.Graphics
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import javax.swing.BorderFactory
 import javax.swing.JPanel
-import javax.swing.border.EtchedBorder
 
 /**
  * A convenience class for demos that use Custom Controls.  This class
@@ -55,7 +55,7 @@ abstract class CustomControls(name: String? = null) : JPanel(), Runnable
 
     init {
         this.name = if (name == null) "Demo" else "$name Demo"
-        border = EtchedBorder()
+        border = BorderFactory.createEtchedBorder()
         @Suppress("LeakingThis")
         addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {

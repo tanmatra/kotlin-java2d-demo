@@ -42,14 +42,13 @@ import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
+import javax.swing.BorderFactory
 import javax.swing.JButton
 import javax.swing.JFrame
 import javax.swing.JPanel
 import javax.swing.JTabbedPane
-import javax.swing.border.BevelBorder
 import javax.swing.border.CompoundBorder
 import javax.swing.border.EmptyBorder
-import javax.swing.border.SoftBevelBorder
 import javax.swing.event.ChangeEvent
 import javax.swing.event.ChangeListener
 import kotlin.reflect.KProperty
@@ -273,7 +272,7 @@ class DemoGroup internal constructor(
                 val top = if (j + 1 >= 3) 0 else 5
                 val left = if ((j + 1) % 2 == 0) 0 else 5
                 val eb = EmptyBorder(top, left, 5, 5)
-                val sbb = SoftBevelBorder(BevelBorder.RAISED)
+                val sbb = BorderFactory.createRaisedSoftBevelBorder()
                 val p = panel.getComponent(j) as JPanel
                 p.border = CompoundBorder(eb, sbb)
             }
@@ -285,7 +284,7 @@ class DemoGroup internal constructor(
     companion object
     {
         var columns = 2
-        private val PANEL_BORDER = CompoundBorder(EmptyBorder(5, 5, 5, 5), BevelBorder(BevelBorder.LOWERED))
+        private val PANEL_BORDER = CompoundBorder(EmptyBorder(5, 5, 5, 5), BorderFactory.createLoweredBevelBorder())
 
         @JvmStatic
         fun main(args: Array<String>) {

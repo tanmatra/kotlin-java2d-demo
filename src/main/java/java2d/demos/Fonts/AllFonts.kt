@@ -41,12 +41,12 @@ import java.awt.Dimension
 import java.awt.Font
 import java.awt.Graphics2D
 import java.awt.GraphicsEnvironment
+import javax.swing.BorderFactory
 import javax.swing.JMenu
 import javax.swing.JMenuBar
 import javax.swing.JMenuItem
 import javax.swing.JSlider
 import javax.swing.SwingConstants
-import javax.swing.border.EtchedBorder
 
 /**
  * Scrolling text of fonts returned from GraphicsEnvironment.getAllFonts().
@@ -102,7 +102,7 @@ class AllFonts : AnimatingControlsSurface()
             background = Color.GRAY
             val sleepAmount = demo.sleepAmount.toInt()
             add(JSlider(SwingConstants.HORIZONTAL, 0, 999, sleepAmount).apply {
-                border = EtchedBorder()
+                border = BorderFactory.createEtchedBorder()
                 preferredSize = Dimension(90, 22)
                 addChangeListener {
                     demo.sleepAmount = value.toLong()

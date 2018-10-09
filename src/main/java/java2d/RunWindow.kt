@@ -38,6 +38,7 @@ import java.awt.GridBagLayout
 import java.awt.GridLayout
 import java.util.Date
 import java.util.logging.Level
+import javax.swing.BorderFactory
 import javax.swing.JButton
 import javax.swing.JCheckBox
 import javax.swing.JFrame
@@ -46,7 +47,6 @@ import javax.swing.JPanel
 import javax.swing.JProgressBar
 import javax.swing.JTextField
 import javax.swing.SwingConstants
-import javax.swing.border.BevelBorder
 import javax.swing.border.CompoundBorder
 import javax.swing.border.EmptyBorder
 
@@ -94,7 +94,7 @@ internal class RunWindow(
     }
 
     init {
-        border = CompoundBorder(EmptyBorder(5, 5, 5, 5), BevelBorder(BevelBorder.LOWERED))
+        border = CompoundBorder(EmptyBorder(5, 5, 5, 5), BorderFactory.createLoweredBevelBorder())
 
         add(runButton, GBC(0, 0).fill())
 
