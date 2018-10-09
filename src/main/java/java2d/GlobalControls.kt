@@ -75,7 +75,7 @@ class GlobalControls(private val java2Demo: Java2Demo) : JPanel(GridBagLayout())
 
     val toolBarCheckBox: JCheckBox = addCheckBox("Tools", false, 5)
 
-    val slider = JSlider(SwingConstants.HORIZONTAL, 0, 200, 30).apply {
+    private val slider = JSlider(SwingConstants.HORIZONTAL, 0, 200, 30).apply {
         fun formatTitle(value: Int) = "Anim delay = $value ms"
         addChangeListener {
             (border as TitledBorder).title = formatTitle(value)
@@ -93,6 +93,8 @@ class GlobalControls(private val java2Demo: Java2Demo) : JPanel(GridBagLayout())
     }.also {
         add(it, GBC(0, 6).fill().grow())
     }
+
+    val sleepAmount: Long get() = slider.value.toLong()
 
     val textureChooser = TextureChooser(this, 0).also {
         add(it, GBC(0, 7).fill().grow())

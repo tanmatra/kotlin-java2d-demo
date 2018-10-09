@@ -208,7 +208,7 @@ class DemoGroup internal constructor(
                 if (globalOptions.isVerbose) {
                     demoPanel.surface.verbose(java2Demo)
                 }
-                demoPanel.surface.sleepAmount = globalControls.slider.value.toLong()
+                demoPanel.surface.sleepAmount = globalControls.sleepAmount
                 java2Demo?.backgroundColor?.let { backgroundColor ->
                     demoPanel.surface.background = backgroundColor
                 }
