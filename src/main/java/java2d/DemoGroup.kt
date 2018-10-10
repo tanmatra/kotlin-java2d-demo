@@ -45,8 +45,6 @@ import javax.swing.JPanel
 import javax.swing.JTabbedPane
 import javax.swing.border.CompoundBorder
 import javax.swing.border.EmptyBorder
-import javax.swing.event.ChangeEvent
-import javax.swing.event.ChangeListener
 import kotlin.reflect.KProperty
 
 /**
@@ -60,7 +58,7 @@ class DemoGroup internal constructor(
     groupInfo: GroupInfo,
     private val globalOptions: GlobalOptions,
     private val java2Demo: Java2Demo? = null
-) : JPanel(BorderLayout()), ChangeListener
+) : JPanel(BorderLayout())
 {
     internal constructor(groupInfo: GroupInfo, java2Demo: Java2Demo) : this(groupInfo, java2Demo, java2Demo)
 
@@ -137,7 +135,11 @@ class DemoGroup internal constructor(
             remove(oldGridPanel)
             add(newPanel)
 
-            newTabbedPane.addChangeListener(this)
+            newTabbedPane.addChangeListener {
+                shutDown(newTabbedPane.getComponentAt(index) as JPanel)
+                index = newTabbedPane.selectedIndex
+                setup(false)
+            }
             revalidate()
             newTabbedPane
         }
@@ -148,12 +150,6 @@ class DemoGroup internal constructor(
         }
 
         revalidate()
-    }
-
-    override fun stateChanged(e: ChangeEvent) {
-        shutDown(tabbedPane!!.getComponentAt(index) as JPanel)
-        index = tabbedPane!!.selectedIndex
-        setup(false)
     }
 
     fun setup(issueRepaint: Boolean, sourceProperty: KProperty<*>? = null) {
@@ -198,7 +194,6 @@ class DemoGroup internal constructor(
         panel.forEachComponent<DemoPanel> { demoPanel ->
             demoPanel.stop()
         }
-        System.gc()
     }
 
     private fun cloneDemo() {
