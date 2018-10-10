@@ -261,6 +261,8 @@ class DemoGroup internal constructor(
     {
         var columns = 2
         private val PANEL_BORDER = CompoundBorder(EmptyBorder(5, 5, 5, 5), BorderFactory.createLoweredBevelBorder())
+        private const val FRAME_WIDTH = 620
+        private const val FRAME_HEIGHT = 530
 
         @JvmStatic
         fun main(args: Array<String>) {
@@ -284,8 +286,6 @@ class DemoGroup internal constructor(
                 })
                 contentPane.add(group, BorderLayout.CENTER)
                 pack()
-                val FRAME_WIDTH = 620
-                val FRAME_HEIGHT = 530
                 setSize(FRAME_WIDTH, FRAME_HEIGHT)
                 setLocationRelativeTo(null)  // centers f on screen
                 isVisible = true
