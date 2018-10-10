@@ -35,14 +35,11 @@ import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.GridBagLayout
 import java.awt.GridLayout
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import javax.swing.BorderFactory
-import javax.swing.JButton
 import javax.swing.JFrame
 import javax.swing.JPanel
 import javax.swing.JTabbedPane
@@ -63,7 +60,7 @@ class DemoGroup internal constructor(
     groupInfo: GroupInfo,
     private val globalOptions: GlobalOptions,
     private val java2Demo: Java2Demo? = null
-) : JPanel(BorderLayout()), ChangeListener, ActionListener
+) : JPanel(BorderLayout()), ChangeListener
 {
     internal constructor(groupInfo: GroupInfo, java2Demo: Java2Demo) : this(groupInfo, java2Demo, java2Demo)
 
@@ -151,15 +148,6 @@ class DemoGroup internal constructor(
         }
 
         revalidate()
-    }
-
-    override fun actionPerformed(e: ActionEvent) {
-        val b = e.source as JButton
-        if (b.toolTipText.startsWith("Clone")) {
-            cloneDemo()
-        } else {
-            removeClone(b.parent.parent.parent.parent)
-        }
     }
 
     override fun stateChanged(e: ChangeEvent) {
