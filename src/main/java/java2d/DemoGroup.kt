@@ -35,7 +35,6 @@ import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.GridBagLayout
 import java.awt.GridLayout
-import java.awt.LayoutManager
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.awt.event.MouseAdapter
@@ -64,7 +63,7 @@ class DemoGroup internal constructor(
     groupInfo: GroupInfo,
     private val globalOptions: GlobalOptions,
     private val java2Demo: Java2Demo? = null
-) : JPanel(), ChangeListener, ActionListener
+) : JPanel(BorderLayout()), ChangeListener, ActionListener
 {
     internal constructor(groupInfo: GroupInfo, java2Demo: Java2Demo) : this(groupInfo, java2Demo, java2Demo)
 
@@ -83,12 +82,8 @@ class DemoGroup internal constructor(
         }
 
     init {
-        layout = BorderLayout()
-
         val classes = groupInfo.classes
-        // If there are an odd number of demos, use GridBagLayout.
-        val panelLayout: LayoutManager = if (classes.size % 2 == 1) GridBagLayout() else GridLayout(0, 2)
-        val gridPanel = JPanel(panelLayout).apply { border = PANEL_BORDER }
+        val gridPanel = JPanel(GridBagLayout()).apply { border = PANEL_BORDER }
 
         val mouseListener = object : MouseAdapter() {
             override fun mouseClicked(event: MouseEvent) {
@@ -104,14 +99,7 @@ class DemoGroup internal constructor(
                 addMouseListener(mouseListener)
                 monitor = java2Demo?.performanceMonitor != null
             }
-            if (panelLayout is GridBagLayout) {
-                val x = gridPanel.componentCount % 2
-                val y = gridPanel.componentCount / 2
-                val w = if (i == classes.lastIndex) 2 else 1
-                gridPanel.add(demoPanel, GBC(x, y).span(w, 1).fill().grow())
-            } else {
-                gridPanel.add(demoPanel)
-            }
+            gridPanel.add(demoPanel, createGridConstraint(gridPanel, i, classes.lastIndex))
         }
 
         add(gridPanel)
@@ -315,6 +303,13 @@ class DemoGroup internal constructor(
                 isVisible = true
             }
             group.setup(false)
+        }
+
+        private fun createGridConstraint(panel: JPanel, index: Int, lastIndex: Int): GBC {
+            val x = panel.componentCount % 2
+            val y = panel.componentCount / 2
+            val w = if (index == lastIndex) 2 else 1
+            return GBC(x, y).span(w, 1).fill().grow()
         }
     }
 }
